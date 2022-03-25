@@ -31,7 +31,7 @@ resource "kubernetes_pod" "dev" {
 ### Read-Only
 
 - **name** (String) Name of the workspace.
+- **owner** (String) Username of the workspace owner.
 - **transition** (String) Either "start" or "stop". Use this to start/stop resources with "count".
-- **username** (String) Username of the workspace owner.
 
 

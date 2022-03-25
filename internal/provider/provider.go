@@ -65,7 +65,7 @@ func New() *schema.Provider {
 						transition = "start"
 					}
 					rd.Set("transition", transition)
-					rd.Set("username", os.Getenv("CODER_WORKSPACE_USERNAME"))
+					rd.Set("owner", os.Getenv("CODER_WORKSPACE_OWNER"))
 					rd.Set("name", os.Getenv("CODER_WORKSPACE_NAME"))
 					return nil
 				},
@@ -75,7 +75,7 @@ func New() *schema.Provider {
 						Computed:    true,
 						Description: `Either "start" or "stop". Use this to start/stop resources with "count".`,
 					},
-					"username": {
+					"owner": {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: "Username of the workspace owner.",
