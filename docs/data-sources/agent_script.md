@@ -37,6 +37,7 @@ resource "kubernetes_pod" "dev" {
 
 ### Optional
 
+- **auth** (String) The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".
 - **id** (String) The ID of this resource.
 
 ### Read-Only

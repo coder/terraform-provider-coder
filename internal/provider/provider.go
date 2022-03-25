@@ -65,6 +65,8 @@ func New() *schema.Provider {
 						transition = "start"
 					}
 					rd.Set("transition", transition)
+					rd.Set("username", os.Getenv("CODER_WORKSPACE_USERNAME"))
+					rd.Set("name", os.Getenv("CODER_WORKSPACE_NAME"))
 					return nil
 				},
 				Schema: map[string]*schema.Schema{
@@ -72,6 +74,16 @@ func New() *schema.Provider {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: `Either "start" or "stop". Use this to start/stop resources with "count".`,
+					},
+					"username": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Username of the workspace owner.",
+					},
+					"name": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Name of the workspace.",
 					},
 				},
 			},
@@ -81,6 +93,10 @@ func New() *schema.Provider {
 					config, valid := i.(config)
 					if !valid {
 						return diag.Errorf("config was unexpected type %q", reflect.TypeOf(i).String())
+					}
+					auth, valid := resourceData.Get("auth").(string)
+					if !valid {
+						return diag.Errorf("auth was unexpected type %q", reflect.TypeOf(resourceData.Get("auth")))
 					}
 					operatingSystem, valid := resourceData.Get("os").(string)
 					if !valid {
@@ -97,6 +113,7 @@ func New() *schema.Provider {
 					script := os.Getenv(fmt.Sprintf("CODER_AGENT_SCRIPT_%s_%s", operatingSystem, arch))
 					if script != "" {
 						script = strings.ReplaceAll(script, "${ACCESS_URL}", accessURL.String())
+						script = strings.ReplaceAll(script, "${AUTH_TYPE}", auth)
 					}
 					err = resourceData.Set("value", script)
 					if err != nil {
@@ -106,6 +123,13 @@ func New() *schema.Provider {
 					return nil
 				},
 				Schema: map[string]*schema.Schema{
+					"auth": {
+						Type:         schema.TypeString,
+						Default:      "token",
+						Optional:     true,
+						Description:  `The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".`,
+						ValidateFunc: validation.StringInSlice([]string{"token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity"}, false),
+					},
 					"os": {
 						Type:         schema.TypeString,
 						Required:     true,
@@ -144,29 +168,11 @@ func New() *schema.Provider {
 					return nil
 				},
 				Schema: map[string]*schema.Schema{
-					"auth": {
+					"instance_id": {
 						ForceNew:    true,
-						Description: "Authenticate an instance with zero-trust by using cloud metadata APIs.",
-						Type:        schema.TypeList,
+						Description: "An instance ID from a provisioned instance to enable zero-trust agent authentication.",
 						Optional:    true,
-						MaxItems:    1,
-						Elem: &schema.Resource{
-							Schema: map[string]*schema.Schema{
-								"type": {
-									ForceNew:     true,
-									Description:  `The authentication type to use. Must be one of: "google-instance-identity".`,
-									Optional:     true,
-									Type:         schema.TypeString,
-									ValidateFunc: validation.StringInSlice([]string{"google-instance-identity"}, false),
-								},
-								"instance_id": {
-									ForceNew:    true,
-									Description: "A unique ID from the created compute resource to identify with cloud metadata APIs.",
-									Optional:    true,
-									Type:        schema.TypeString,
-								},
-							},
-						},
+						Type:        schema.TypeString,
 					},
 					"env": {
 						ForceNew:    true,

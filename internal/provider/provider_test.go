@@ -117,10 +117,7 @@ func TestAgent(t *testing.T) {
 					url = "https://example.com"
 				}
 				resource "coder_agent" "new" {
-					auth {
-						type = "google-instance-identity"
-						instance_id = "instance"
-					}
+					instance_id = "instance"
 					env = {
 						hi = "test"
 					}
@@ -133,8 +130,7 @@ func TestAgent(t *testing.T) {
 					require.NotNil(t, resource)
 					for _, key := range []string{
 						"token",
-						"auth.0.type",
-						"auth.0.instance_id",
+						"instance_id",
 						"env.hi",
 						"startup_script",
 					} {
