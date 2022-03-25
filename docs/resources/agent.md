@@ -40,21 +40,13 @@ resource "google_compute_instance" "dev" {
 
 ### Optional
 
-- **auth** (Block List, Max: 1) Authenticate an instance with zero-trust by using cloud metadata APIs. (see [below for nested schema](#nestedblock--auth))
 - **env** (Map of String) A mapping of environment variables to set inside the workspace.
 - **id** (String) The ID of this resource.
+- **instance_id** (String) An instance ID from a provisioned instance to enable zero-trust agent authentication.
 - **startup_script** (String) A script to run after the agent starts.
 
 ### Read-Only
 
 - **token** (String) Set the environment variable "CODER_TOKEN" with this token to authenticate an agent.
-
-<a id="nestedblock--auth"></a>
-### Nested Schema for `auth`
-
-Optional:
-
-- **instance_id** (String) A unique ID from the created compute resource to identify with cloud metadata APIs.
-- **type** (String) The authentication type to use. Must be one of: "google-instance-identity".
 
 
