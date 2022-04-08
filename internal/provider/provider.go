@@ -65,11 +65,29 @@ func New() *schema.Provider {
 						transition = "start"
 					}
 					rd.Set("transition", transition)
-					rd.Set("owner", os.Getenv("CODER_WORKSPACE_OWNER"))
-					rd.Set("name", os.Getenv("CODER_WORKSPACE_NAME"))
+					count := 0
+					if transition == "start" {
+						count = 1
+					}
+					rd.Set("start_count", count)
+					owner := os.Getenv("CODER_WORKSPACE_OWNER")
+					if owner == "" {
+						owner = "default"
+					}
+					rd.Set("owner", owner)
+					name := os.Getenv("CODER_WORKSPACE_NAME")
+					if name == "" {
+						name = "default"
+					}
+					rd.Set("name", name)
 					return nil
 				},
 				Schema: map[string]*schema.Schema{
+					"start_count": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: `A computed count based on "transition" state. If "start", count will equal 1.`,
+					},
 					"transition": {
 						Type:        schema.TypeString,
 						Computed:    true,
@@ -87,8 +105,19 @@ func New() *schema.Provider {
 					},
 				},
 			},
-			"coder_agent_script": {
-				Description: "Use this data source to get the startup script to pull and start the Coder agent.",
+		},
+		ResourcesMap: map[string]*schema.Resource{
+			"coder_agent": {
+				Description: "Use this resource to associate an agent.",
+				CreateContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+					// This should be a real authentication token!
+					rd.SetId(uuid.NewString())
+					err := rd.Set("token", uuid.NewString())
+					if err != nil {
+						return diag.FromErr(err)
+					}
+					return nil
+				},
 				ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 					config, valid := i.(config)
 					if !valid {
@@ -115,70 +144,48 @@ func New() *schema.Provider {
 						script = strings.ReplaceAll(script, "${ACCESS_URL}", accessURL.String())
 						script = strings.ReplaceAll(script, "${AUTH_TYPE}", auth)
 					}
-					err = resourceData.Set("value", script)
+					err = resourceData.Set("init_script", script)
 					if err != nil {
 						return diag.FromErr(err)
 					}
-					resourceData.SetId(strings.Join([]string{operatingSystem, arch}, "_"))
-					return nil
-				},
-				Schema: map[string]*schema.Schema{
-					"auth": {
-						Type:         schema.TypeString,
-						Default:      "token",
-						Optional:     true,
-						Description:  `The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".`,
-						ValidateFunc: validation.StringInSlice([]string{"token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity"}, false),
-					},
-					"os": {
-						Type:         schema.TypeString,
-						Required:     true,
-						Description:  `The operating system the agent will run on. Must be one of: "linux", "darwin", or "windows".`,
-						ValidateFunc: validation.StringInSlice([]string{"linux", "darwin", "windows"}, false),
-					},
-					"arch": {
-						Type:         schema.TypeString,
-						Required:     true,
-						Description:  `The architecture the agent will run on. Must be one of: "amd64", "arm64".`,
-						ValidateFunc: validation.StringInSlice([]string{"amd64"}, false),
-					},
-					"value": {
-						Type:     schema.TypeString,
-						Computed: true,
-					},
-				},
-			},
-		},
-		ResourcesMap: map[string]*schema.Resource{
-			"coder_agent": {
-				Description: "Use this resource to associate an agent.",
-				CreateContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
-					// This should be a real authentication token!
-					rd.SetId(uuid.NewString())
-					err := rd.Set("token", uuid.NewString())
-					if err != nil {
-						return diag.FromErr(err)
-					}
-					return nil
-				},
-				ReadContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 					return nil
 				},
 				DeleteContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 					return nil
 				},
 				Schema: map[string]*schema.Schema{
-					"instance_id": {
-						ForceNew:    true,
-						Description: "An instance ID from a provisioned instance to enable zero-trust agent authentication.",
-						Optional:    true,
+					"init_script": {
 						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "Run this script on startup of an instance to initialize the agent.",
+					},
+					"arch": {
+						Type:         schema.TypeString,
+						ForceNew:     true,
+						Required:     true,
+						Description:  `The architecture the agent will run on. Must be one of: "amd64", "arm64".`,
+						ValidateFunc: validation.StringInSlice([]string{"amd64", "arm64"}, false),
+					},
+					"auth": {
+						Type:         schema.TypeString,
+						Default:      "token",
+						ForceNew:     true,
+						Optional:     true,
+						Description:  `The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".`,
+						ValidateFunc: validation.StringInSlice([]string{"token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity"}, false),
 					},
 					"env": {
 						ForceNew:    true,
 						Description: "A mapping of environment variables to set inside the workspace.",
 						Type:        schema.TypeMap,
 						Optional:    true,
+					},
+					"os": {
+						Type:         schema.TypeString,
+						ForceNew:     true,
+						Required:     true,
+						Description:  `The operating system the agent will run on. Must be one of: "linux", "darwin", or "windows".`,
+						ValidateFunc: validation.StringInSlice([]string{"linux", "darwin", "windows"}, false),
 					},
 					"startup_script": {
 						ForceNew:    true,
@@ -191,6 +198,36 @@ func New() *schema.Provider {
 						Description: `Set the environment variable "CODER_TOKEN" with this token to authenticate an agent.`,
 						Type:        schema.TypeString,
 						Computed:    true,
+					},
+				},
+			},
+			"coder_agent_instance": {
+				Description: "Use this resource to associate an instance ID with an agent for zero-trust " +
+					"authentication. This association is done automatically for \"google_compute_instance\", " +
+					"\"aws_instance\", \"azurerm_linux_virtual_machine\", and " +
+					"\"azurerm_windows_virtual_machine\" resources.",
+				CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+					resourceData.SetId(uuid.NewString())
+					return nil
+				},
+				ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+					return nil
+				},
+				DeleteContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+					return nil
+				},
+				Schema: map[string]*schema.Schema{
+					"agent_id": {
+						Type:        schema.TypeString,
+						Description: `The "id" property of a "coder_agent" resource to associate with.`,
+						ForceNew:    true,
+						Required:    true,
+					},
+					"instance_id": {
+						ForceNew:    true,
+						Required:    true,
+						Description: `The instance identifier of a provisioned resource.`,
+						Type:        schema.TypeString,
 					},
 				},
 			},
