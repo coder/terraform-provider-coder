@@ -1,5 +1,12 @@
 default: testacc
 
+fmt:
+	terraform fmt -recursive
+
+gen:
+	# go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+	tfplugindocs
+
 # Run acceptance tests
 .PHONY: testacc
 testacc:
