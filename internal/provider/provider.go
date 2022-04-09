@@ -64,17 +64,17 @@ func New() *schema.Provider {
 						// Default to start!
 						transition = "start"
 					}
-					rd.Set("transition", transition)
+					_ = rd.Set("transition", transition)
 					count := 0
 					if transition == "start" {
 						count = 1
 					}
-					rd.Set("start_count", count)
+					_ = rd.Set("start_count", count)
 					owner := os.Getenv("CODER_WORKSPACE_OWNER")
 					if owner == "" {
 						owner = "default"
 					}
-					rd.Set("owner", owner)
+					_ = rd.Set("owner", owner)
 					name := os.Getenv("CODER_WORKSPACE_NAME")
 					if name == "" {
 						name = "default"
@@ -109,46 +109,17 @@ func New() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"coder_agent": {
 				Description: "Use this resource to associate an agent.",
-				CreateContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+				CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 					// This should be a real authentication token!
-					rd.SetId(uuid.NewString())
-					err := rd.Set("token", uuid.NewString())
+					resourceData.SetId(uuid.NewString())
+					err := resourceData.Set("token", uuid.NewString())
 					if err != nil {
 						return diag.FromErr(err)
 					}
-					return nil
+					return updateInitScript(resourceData, i)
 				},
 				ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
-					config, valid := i.(config)
-					if !valid {
-						return diag.Errorf("config was unexpected type %q", reflect.TypeOf(i).String())
-					}
-					auth, valid := resourceData.Get("auth").(string)
-					if !valid {
-						return diag.Errorf("auth was unexpected type %q", reflect.TypeOf(resourceData.Get("auth")))
-					}
-					operatingSystem, valid := resourceData.Get("os").(string)
-					if !valid {
-						return diag.Errorf("os was unexpected type %q", reflect.TypeOf(resourceData.Get("os")))
-					}
-					arch, valid := resourceData.Get("arch").(string)
-					if !valid {
-						return diag.Errorf("arch was unexpected type %q", reflect.TypeOf(resourceData.Get("arch")))
-					}
-					accessURL, err := config.URL.Parse("/")
-					if err != nil {
-						return diag.Errorf("parse access url: %s", err)
-					}
-					script := os.Getenv(fmt.Sprintf("CODER_AGENT_SCRIPT_%s_%s", operatingSystem, arch))
-					if script != "" {
-						script = strings.ReplaceAll(script, "${ACCESS_URL}", accessURL.String())
-						script = strings.ReplaceAll(script, "${AUTH_TYPE}", auth)
-					}
-					err = resourceData.Set("init_script", script)
-					if err != nil {
-						return diag.FromErr(err)
-					}
-					return nil
+					return updateInitScript(resourceData, i)
 				},
 				DeleteContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 					return nil
@@ -233,4 +204,39 @@ func New() *schema.Provider {
 			},
 		},
 	}
+}
+
+// updateInitScript fetches parameters from a "coder_agent" to produce the
+// agent script from environment variables.
+func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+	config, valid := i.(config)
+	if !valid {
+		return diag.Errorf("config was unexpected type %q", reflect.TypeOf(i).String())
+	}
+	auth, valid := resourceData.Get("auth").(string)
+	if !valid {
+		return diag.Errorf("auth was unexpected type %q", reflect.TypeOf(resourceData.Get("auth")))
+	}
+	operatingSystem, valid := resourceData.Get("os").(string)
+	if !valid {
+		return diag.Errorf("os was unexpected type %q", reflect.TypeOf(resourceData.Get("os")))
+	}
+	arch, valid := resourceData.Get("arch").(string)
+	if !valid {
+		return diag.Errorf("arch was unexpected type %q", reflect.TypeOf(resourceData.Get("arch")))
+	}
+	accessURL, err := config.URL.Parse("/")
+	if err != nil {
+		return diag.Errorf("parse access url: %s", err)
+	}
+	script := os.Getenv(fmt.Sprintf("CODER_AGENT_SCRIPT_%s_%s", operatingSystem, arch))
+	if script != "" {
+		script = strings.ReplaceAll(script, "${ACCESS_URL}", accessURL.String())
+		script = strings.ReplaceAll(script, "${AUTH_TYPE}", auth)
+	}
+	err = resourceData.Set("init_script", script)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
