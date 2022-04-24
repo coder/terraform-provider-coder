@@ -58,7 +58,6 @@ func New() *schema.Provider {
 			"coder_workspace": {
 				Description: "Use this data source to get information for the active workspace build.",
 				ReadContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
-					rd.SetId(uuid.NewString())
 					transition := os.Getenv("CODER_WORKSPACE_TRANSITION")
 					if transition == "" {
 						// Default to start!
@@ -75,11 +74,21 @@ func New() *schema.Provider {
 						owner = "default"
 					}
 					_ = rd.Set("owner", owner)
+					ownerID := os.Getenv("CODER_WORKSPACE_OWNER_ID")
+					if ownerID == "" {
+						ownerID = uuid.Nil.String()
+					}
+					_ = rd.Set("owner_id", ownerID)
 					name := os.Getenv("CODER_WORKSPACE_NAME")
 					if name == "" {
 						name = "default"
 					}
 					rd.Set("name", name)
+					id := os.Getenv("CODER_WORKSPACE_ID")
+					if id == "" {
+						id = uuid.NewString()
+					}
+					rd.SetId(id)
 					return nil
 				},
 				Schema: map[string]*schema.Schema{
@@ -97,6 +106,16 @@ func New() *schema.Provider {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: "Username of the workspace owner.",
+					},
+					"owner_id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "UUID of the workspace owner.",
+					},
+					"id": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "UUID of the workspace.",
 					},
 					"name": {
 						Type:        schema.TypeString,
