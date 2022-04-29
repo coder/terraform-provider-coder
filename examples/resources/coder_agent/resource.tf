@@ -4,6 +4,7 @@ data "coder_workspace" "me" {
 resource "coder_agent" "dev" {
   os   = "linux"
   arch = "amd64"
+  dir  = "/workspace"
 }
 
 resource "kubernetes_pod" "dev" {

@@ -62,6 +62,7 @@ func TestAgent(t *testing.T) {
 					os = "linux"
 					arch = "amd64"
 					auth = "aws-instance-identity"
+					dir = "/tmp"
 					env = {
 						hi = "test"
 					}
@@ -78,6 +79,7 @@ func TestAgent(t *testing.T) {
 					"os",
 					"arch",
 					"auth",
+					"dir",
 					"env.hi",
 					"startup_script",
 				} {

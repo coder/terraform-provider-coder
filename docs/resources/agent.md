@@ -19,6 +19,7 @@ data "coder_workspace" "me" {
 resource "coder_agent" "dev" {
   os   = "linux"
   arch = "amd64"
+  dir  = "/workspace"
 }
 
 resource "kubernetes_pod" "dev" {
@@ -46,6 +47,7 @@ resource "kubernetes_pod" "dev" {
 ### Optional
 
 - `auth` (String) The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".
+- `dir` (String) The starting directory when a user creates a shell session. Defaults to $HOME.
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
 - `id` (String) The ID of this resource.
 - `startup_script` (String) A script to run after the agent starts.
