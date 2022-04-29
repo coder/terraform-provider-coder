@@ -164,6 +164,12 @@ func New() *schema.Provider {
 						Description:  `The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".`,
 						ValidateFunc: validation.StringInSlice([]string{"token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity"}, false),
 					},
+					"dir": {
+						Type:        schema.TypeString,
+						ForceNew:    true,
+						Optional:    true,
+						Description: "The starting directory when a user creates a shell session. Defaults to $HOME.",
+					},
 					"env": {
 						ForceNew:    true,
 						Description: "A mapping of environment variables to set inside the workspace.",
