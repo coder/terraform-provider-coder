@@ -191,7 +191,7 @@ func New() *schema.Provider {
 					},
 					"token": {
 						ForceNew:    true,
-						Description: `Set the environment variable "CODER_TOKEN" with this token to authenticate an agent.`,
+						Description: `Set the environment variable "CODER_AGENT_TOKEN" with this token to authenticate an agent.`,
 						Type:        schema.TypeString,
 						Computed:    true,
 					},

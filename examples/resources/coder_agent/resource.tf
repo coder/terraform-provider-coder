@@ -13,7 +13,7 @@ resource "kubernetes_pod" "dev" {
     container {
       command = ["sh", "-c", coder_agent.dev.init_script]
       env {
-        name  = "CODER_TOKEN"
+        name  = "CODER_AGENT_TOKEN"
         value = coder_agent.dev.token
       }
     }
