@@ -28,7 +28,7 @@ resource "kubernetes_pod" "dev" {
     container {
       command = ["sh", "-c", coder_agent.dev.init_script]
       env {
-        name  = "CODER_TOKEN"
+        name  = "CODER_AGENT_TOKEN"
         value = coder_agent.dev.token
       }
     }
@@ -55,6 +55,6 @@ resource "kubernetes_pod" "dev" {
 ### Read-Only
 
 - `init_script` (String) Run this script on startup of an instance to initialize the agent.
-- `token` (String) Set the environment variable "CODER_TOKEN" with this token to authenticate an agent.
+- `token` (String) Set the environment variable "CODER_AGENT_TOKEN" with this token to authenticate an agent.
 
 
