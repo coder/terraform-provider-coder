@@ -134,3 +134,47 @@ func TestAgentInstance(t *testing.T) {
 		}},
 	})
 }
+
+func TestApp(t *testing.T) {
+	t.Parallel()
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+				provider "coder" {
+				}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "code-server" {
+					agent_id = coder_agent.dev.id
+					name = "code-server"
+					icon = "builtin:vim"
+					target = "http://localhost:13337"
+				}
+				`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 2)
+				resource := state.Modules[0].Resources["coder_app.code-server"]
+				require.NotNil(t, resource)
+				for _, key := range []string{
+					"agent_id",
+					"name",
+					"icon",
+					"target",
+				} {
+					value := resource.Primary.Attributes[key]
+					t.Logf("%q = %q", key, value)
+					require.NotNil(t, value)
+					require.Greater(t, len(value), 0)
+				}
+				return nil
+			},
+		}},
+	})
+}
