@@ -163,8 +163,8 @@ func New() *schema.Provider {
 						Type:         schema.TypeString,
 						ForceNew:     true,
 						Required:     true,
-						Description:  `The architecture the agent will run on. Must be one of: "amd64", "arm64".`,
-						ValidateFunc: validation.StringInSlice([]string{"amd64", "arm64"}, false),
+						Description:  `The architecture the agent will run on. Must be one of: "amd64", "armv7", "arm64".`,
+						ValidateFunc: validation.StringInSlice([]string{"amd64", "armv7", "arm64"}, false),
 					},
 					"auth": {
 						Type:         schema.TypeString,

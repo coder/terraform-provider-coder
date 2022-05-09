@@ -41,7 +41,7 @@ resource "kubernetes_pod" "dev" {
 
 ### Required
 
-- `arch` (String) The architecture the agent will run on. Must be one of: "amd64", "arm64".
+- `arch` (String) The architecture the agent will run on. Must be one of: "amd64", "armv7", "arm64".
 - `os` (String) The operating system the agent will run on. Must be one of: "linux", "darwin", or "windows".
 
 ### Optional
