@@ -56,10 +56,10 @@ resource "coder_app" "intellij" {
 
 ### Optional
 
-- `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command.
+- `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "target" may be specified, but not both.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
 - `id` (String) The ID of this resource.
 - `name` (String) A display name to identify the app.
-- `target` (String) A URL to be proxied to from inside the workspace.
+- `target` (String) A URL to be proxied to from inside the workspace. Either "command" or "target" may be specified, but not both.
 
 
