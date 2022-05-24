@@ -154,7 +154,8 @@ func TestApp(t *testing.T) {
 					agent_id = coder_agent.dev.id
 					name = "code-server"
 					icon = "builtin:vim"
-					target = "http://localhost:13337"
+					relative_path = true
+					url = "http://localhost:13337"
 				}
 				`,
 			Check: func(state *terraform.State) error {
@@ -166,7 +167,8 @@ func TestApp(t *testing.T) {
 					"agent_id",
 					"name",
 					"icon",
-					"target",
+					"relative_path",
+					"url",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)

@@ -37,7 +37,7 @@ resource "coder_agent_instance" "dev" {
 - `agent_id` (String) The "id" property of a "coder_agent" resource to associate with.
 - `instance_id` (String) The instance identifier of a provisioned resource.
 
-### Optional
+### Read-Only
 
 - `id` (String) The ID of this resource.
 

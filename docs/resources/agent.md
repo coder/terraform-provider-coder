@@ -49,11 +49,11 @@ resource "kubernetes_pod" "dev" {
 - `auth` (String) The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".
 - `dir` (String) The starting directory when a user creates a shell session. Defaults to $HOME.
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
-- `id` (String) The ID of this resource.
 - `startup_script` (String) A script to run after the agent starts.
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `init_script` (String) Run this script on startup of an instance to initialize the agent.
 - `token` (String) Set the environment variable "CODER_AGENT_TOKEN" with this token to authenticate an agent.
 

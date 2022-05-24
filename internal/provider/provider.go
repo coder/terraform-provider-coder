@@ -260,8 +260,8 @@ func New() *schema.Provider {
 						Type: schema.TypeString,
 						Description: "A command to run in a terminal opening this app. In the web, " +
 							"this will open in a new tab. In the CLI, this will SSH and execute the command. " +
-							"Either \"command\" or \"target\" may be specified, but not both.",
-						ConflictsWith: []string{"target"},
+							"Either \"command\" or \"url\" may be specified, but not both.",
+						ConflictsWith: []string{"url"},
 						Optional:      true,
 						ForceNew:      true,
 					},
@@ -286,10 +286,18 @@ func New() *schema.Provider {
 						ForceNew:    true,
 						Optional:    true,
 					},
-					"target": {
+					"relative_path": {
+						Type: schema.TypeBool,
+						Description: "Specifies whether the URL will be accessed via a relative " +
+							"path or wildcard. Use if wildcard routing is unavailable.",
+						ForceNew:      true,
+						Optional:      true,
+						ConflictsWith: []string{"command"},
+					},
+					"url": {
 						Type: schema.TypeString,
 						Description: "A URL to be proxied to from inside the workspace. " +
-							"Either \"command\" or \"target\" may be specified, but not both.",
+							"Either \"command\" or \"url\" may be specified, but not both.",
 						ForceNew:      true,
 						Optional:      true,
 						ConflictsWith: []string{"command"},
