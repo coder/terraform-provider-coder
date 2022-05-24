@@ -4,8 +4,7 @@ fmt:
 	terraform fmt -recursive
 
 gen:
-	# go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
-	tfplugindocs
+	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
 
 # Run acceptance tests
 .PHONY: testacc

@@ -29,7 +29,8 @@ resource "coder_app" "code-server" {
   agent_id = coder_agent.dev.id
   name     = "VS Code"
   icon     = data.coder_workspace.me.access_url + "/icons/vscode.svg"
-  target   = "http://localhost:13337"
+  url      = "http://localhost:13337"
+  path     = true
 }
 
 resource "coder_app" "vim" {
@@ -56,10 +57,14 @@ resource "coder_app" "intellij" {
 
 ### Optional
 
-- `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "target" may be specified, but not both.
+- `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "url" may be specified, but not both.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
-- `id` (String) The ID of this resource.
 - `name` (String) A display name to identify the app.
-- `target` (String) A URL to be proxied to from inside the workspace. Either "command" or "target" may be specified, but not both.
+- `relative_path` (Boolean) Specifies whether the URL will be accessed via a relative path or wildcard. Use if wildcard routing is unavailable.
+- `url` (String) A URL to be proxied to from inside the workspace. Either "command" or "url" may be specified, but not both.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 
