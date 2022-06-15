@@ -30,7 +30,7 @@ resource "coder_app" "code-server" {
   name     = "VS Code"
   icon     = data.coder_workspace.me.access_url + "/icons/vscode.svg"
   url      = "http://localhost:13337"
-  path     = true
+  relative_path     = true
 }
 
 resource "coder_app" "vim" {
