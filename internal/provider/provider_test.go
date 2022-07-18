@@ -20,7 +20,6 @@ func TestProvider(t *testing.T) {
 
 func TestWorkspace(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
-	t.Setenv("CODER_WORKSPACE_OWNER_NAME", "Workspace Owner Jr.")
 	t.Setenv("CODER_WORKSPACE_OWNER_EMAIL", "owner123@example.com")
 
 	resource.Test(t, resource.TestCase{
@@ -46,7 +45,6 @@ func TestWorkspace(t *testing.T) {
 				require.NotNil(t, value)
 				t.Log(value)
 				require.Equal(t, "owner123", attribs["owner"])
-				require.Equal(t, "Workspace Owner Jr.", attribs["owner_name"])
 				require.Equal(t, "owner123@example.com", attribs["owner_email"])
 				return nil
 			},

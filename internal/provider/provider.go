@@ -76,12 +76,6 @@ func New() *schema.Provider {
 					}
 					_ = rd.Set("owner", owner)
 
-					ownerName := os.Getenv("CODER_WORKSPACE_OWNER_NAME")
-					if ownerName == "" {
-						ownerName = owner
-					}
-					_ = rd.Set("owner_name", ownerName)
-
 					ownerEmail := os.Getenv("CODER_WORKSPACE_OWNER_EMAIL")
 					_ = rd.Set("owner_email", ownerEmail)
 
@@ -131,11 +125,6 @@ func New() *schema.Provider {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: "Username of the workspace owner.",
-					},
-					"owner_name": {
-						Type:        schema.TypeString,
-						Computed:    true,
-						Description: "Name of the workspace owner (e.g. for Git commits) if known, otherwise their username.",
 					},
 					"owner_email": {
 						Type:        schema.TypeString,

@@ -30,7 +30,6 @@ resource "kubernetes_pod" "dev" {
 - `id` (String) UUID of the workspace.
 - `name` (String) Name of the workspace.
 - `owner` (String) Username of the workspace owner.
-- `owner_name` (String) Display-friendly name of the workspace owner (or their username, if a name is not known).
 - `owner_email` (String) Email address of the workspace owner.
 - `owner_id` (String) UUID of the workspace owner.
 - `start_count` (Number) A computed count based on "transition" state. If "start", count will equal 1.
