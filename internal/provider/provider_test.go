@@ -19,7 +19,10 @@ func TestProvider(t *testing.T) {
 }
 
 func TestWorkspace(t *testing.T) {
-	t.Parallel()
+	t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
+	t.Setenv("CODER_WORKSPACE_OWNER_NAME", "Workspace Owner Jr.")
+	t.Setenv("CODER_WORKSPACE_OWNER_EMAIL", "owner123@example.com")
+
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
 			"coder": provider.New(),
@@ -37,9 +40,14 @@ func TestWorkspace(t *testing.T) {
 				require.Len(t, state.Modules[0].Resources, 1)
 				resource := state.Modules[0].Resources["data.coder_workspace.me"]
 				require.NotNil(t, resource)
-				value := resource.Primary.Attributes["transition"]
+
+				attribs := resource.Primary.Attributes
+				value := attribs["transition"]
 				require.NotNil(t, value)
 				t.Log(value)
+				require.Equal(t, "owner123", attribs["owner"])
+				require.Equal(t, "Workspace Owner Jr.", attribs["owner_name"])
+				require.Equal(t, "owner123@example.com", attribs["owner_email"])
 				return nil
 			},
 		}},
