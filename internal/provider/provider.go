@@ -76,11 +76,11 @@ func New() *schema.Provider {
 					}
 					_ = rd.Set("owner", owner)
 
-					/*ownerName := os.Getenv("CODER_WORKSPACE_OWNER_NAME")
+					ownerName := os.Getenv("CODER_WORKSPACE_OWNER_NAME")
 					if ownerName == "" {
 						ownerName = owner
 					}
-					_ = rd.Set("owner_name", ownerName)*/
+					_ = rd.Set("owner_name", ownerName)
 
 					ownerEmail := os.Getenv("CODER_WORKSPACE_OWNER_EMAIL")
 					_ = rd.Set("owner_email", ownerEmail)
