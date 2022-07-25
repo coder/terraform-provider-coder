@@ -186,3 +186,58 @@ func TestApp(t *testing.T) {
 		}},
 	})
 }
+
+func TestMetadata(t *testing.T) {
+	t.Parallel()
+	prov := provider.New()
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": prov,
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+				provider "coder" {
+				}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_metadata" "agent" {
+					resource_id = coder_agent.dev.id
+					pair {
+						key = "foo"
+						value = "bar"
+					}
+					pair {
+						key = "secret"
+						value = "squirrel"
+						sensitive = true
+					}
+				}
+				`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 2)
+				agent := state.Modules[0].Resources["coder_agent.dev"]
+				require.NotNil(t, agent)
+				metadata := state.Modules[0].Resources["coder_metadata.agent"]
+				require.NotNil(t, metadata)
+				t.Logf("metadata attributes: %#v", metadata.Primary.Attributes)
+				for key, expected := range map[string]string{
+					"resource_id":      agent.Primary.Attributes["id"],
+					"pair.#":           "2",
+					"pair.0.key":       "foo",
+					"pair.0.value":     "bar",
+					"pair.0.sensitive": "false",
+					"pair.1.key":       "secret",
+					"pair.1.value":     "squirrel",
+					"pair.1.sensitive": "true",
+				} {
+					require.Equal(t, expected, metadata.Primary.Attributes[key])
+				}
+				return nil
+			},
+		}},
+	})
+}

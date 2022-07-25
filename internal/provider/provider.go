@@ -318,6 +318,69 @@ func New() *schema.Provider {
 					},
 				},
 			},
+			"coder_metadata": {
+				Description: "Use this resource to attach key/value pairs to a resource. They will be " +
+					"displayed in the Coder dashboard.",
+				CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+					resourceData.SetId(uuid.NewString())
+					return nil
+				},
+				ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+					return nil
+				},
+				DeleteContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+					return nil
+				},
+				Schema: map[string]*schema.Schema{
+					"resource_id": {
+						Type:        schema.TypeString,
+						Description: "The \"id\" property of another resource that metadata should be attached to.",
+						ForceNew:    true,
+						Required:    true,
+					},
+					"pair": {
+						Type:     schema.TypeList,
+						ForceNew: true,
+						Required: true,
+						Elem: &schema.Resource{
+							CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+								resourceData.SetId(uuid.NewString())
+								return nil
+							},
+							ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+								return nil
+							},
+							DeleteContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+								return nil
+							},
+							Schema: map[string]*schema.Schema{
+								"key": {
+									Type:        schema.TypeString,
+									Description: "The key of this metadata item.",
+									ForceNew:    true,
+									Required:    true,
+								},
+								"value": {
+									Type:        schema.TypeString,
+									Description: "The value of this metadata item.",
+									ForceNew:    true,
+									Required:    true,
+								},
+								"sensitive": {
+									Type: schema.TypeBool,
+									Description: "Set to \"true\" to for items such as API keys whose values should be " +
+										"hidden from view by default. Note that this does not prevent metadata from " +
+										"being retrieved using the API, so it is not suitable for secrets that should " +
+										"not be exposed to workspace users.",
+									ForceNew: true,
+									Optional: true,
+									Default:  false,
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
