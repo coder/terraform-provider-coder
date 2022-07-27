@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -323,6 +325,16 @@ func New() *schema.Provider {
 					"displayed in the Coder dashboard.",
 				CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 					resourceData.SetId(uuid.NewString())
+
+					pairs, err := populateIsNull(resourceData)
+					if err != nil {
+						return errorAsDiagnostics(err)
+					}
+					err = resourceData.Set("pair", pairs)
+					if err != nil {
+						return errorAsDiagnostics(err)
+					}
+
 					return nil
 				},
 				ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
@@ -343,16 +355,6 @@ func New() *schema.Provider {
 						ForceNew: true,
 						Required: true,
 						Elem: &schema.Resource{
-							CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
-								resourceData.SetId(uuid.NewString())
-								return nil
-							},
-							ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
-								return nil
-							},
-							DeleteContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
-								return nil
-							},
 							Schema: map[string]*schema.Schema{
 								"key": {
 									Type:        schema.TypeString,
@@ -364,7 +366,7 @@ func New() *schema.Provider {
 									Type:        schema.TypeString,
 									Description: "The value of this metadata item.",
 									ForceNew:    true,
-									Required:    true,
+									Optional:    true,
 								},
 								"sensitive": {
 									Type: schema.TypeBool,
@@ -375,6 +377,11 @@ func New() *schema.Provider {
 									ForceNew: true,
 									Optional: true,
 									Default:  false,
+								},
+								"is_null": {
+									Type:     schema.TypeBool,
+									ForceNew: true,
+									Computed: true,
 								},
 							},
 						},
@@ -418,4 +425,63 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+// populateIsNull reads the raw plan for a coder_metadata resource being created,
+// figures out which items have null "value"s, and augments them by setting the
+// "is_null" field to true. This ugly hack is necessary because terraform-plugin-sdk
+// is designed around a old version of Terraform that didn't support nullable fields,
+// and it doesn't correctly propagate null values for primitive types.
+// Returns an interface{} representing the new value of the "pair" field, or an error.
+func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err error) {
+	// The cty package reports type mismatches by panicking
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New(fmt.Sprintf("panic while handling coder_metadata: %#v", r))
+		}
+	}()
+
+	rawPlan := resourceData.GetRawPlan()
+	pairs := rawPlan.GetAttr("pair").AsValueSlice()
+
+	var resultPairs []interface{}
+	for _, pair := range pairs {
+		resultPair := map[string]interface{}{
+			"key":       valueAsString(pair.GetAttr("key")),
+			"value":     valueAsString(pair.GetAttr("value")),
+			"sensitive": valueAsBool(pair.GetAttr("sensitive")),
+		}
+		if pair.GetAttr("value").IsNull() {
+			resultPair["is_null"] = true
+		}
+		resultPairs = append(resultPairs, resultPair)
+	}
+
+	return resultPairs, nil
+}
+
+// valueAsString takes a cty.Value that may be a string or null, and converts it to either a Go string
+// or a nil interface{}
+func valueAsString(value cty.Value) interface{} {
+	if value.IsNull() {
+		return ""
+	}
+	return value.AsString()
+}
+
+// valueAsString takes a cty.Value that may be a boolean or null, and converts it to either a Go bool
+// or a nil interface{}
+func valueAsBool(value cty.Value) interface{} {
+	if value.IsNull() {
+		return nil
+	}
+	return value.True()
+}
+
+// errorAsDiagnostic transforms a Go error to a diag.Diagnostics object representing a fatal error.
+func errorAsDiagnostics(err error) diag.Diagnostics {
+	return []diag.Diagnostic{{
+		Severity: diag.Error,
+		Summary:  err.Error(),
+	}}
 }

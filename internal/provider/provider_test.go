@@ -214,6 +214,17 @@ func TestMetadata(t *testing.T) {
 						value = "squirrel"
 						sensitive = true
 					}
+					pair {
+						key = "implicit_null"
+					}
+					pair {
+						key = "explicit_null"
+						value = null
+					}
+					pair {
+						key = "empty"
+						value = ""
+					}
 				}
 				`,
 			Check: func(state *terraform.State) error {
@@ -226,13 +237,23 @@ func TestMetadata(t *testing.T) {
 				t.Logf("metadata attributes: %#v", metadata.Primary.Attributes)
 				for key, expected := range map[string]string{
 					"resource_id":      agent.Primary.Attributes["id"],
-					"pair.#":           "2",
+					"pair.#":           "5",
 					"pair.0.key":       "foo",
 					"pair.0.value":     "bar",
 					"pair.0.sensitive": "false",
 					"pair.1.key":       "secret",
 					"pair.1.value":     "squirrel",
 					"pair.1.sensitive": "true",
+					"pair.2.key":       "implicit_null",
+					"pair.2.is_null":   "true",
+					"pair.2.sensitive": "false",
+					"pair.3.key":       "explicit_null",
+					"pair.3.is_null":   "true",
+					"pair.3.sensitive": "false",
+					"pair.4.key":       "empty",
+					"pair.4.value":     "",
+					"pair.4.is_null":   "false",
+					"pair.4.sensitive": "false",
 				} {
 					require.Equal(t, expected, metadata.Primary.Attributes[key])
 				}
