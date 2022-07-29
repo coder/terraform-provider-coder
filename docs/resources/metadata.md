@@ -20,12 +20,25 @@ resource "kubernetes_pod" "dev" {
   count = data.coder_workspace.me.start_count
 }
 
+resource "tls_private_key" "example_key_pair" {
+  algorithm = "ECDSA"
+  ecdsa_curve = "P256"
+}
+
 resource "coder_metadata" "pod_info" {
   count = data.coder_workspace.me.start_count
   resource_id = kubernetes_pod.dev[0].id
   pair {
+    key = "description"
+    value = "This description will show up in the Coder dashboard."
+  }
+  pair {
     key = "pod_uid"
     value = kubernetes_pod.dev[0].uid
+  }
+  pair {
+    key = "public_key"
+    value = tls_private_key.example_key.public_key_openssh
   }
 }
 ```
