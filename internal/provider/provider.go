@@ -351,9 +351,10 @@ func New() *schema.Provider {
 						Required:    true,
 					},
 					"pair": {
-						Type:     schema.TypeList,
-						ForceNew: true,
-						Required: true,
+						Type:        schema.TypeList,
+						Description: "Each \"pair\" block defines a single key/value metadata pair.",
+						ForceNew:    true,
+						Required:    true,
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
 								"key": {
