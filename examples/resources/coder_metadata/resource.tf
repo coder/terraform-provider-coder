@@ -23,7 +23,7 @@ resource "coder_metadata" "pod_info" {
   }
   pair {
     key = "public_key"
-    value = tls_private_key.example_key.public_key_openssh
+    value = tls_private_key.example_key_pair.public_key_openssh
      # The value of this item will be hidden from view by default
     sensitive = true
   }
