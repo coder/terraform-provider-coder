@@ -326,11 +326,11 @@ func New() *schema.Provider {
 				CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 					resourceData.SetId(uuid.NewString())
 
-					pairs, err := populateIsNull(resourceData)
+					items, err := populateIsNull(resourceData)
 					if err != nil {
 						return errorAsDiagnostics(err)
 					}
-					err = resourceData.Set("pair", pairs)
+					err = resourceData.Set("item", items)
 					if err != nil {
 						return errorAsDiagnostics(err)
 					}
@@ -350,9 +350,9 @@ func New() *schema.Provider {
 						ForceNew:    true,
 						Required:    true,
 					},
-					"pair": {
+					"item": {
 						Type:        schema.TypeList,
-						Description: "Each \"pair\" block defines a single key/value metadata pair.",
+						Description: "Each \"item\" block defines a single metadata item consisting of a key/value pair.",
 						ForceNew:    true,
 						Required:    true,
 						Elem: &schema.Resource{
@@ -433,7 +433,7 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 // "is_null" field to true. This ugly hack is necessary because terraform-plugin-sdk
 // is designed around a old version of Terraform that didn't support nullable fields,
 // and it doesn't correctly propagate null values for primitive types.
-// Returns an interface{} representing the new value of the "pair" field, or an error.
+// Returns an interface{} representing the new value of the "item" field, or an error.
 func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err error) {
 	// The cty package reports type mismatches by panicking
 	defer func() {
@@ -443,22 +443,22 @@ func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err 
 	}()
 
 	rawPlan := resourceData.GetRawPlan()
-	pairs := rawPlan.GetAttr("pair").AsValueSlice()
+	items := rawPlan.GetAttr("item").AsValueSlice()
 
-	var resultPairs []interface{}
-	for _, pair := range pairs {
-		resultPair := map[string]interface{}{
-			"key":       valueAsString(pair.GetAttr("key")),
-			"value":     valueAsString(pair.GetAttr("value")),
-			"sensitive": valueAsBool(pair.GetAttr("sensitive")),
+	var resultItems []interface{}
+	for _, item := range items {
+		resultItem := map[string]interface{}{
+			"key":       valueAsString(item.GetAttr("key")),
+			"value":     valueAsString(item.GetAttr("value")),
+			"sensitive": valueAsBool(item.GetAttr("sensitive")),
 		}
-		if pair.GetAttr("value").IsNull() {
-			resultPair["is_null"] = true
+		if item.GetAttr("value").IsNull() {
+			resultItem["is_null"] = true
 		}
-		resultPairs = append(resultPairs, resultPair)
+		resultItems = append(resultItems, resultItem)
 	}
 
-	return resultPairs, nil
+	return resultItems, nil
 }
 
 // valueAsString takes a cty.Value that may be a string or null, and converts it to either a Go string

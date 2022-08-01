@@ -28,15 +28,15 @@ resource "tls_private_key" "example_key_pair" {
 resource "coder_metadata" "pod_info" {
   count = data.coder_workspace.me.start_count
   resource_id = kubernetes_pod.dev[0].id
-  pair {
+  item {
     key = "description"
     value = "This description will show up in the Coder dashboard."
   }
-  pair {
+  item {
     key = "pod_uid"
     value = kubernetes_pod.dev[0].uid
   }
-  pair {
+  item {
     key = "public_key"
     value = tls_private_key.example_key_pair.public_key_openssh
      # The value of this item will be hidden from view by default
@@ -50,15 +50,15 @@ resource "coder_metadata" "pod_info" {
 
 ### Required
 
-- `pair` (Block List, Min: 1) Each "pair" block defines a single key/value metadata pair. (see [below for nested schema](#nestedblock--pair))
+- `item` (Block List, Min: 1) Each "item" block defines a single metadata item consisting of a key/value pair. (see [below for nested schema](#nestedblock--item))
 - `resource_id` (String) The "id" property of another resource that metadata should be attached to.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 
-<a id="nestedblock--pair"></a>
-### Nested Schema for `pair`
+<a id="nestedblock--item"></a>
+### Nested Schema for `item`
 
 Required:
 

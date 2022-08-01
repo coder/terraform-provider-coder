@@ -205,23 +205,23 @@ func TestMetadata(t *testing.T) {
 				}
 				resource "coder_metadata" "agent" {
 					resource_id = coder_agent.dev.id
-					pair {
+					item {
 						key = "foo"
 						value = "bar"
 					}
-					pair {
+					item {
 						key = "secret"
 						value = "squirrel"
 						sensitive = true
 					}
-					pair {
+					item {
 						key = "implicit_null"
 					}
-					pair {
+					item {
 						key = "explicit_null"
 						value = null
 					}
-					pair {
+					item {
 						key = "empty"
 						value = ""
 					}
@@ -237,23 +237,23 @@ func TestMetadata(t *testing.T) {
 				t.Logf("metadata attributes: %#v", metadata.Primary.Attributes)
 				for key, expected := range map[string]string{
 					"resource_id":      agent.Primary.Attributes["id"],
-					"pair.#":           "5",
-					"pair.0.key":       "foo",
-					"pair.0.value":     "bar",
-					"pair.0.sensitive": "false",
-					"pair.1.key":       "secret",
-					"pair.1.value":     "squirrel",
-					"pair.1.sensitive": "true",
-					"pair.2.key":       "implicit_null",
-					"pair.2.is_null":   "true",
-					"pair.2.sensitive": "false",
-					"pair.3.key":       "explicit_null",
-					"pair.3.is_null":   "true",
-					"pair.3.sensitive": "false",
-					"pair.4.key":       "empty",
-					"pair.4.value":     "",
-					"pair.4.is_null":   "false",
-					"pair.4.sensitive": "false",
+					"item.#":           "5",
+					"item.0.key":       "foo",
+					"item.0.value":     "bar",
+					"item.0.sensitive": "false",
+					"item.1.key":       "secret",
+					"item.1.value":     "squirrel",
+					"item.1.sensitive": "true",
+					"item.2.key":       "implicit_null",
+					"item.2.is_null":   "true",
+					"item.2.sensitive": "false",
+					"item.3.key":       "explicit_null",
+					"item.3.is_null":   "true",
+					"item.3.sensitive": "false",
+					"item.4.key":       "empty",
+					"item.4.value":     "",
+					"item.4.is_null":   "false",
+					"item.4.sensitive": "false",
 				} {
 					require.Equal(t, expected, metadata.Primary.Attributes[key])
 				}
