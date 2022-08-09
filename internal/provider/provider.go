@@ -151,8 +151,8 @@ func New() *schema.Provider {
 					},
 				},
 			},
-			"coder_host": {
-				Description: "Use this data source to get information about the host.",
+			"coder_provisioner": {
+				Description: "Use this data source to get information about the Coder provisioner.",
 				ReadContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 					rd.SetId(uuid.NewString())
 					rd.Set("os", runtime.GOOS)
@@ -164,12 +164,12 @@ func New() *schema.Provider {
 					"os": {
 						Type:        schema.TypeString,
 						Computed:    true,
-						Description: "The operating system of the host.",
+						Description: "The operating system of the host. This exposes `runtime.GOOS` (see https://pkg.go.dev/runtime#pkg-constants).",
 					},
 					"arch": {
 						Type:        schema.TypeString,
 						Computed:    true,
-						Description: "The architecture of the host.",
+						Description: "The architecture of the host. This exposes `runtime.GOARCH` (see https://pkg.go.dev/runtime#pkg-constants).",
 					},
 				},
 			},

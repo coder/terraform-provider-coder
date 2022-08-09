@@ -53,7 +53,7 @@ func TestWorkspace(t *testing.T) {
 	})
 }
 
-func TestHost(t *testing.T) {
+func TestProvisioner(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
 			"coder": provider.New(),
@@ -63,12 +63,12 @@ func TestHost(t *testing.T) {
 			Config: `
 			provider "coder" {
 			}
-			data "coder_host" "me" {
+			data "coder_provisioner" "me" {
 			}`,
 			Check: func(state *terraform.State) error {
 				require.Len(t, state.Modules, 1)
 				require.Len(t, state.Modules[0].Resources, 1)
-				resource := state.Modules[0].Resources["data.coder_host.me"]
+				resource := state.Modules[0].Resources["data.coder_provisioner.me"]
 				require.NotNil(t, resource)
 
 				attribs := resource.Primary.Attributes
