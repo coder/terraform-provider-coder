@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"runtime"
 	"strings"
 
 	"github.com/google/uuid"
@@ -147,6 +148,28 @@ func New() *schema.Provider {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: "Name of the workspace.",
+					},
+				},
+			},
+			"coder_host": {
+				Description: "Use this data source to get information about the host.",
+				ReadContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+					rd.SetId(uuid.NewString())
+					rd.Set("os", runtime.GOOS)
+					rd.Set("arch", runtime.GOARCH)
+
+					return nil
+				},
+				Schema: map[string]*schema.Schema{
+					"os": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The operating system of the host.",
+					},
+					"arch": {
+						Type:        schema.TypeString,
+						Computed:    true,
+						Description: "The architecture of the host.",
 					},
 				},
 			},
