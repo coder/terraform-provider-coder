@@ -26,6 +26,7 @@ resource "kubernetes_pod" "dev" {
 
 ### Read-Only
 
+- `access_port` (Number) The access port of the Coder deployment provisioning this workspace.
 - `access_url` (String) The access URL of the Coder deployment provisioning this workspace.
 - `id` (String) UUID of the workspace.
 - `name` (String) Name of the workspace.
