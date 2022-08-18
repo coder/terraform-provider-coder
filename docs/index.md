@@ -8,8 +8,6 @@ description: |-
 
 # Coder Provider
 
--> This works with a closed-alpha of [Coder](https://coder.com). For access, contact [support@coder.com](mailto:support@coder.com).
-
 ## Example
 
 ```terraform
@@ -64,5 +62,4 @@ resource "google_compute_instance" "dev" {
 
 ### Optional
 
-- `host` (String) This overrides the host in the "url" property, but preserve the port.
 - `url` (String) The URL to access Coder.
