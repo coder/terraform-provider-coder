@@ -8,6 +8,7 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -40,11 +41,6 @@ func New() *schema.Provider {
 					return nil, nil
 				},
 			},
-			"host": {
-				Type:        schema.TypeString,
-				Description: "This overrides the host in the \"url\" property, but preserve the port.",
-				Optional:    true,
-			},
 		},
 		ConfigureContextFunc: func(c context.Context, resourceData *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			rawURL, ok := resourceData.Get("url").(string)
@@ -57,14 +53,6 @@ func New() *schema.Provider {
 			parsed, err := url.Parse(resourceData.Get("url").(string))
 			if err != nil {
 				return nil, diag.FromErr(err)
-			}
-			rawHost, ok := resourceData.Get("host").(string)
-			if ok {
-				rawPort := parsed.Port()
-				if rawPort != "" && !strings.Contains(rawHost, ":") {
-					rawHost += ":" + rawPort
-				}
-				parsed.Host = rawHost
 			}
 			return config{
 				URL: parsed,
@@ -119,6 +107,19 @@ func New() *schema.Provider {
 					}
 					rd.Set("access_url", config.URL.String())
 
+					rawPort := config.URL.Port()
+					if rawPort == "" {
+						rawPort = "80"
+						if config.URL.Scheme == "https" {
+							rawPort = "443"
+						}
+					}
+					port, err := strconv.Atoi(rawPort)
+					if err != nil {
+						return diag.Errorf("couldn't parse port %q", port)
+					}
+					rd.Set("access_port", port)
+
 					return nil
 				},
 				Schema: map[string]*schema.Schema{
@@ -126,6 +127,11 @@ func New() *schema.Provider {
 						Type:        schema.TypeString,
 						Computed:    true,
 						Description: "The access URL of the Coder deployment provisioning this workspace.",
+					},
+					"access_port": {
+						Type:        schema.TypeInt,
+						Computed:    true,
+						Description: "The access port of the Coder deployment provisioning this workspace.",
 					},
 					"start_count": {
 						Type:        schema.TypeInt,
