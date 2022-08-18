@@ -59,7 +59,7 @@ func New() *schema.Provider {
 				return nil, diag.FromErr(err)
 			}
 			rawHost, ok := resourceData.Get("host").(string)
-			if ok {
+			if ok && rawHost != "" {
 				rawPort := parsed.Port()
 				if rawPort != "" && !strings.Contains(rawHost, ":") {
 					rawHost += ":" + rawPort
