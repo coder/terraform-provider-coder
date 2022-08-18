@@ -32,7 +32,6 @@ func TestWorkspace(t *testing.T) {
 			Config: `
 			provider "coder" {
 				url = "https://example.com:8080"
-				host = "localhost:4334"
 			}
 			data "coder_workspace" "me" {
 			}`,
@@ -46,7 +45,7 @@ func TestWorkspace(t *testing.T) {
 				value := attribs["transition"]
 				require.NotNil(t, value)
 				t.Log(value)
-				require.Equal(t, "https://localhost:4334", attribs["access_url"])
+				require.Equal(t, "8080", attribs["access_port"])
 				require.Equal(t, "owner123", attribs["owner"])
 				require.Equal(t, "owner123@example.com", attribs["owner_email"])
 				return nil
