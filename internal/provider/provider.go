@@ -54,6 +54,14 @@ func New() *schema.Provider {
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
+			rawHost, ok := resourceData.Get("host").(string)
+			if ok && rawHost != "" {
+				rawPort := parsed.Port()
+				if rawPort != "" && !strings.Contains(rawHost, ":") {
+					rawHost += ":" + rawPort
+				}
+				parsed.Host = rawHost
+			}
 			return config{
 				URL: parsed,
 			}, nil

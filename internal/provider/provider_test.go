@@ -52,6 +52,35 @@ func TestWorkspace(t *testing.T) {
 			},
 		}},
 	})
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+			provider "coder" {
+				url = "https://example.com:8080"
+			}
+			data "coder_workspace" "me" {
+			}`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				resource := state.Modules[0].Resources["data.coder_workspace.me"]
+				require.NotNil(t, resource)
+
+				attribs := resource.Primary.Attributes
+				value := attribs["transition"]
+				require.NotNil(t, value)
+				t.Log(value)
+				require.Equal(t, "https://example.com:8080", attribs["access_url"])
+				require.Equal(t, "owner123", attribs["owner"])
+				require.Equal(t, "owner123@example.com", attribs["owner_email"])
+				return nil
+			},
+		}},
+	})
 }
 
 func TestProvisioner(t *testing.T) {
