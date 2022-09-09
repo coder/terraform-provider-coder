@@ -296,7 +296,7 @@ func TestMetadata(t *testing.T) {
 				t.Logf("metadata attributes: %#v", metadata.Primary.Attributes)
 				for key, expected := range map[string]string{
 					"resource_id":      agent.Primary.Attributes["id"],
-					"hide":             agent.Primary.Attributes["hide"],
+					"hide":             "true",
 					"item.#":           "5",
 					"item.0.key":       "foo",
 					"item.0.value":     "bar",
