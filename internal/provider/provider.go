@@ -406,6 +406,12 @@ func New() *schema.Provider {
 						ForceNew:    true,
 						Optional:    true,
 					},
+					"icon": {
+						Type:        schema.TypeString,
+						Description: "The Material UI icon name in CamelCase.",
+						ForceNew:    true,
+						Optional:    true,
+					},
 					"item": {
 						Type:        schema.TypeList,
 						Description: "Each \"item\" block defines a single metadata item consisting of a key/value pair.",
