@@ -400,6 +400,12 @@ func New() *schema.Provider {
 						ForceNew:    true,
 						Required:    true,
 					},
+					"hide": {
+						Type:        schema.TypeBool,
+						Description: "Hide the resource from the UI.",
+						ForceNew:    true,
+						Optional:    true,
+					},
 					"item": {
 						Type:        schema.TypeList,
 						Description: "Each \"item\" block defines a single metadata item consisting of a key/value pair.",
