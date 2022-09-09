@@ -53,6 +53,10 @@ resource "coder_metadata" "pod_info" {
 - `item` (Block List, Min: 1) Each "item" block defines a single metadata item consisting of a key/value pair. (see [below for nested schema](#nestedblock--item))
 - `resource_id` (String) The "id" property of another resource that metadata should be attached to.
 
+### Optional
+
+- `hide` (Boolean) Hide the resource from the UI.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.
