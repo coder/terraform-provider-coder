@@ -263,6 +263,7 @@ func TestMetadata(t *testing.T) {
 				}
 				resource "coder_metadata" "agent" {
 					resource_id = coder_agent.dev.id
+					hide = true
 					item {
 						key = "foo"
 						value = "bar"
@@ -295,6 +296,7 @@ func TestMetadata(t *testing.T) {
 				t.Logf("metadata attributes: %#v", metadata.Primary.Attributes)
 				for key, expected := range map[string]string{
 					"resource_id":      agent.Primary.Attributes["id"],
+					"hide":             agent.Primary.Attributes["hide"],
 					"item.#":           "5",
 					"item.0.key":       "foo",
 					"item.0.value":     "bar",
