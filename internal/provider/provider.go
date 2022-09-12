@@ -406,6 +406,21 @@ func New() *schema.Provider {
 						ForceNew:    true,
 						Optional:    true,
 					},
+					"icon": {
+						Type: schema.TypeString,
+						Description: "A URL to an icon that will display in the dashboard. View built-in " +
+							"icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a " +
+							"built-in icon with `data.coder_workspace.me.access_url + \"/icons/<path>\"`.",
+						ForceNew: true,
+						Optional: true,
+						ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+							_, err := url.Parse(s)
+							if err != nil {
+								return nil, []error{err}
+							}
+							return nil, nil
+						},
+					},
 					"item": {
 						Type:        schema.TypeList,
 						Description: "Each \"item\" block defines a single metadata item consisting of a key/value pair.",
