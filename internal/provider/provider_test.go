@@ -264,7 +264,7 @@ func TestMetadata(t *testing.T) {
 				resource "coder_metadata" "agent" {
 					resource_id = coder_agent.dev.id
 					hide = true
-					icon = "Storage"
+					icon = "/icons/storage.svg"
 					item {
 						key = "foo"
 						value = "bar"
@@ -298,7 +298,7 @@ func TestMetadata(t *testing.T) {
 				for key, expected := range map[string]string{
 					"resource_id":      agent.Primary.Attributes["id"],
 					"hide":             "true",
-					"icon":             "Storage",
+					"icon":             "/icons/storage.svg",
 					"item.#":           "5",
 					"item.0.key":       "foo",
 					"item.0.value":     "bar",
