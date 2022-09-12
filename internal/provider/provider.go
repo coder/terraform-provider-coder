@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -16,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"golang.org/x/xerrors"
 )
 
 type config struct {
@@ -509,7 +509,7 @@ func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err 
 	// The cty package reports type mismatches by panicking
 	defer func() {
 		if r := recover(); r != nil {
-			err = errors.New(fmt.Sprintf("panic while handling coder_metadata: %#v", r))
+			err = xerrors.Errorf("panic while handling coder_metadata: %#v", r)
 		}
 	}()
 
@@ -517,9 +517,16 @@ func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err 
 	items := rawPlan.GetAttr("item").AsValueSlice()
 
 	var resultItems []interface{}
+	itemKeys := map[string]struct{}{}
 	for _, item := range items {
+		key := valueAsString(item.GetAttr("key"))
+		_, exists := itemKeys[key]
+		if exists {
+			return nil, xerrors.Errorf("duplicate metadata key %q", key)
+		}
+		itemKeys[key] = struct{}{}
 		resultItem := map[string]interface{}{
-			"key":       valueAsString(item.GetAttr("key")),
+			"key":       key,
 			"value":     valueAsString(item.GetAttr("value")),
 			"sensitive": valueAsBool(item.GetAttr("sensitive")),
 		}
@@ -534,7 +541,7 @@ func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err 
 
 // valueAsString takes a cty.Value that may be a string or null, and converts it to either a Go string
 // or a nil interface{}
-func valueAsString(value cty.Value) interface{} {
+func valueAsString(value cty.Value) string {
 	if value.IsNull() {
 		return ""
 	}

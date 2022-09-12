@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"regexp"
 	"runtime"
 	"testing"
 
@@ -321,6 +322,41 @@ func TestMetadata(t *testing.T) {
 				}
 				return nil
 			},
+		}},
+	})
+}
+
+func TestMetadataDuplicateKeys(t *testing.T) {
+	t.Parallel()
+	prov := provider.New()
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": prov,
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+				provider "coder" {
+				}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_metadata" "agent" {
+					resource_id = coder_agent.dev.id
+					hide = true
+					icon = "/icons/storage.svg"
+					item {
+						key = "foo"
+						value = "bar"
+					}
+					item {
+						key = "foo"
+						value = "bar"
+					}
+				}
+				`,
+			ExpectError: regexp.MustCompile("duplicate metadata key"),
 		}},
 	})
 }
