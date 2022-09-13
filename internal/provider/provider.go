@@ -539,7 +539,8 @@ func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err 
 	return resultItems, nil
 }
 
-// valueAsString takes a cty.Value that may be a string or null, and converts it to either a Go string
+// valueAsString takes a cty.Value that may be a string or null, and converts it to a Go string,
+// which will be empty if the input value was null.
 // or a nil interface{}
 func valueAsString(value cty.Value) string {
 	if value.IsNull() {
