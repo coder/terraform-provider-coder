@@ -213,7 +213,11 @@ func New() *schema.Provider {
 					}
 					return updateInitScript(resourceData, i)
 				},
-				ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+				ReadWithoutTimeout: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+					err := resourceData.Set("token", uuid.NewString())
+					if err != nil {
+						return diag.FromErr(err)
+					}
 					return updateInitScript(resourceData, i)
 				},
 				DeleteContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
@@ -267,6 +271,7 @@ func New() *schema.Provider {
 					},
 					"token": {
 						ForceNew:    true,
+						Sensitive:   true,
 						Description: `Set the environment variable "CODER_AGENT_TOKEN" with this token to authenticate an agent.`,
 						Type:        schema.TypeString,
 						Computed:    true,
