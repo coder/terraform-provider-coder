@@ -31,9 +31,11 @@ resource "coder_app" "code-server" {
   icon                  = data.coder_workspace.me.access_url + "/icons/vscode.svg"
   url                   = "http://localhost:13337"
   relative_path         = true
-  healthcheck_url       = "http://localhost:13337/healthz"
-  healthcheck_interval  = 5
-  healthcheck_threshold = 6
+  healthcheck {
+    url       = "http://localhost:13337/healthz"
+    interval  = 5
+    threshold = 6
+  }
 }
 
 resource "coder_app" "vim" {
@@ -61,9 +63,7 @@ resource "coder_app" "intellij" {
 ### Optional
 
 - `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "url" may be specified, but not both.
-- `healthcheck_interval` (Number) Duration in seconds to wait between healthcheck requests.
-- `healthcheck_threshold` (Number) Number of consecutive heathcheck failures before returning an unhealthy status.
-- `healthcheck_url` (String) HTTP address used determine the application readiness. A successful health check is a HTTP response code less than 500 returned before healthcheck_interval seconds.
+- `healthcheck` (Block Set) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
 - `name` (String) A display name to identify the app.
 - `relative_path` (Boolean) Specifies whether the URL will be accessed via a relative path or wildcard. Use if wildcard routing is unavailable.
@@ -72,5 +72,14 @@ resource "coder_app" "intellij" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedblock--healthcheck"></a>
+### Nested Schema for `healthcheck`
+
+Optional:
+
+- `interval` (Number) Duration in seconds to wait between healthcheck requests.
+- `threshold` (Number) Number of consecutive heathcheck failures before returning an unhealthy status.
+- `url` (String) HTTP address used determine the application readiness. A successful health check is a HTTP response code less than 500 returned before healthcheck.interval seconds.
 
 
