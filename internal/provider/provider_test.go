@@ -221,10 +221,11 @@ func TestApp(t *testing.T) {
 					icon = "builtin:vim"
 					relative_path = true
 					url = "http://localhost:13337"
-					healthcheck{
+					healthcheck {
 						url = "http://localhost:13337/healthz"
 						interval = 5
 						threshold = 6
+					}
 				}
 				`,
 			Check: func(state *terraform.State) error {
