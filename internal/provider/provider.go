@@ -375,7 +375,7 @@ func New() *schema.Provider {
 					},
 					"healthcheck_url": {
 						Type:          schema.TypeString,
-						Description:   "HTTP address used determine the application readiness. " + "A successful health check is a HTTP response code less than 500 returned before healthcheck_interval seconds.",
+						Description:   "HTTP address used determine the application readiness. A successful health check is a HTTP response code less than 500 returned before healthcheck_interval seconds.",
 						ForceNew:      true,
 						Optional:      true,
 						ConflictsWith: []string{"command"},

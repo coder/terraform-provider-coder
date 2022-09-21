@@ -11,13 +11,13 @@ EOF
 }
 
 resource "coder_app" "code-server" {
-  agent_id      = coder_agent.dev.id
-  name          = "VS Code"
-  icon          = data.coder_workspace.me.access_url + "/icons/vscode.svg"
-  url           = "http://localhost:13337"
-  relative_path = true
-  healthcheck_url = "http://localhost:13337/healthz"
-  healthcheck_interval = 5
+  agent_id              = coder_agent.dev.id
+  name                  = "VS Code"
+  icon                  = data.coder_workspace.me.access_url + "/icons/vscode.svg"
+  url                   = "http://localhost:13337"
+  relative_path         = true
+  healthcheck_url       = "http://localhost:13337/healthz"
+  healthcheck_interval  = 5
   healthcheck_threshold = 6
 }
 
