@@ -26,11 +26,11 @@ EOF
 }
 
 resource "coder_app" "code-server" {
-  agent_id          = coder_agent.dev.id
-  name              = "VS Code"
-  icon              = data.coder_workspace.me.access_url + "/icons/vscode.svg"
-  url               = "http://localhost:13337"
-  relative_path     = true
+  agent_id      = coder_agent.dev.id
+  name          = "VS Code"
+  icon          = data.coder_workspace.me.access_url + "/icons/vscode.svg"
+  url           = "http://localhost:13337"
+  relative_path = true
 }
 
 resource "coder_app" "vim" {
@@ -58,6 +58,10 @@ resource "coder_app" "intellij" {
 ### Optional
 
 - `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "url" may be specified, but not both.
+- `healthcheck_enabled` (Boolean) Run a HTTP request periodically to determine the application readiness.
+- `healthcheck_interval` (Number) Duration in seconds to wait between healthcheck requests.
+- `healthcheck_threshold` (Number) Number of consecutive heathcheck failures before returning an unhealthy status.
+- `healthcheck_url` (String) HTTP address used determine the application readiness.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
 - `name` (String) A display name to identify the app.
 - `relative_path` (Boolean) Specifies whether the URL will be accessed via a relative path or wildcard. Use if wildcard routing is unavailable.
