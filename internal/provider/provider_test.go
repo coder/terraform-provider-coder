@@ -239,9 +239,6 @@ func TestApp(t *testing.T) {
 					"icon",
 					"relative_path",
 					"url",
-					"healthcheck.url",
-					"healthcheck.interval",
-					"healthcheck.threshold",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)

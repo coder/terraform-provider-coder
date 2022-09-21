@@ -76,7 +76,7 @@ resource "coder_app" "intellij" {
 <a id="nestedblock--healthcheck"></a>
 ### Nested Schema for `healthcheck`
 
-Optional:
+Required:
 
 - `interval` (Number) Duration in seconds to wait between healthcheck requests.
 - `threshold` (Number) Number of consecutive heathcheck failures before returning an unhealthy status.
