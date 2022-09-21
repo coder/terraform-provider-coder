@@ -31,6 +31,9 @@ resource "coder_app" "code-server" {
   icon          = data.coder_workspace.me.access_url + "/icons/vscode.svg"
   url           = "http://localhost:13337"
   relative_path = true
+  healthcheck_url = "http://localhost:13337/healthz"
+  healthcheck_interval = 5
+  healthcheck_threshold = 6
 }
 
 resource "coder_app" "vim" {
