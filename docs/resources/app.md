@@ -58,7 +58,6 @@ resource "coder_app" "intellij" {
 ### Optional
 
 - `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "url" may be specified, but not both.
-- `healthcheck_enabled` (Boolean) Run a HTTP request periodically to determine the application readiness.
 - `healthcheck_interval` (Number) Duration in seconds to wait between healthcheck requests.
 - `healthcheck_threshold` (Number) Number of consecutive heathcheck failures before returning an unhealthy status.
 - `healthcheck_url` (String) HTTP address used determine the application readiness.

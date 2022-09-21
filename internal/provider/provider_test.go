@@ -221,6 +221,9 @@ func TestApp(t *testing.T) {
 					icon = "builtin:vim"
 					relative_path = true
 					url = "http://localhost:13337"
+					healthcheck_url = "http://localhost:13337/healthz"
+					healthcheck_interval = 5
+					healthcheck_threshold = 6
 				}
 				`,
 			Check: func(state *terraform.State) error {
@@ -234,6 +237,9 @@ func TestApp(t *testing.T) {
 					"icon",
 					"relative_path",
 					"url",
+					"healthcheck_url",
+					"healthcheck_interval",
+					"healthcheck_threshold",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)

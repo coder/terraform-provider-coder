@@ -373,19 +373,13 @@ func New() *schema.Provider {
 						Optional:      true,
 						ConflictsWith: []string{"command"},
 					},
-					"healthcheck_enabled": {
-						Type:          schema.TypeBool,
-						Description:   "Run a HTTP request periodically to determine the application readiness.",
-						ForceNew:      true,
-						Optional:      true,
-						ConflictsWith: []string{"command"},
-					},
 					"healthcheck_url": {
 						Type:          schema.TypeString,
 						Description:   "HTTP address used determine the application readiness.",
 						ForceNew:      true,
 						Optional:      true,
 						ConflictsWith: []string{"command"},
+						RequiredWith:  []string{"healthcheck_interval", "healthcheck_threshold"},
 					},
 					"healthcheck_interval": {
 						Type:          schema.TypeInt,
@@ -393,6 +387,7 @@ func New() *schema.Provider {
 						ForceNew:      true,
 						Optional:      true,
 						ConflictsWith: []string{"command"},
+						RequiredWith:  []string{"healthcheck_url", "healthcheck_threshold"},
 					},
 					"healthcheck_threshold": {
 						Type:          schema.TypeInt,
@@ -400,6 +395,7 @@ func New() *schema.Provider {
 						ForceNew:      true,
 						Optional:      true,
 						ConflictsWith: []string{"command"},
+						RequiredWith:  []string{"healthcheck_interval", "healthcheck_url"},
 					},
 				},
 			},
