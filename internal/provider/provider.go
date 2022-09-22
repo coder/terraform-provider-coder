@@ -378,6 +378,7 @@ func New() *schema.Provider {
 						Description:   "HTTP health checking to determine the application readiness.",
 						ForceNew:      true,
 						Optional:      true,
+						MaxItems:      1,
 						ConflictsWith: []string{"command"},
 						Elem: &schema.Resource{
 							Schema: map[string]*schema.Schema{
