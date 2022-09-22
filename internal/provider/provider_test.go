@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"regexp"
 	"runtime"
 	"testing"
@@ -239,9 +240,14 @@ func TestApp(t *testing.T) {
 					"icon",
 					"relative_path",
 					"url",
+					"healthcheck.0.url",
+					"healthcheck.0.interval",
+					"healthcheck.0.threshold",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)
+					d, _ := json.MarshalIndent(resource.Primary.Attributes, "", "  ")
+					t.Logf(string(d))
 					require.NotNil(t, value)
 					require.Greater(t, len(value), 0)
 				}
