@@ -33,7 +33,7 @@ type Parameter struct {
 	Name        string
 	Description string
 	Type        string
-	Immutable   bool
+	Mutable     bool
 	Default     string
 	Icon        string
 	Option      []Option
@@ -52,7 +52,7 @@ func parameterDataSource() *schema.Resource {
 				Name        interface{}
 				Description interface{}
 				Type        interface{}
-				Immutable   interface{}
+				Mutable     interface{}
 				Default     interface{}
 				Icon        interface{}
 				Option      interface{}
@@ -62,7 +62,7 @@ func parameterDataSource() *schema.Resource {
 				Name:        rd.Get("name"),
 				Description: rd.Get("description"),
 				Type:        rd.Get("type"),
-				Immutable:   rd.Get("immutable"),
+				Mutable:     rd.Get("mutable"),
 				Default:     rd.Get("default"),
 				Icon:        rd.Get("icon"),
 				Option:      rd.Get("option"),
@@ -139,10 +139,10 @@ func parameterDataSource() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{"number", "string", "bool"}, false),
 				Description:  `The type of this parameter. Must be one of: "number", "string", or "bool".`,
 			},
-			"immutable": {
+			"mutable": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
+				Default:     false,
 				Description: "Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!",
 			},
 			"default": {

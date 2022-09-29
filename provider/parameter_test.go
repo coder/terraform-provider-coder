@@ -25,7 +25,7 @@ data "coder_parameter" "region" {
 	name = "Region"
 	type = "string"
 	description = "Some option!"
-	immutable = false
+	mutable = true
 	icon = "/icon/region.svg"
 	option {
 		name = "US Central"
@@ -47,7 +47,7 @@ data "coder_parameter" "region" {
 				"name":                 "Region",
 				"type":                 "string",
 				"description":          "Some option!",
-				"immutable":            "false",
+				"mutable":              "true",
 				"icon":                 "/icon/region.svg",
 				"option.0.name":        "US Central",
 				"option.0.value":       "us-central1-a",

@@ -38,7 +38,6 @@ data "coder_parameter" "cores" {
 data "coder_parameter" "disk_size" {
     display_name = "Disk Size"
     type = "number"
-    increase_only = true
     validation {
         # This can apply to number and string types.
         min = 0

@@ -1,3 +1,3 @@
-# Terraform Provider Coder
+# terraform-provider-coder
 
-> This works with a closed-alpha of [Coder](https://coder.com). For access, contact [support@coder.com](mailto:support@coder.com).
+See [Coder](https://github.com/coder/coder).
