@@ -12,7 +12,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/mitchellh/mapstructure"
 )
+
+type Option struct {
+	Name        string
+	Description string
+	Value       string
+	Icon        string
+}
+
+type Validation struct {
+	Min   int
+	Max   int
+	Regex string
+}
+
+type Parameter struct {
+	Value       string
+	Name        string
+	Description string
+	Type        string
+	Immutable   bool
+	Default     string
+	Icon        string
+	Option      []Option
+	Validation  []Validation
+}
 
 func parameterDataSource() *schema.Resource {
 	return &schema.Resource{
@@ -20,112 +46,71 @@ func parameterDataSource() *schema.Resource {
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
-			name := rd.Get("name").(string)
-			typ := rd.Get("type").(string)
+			var parameter Parameter
+			err := mapstructure.Decode(struct {
+				Value       interface{}
+				Name        interface{}
+				Description interface{}
+				Type        interface{}
+				Immutable   interface{}
+				Default     interface{}
+				Icon        interface{}
+				Option      interface{}
+				Validation  interface{}
+			}{
+				Value:       rd.Get("value"),
+				Name:        rd.Get("name"),
+				Description: rd.Get("description"),
+				Type:        rd.Get("type"),
+				Immutable:   rd.Get("immutable"),
+				Default:     rd.Get("default"),
+				Icon:        rd.Get("icon"),
+				Option:      rd.Get("option"),
+				Validation:  rd.Get("validation"),
+			}, &parameter)
+			if err != nil {
+				return diag.Errorf("decode parameter: %s", err)
+			}
 			var value string
-			rawDefaultValue, ok := rd.GetOk("default")
-			if ok {
-				defaultValue := rawDefaultValue.(string)
-				err := valueIsType(typ, defaultValue)
+			if parameter.Default != "" {
+				err := valueIsType(parameter.Type, parameter.Default)
 				if err != nil {
 					return err
 				}
-				value = defaultValue
+				value = parameter.Default
 			}
-			envValue, ok := os.LookupEnv(fmt.Sprintf("CODER_PARAMETER_%s", name))
+			envValue, ok := os.LookupEnv(fmt.Sprintf("CODER_PARAMETER_%s", parameter.Name))
 			if ok {
 				value = envValue
 			}
 			rd.Set("value", value)
 
-			rawValidation, exists := rd.GetOk("validation")
-			var (
-				validationRegex string
-				validationMin   int
-				validationMax   int
-			)
-			if exists {
-				validationArray, valid := rawValidation.([]interface{})
-				if !valid {
-					return diag.Errorf("validation is of wrong type %T", rawValidation)
-				}
-				validation, valid := validationArray[0].(map[string]interface{})
-				if !valid {
-					return diag.Errorf("validation is of wrong type %T", validation)
-				}
-				rawRegex, ok := validation["regex"]
-				if ok {
-					validationRegex, ok = rawRegex.(string)
-					if !ok {
-						return diag.Errorf("validation regex is of wrong type %T", rawRegex)
-					}
-				}
-				rawMin, ok := validation["min"]
-				if ok {
-					validationMin, ok = rawMin.(int)
-					if !ok {
-						return diag.Errorf("validation min is wrong type %T", rawMin)
-					}
-				}
-				rawMax, ok := validation["max"]
-				if ok {
-					validationMax, ok = rawMax.(int)
-					if !ok {
-						return diag.Errorf("validation max is wrong type %T", rawMax)
-					}
+			if len(parameter.Validation) == 1 {
+				validation := &parameter.Validation[0]
+				err = validation.Valid(parameter.Type, value)
+				if err != nil {
+					return diag.FromErr(err)
 				}
 			}
 
-			err := ValueValidatesType(typ, value, validationRegex, validationMin, validationMax)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-
-			rawOptions, exists := rd.GetOk("option")
-			if exists {
-				rawArrayOptions, valid := rawOptions.([]interface{})
-				if !valid {
-					return diag.Errorf("options is of wrong type %T", rawArrayOptions)
-				}
-				optionDisplayNames := map[string]interface{}{}
-				optionValues := map[string]interface{}{}
-				for _, rawOption := range rawArrayOptions {
-					option, valid := rawOption.(map[string]interface{})
-					if !valid {
-						return diag.Errorf("option is of wrong type %T", rawOption)
-					}
-					rawName, ok := option["name"]
-					if !ok {
-						return diag.Errorf("no name for %+v", option)
-					}
-					displayName, ok := rawName.(string)
-					if !ok {
-						return diag.Errorf("display name is of wrong type %T", displayName)
-					}
-					_, exists := optionDisplayNames[displayName]
+			if len(parameter.Option) > 0 {
+				names := map[string]interface{}{}
+				values := map[string]interface{}{}
+				for _, option := range parameter.Option {
+					_, exists := names[option.Name]
 					if exists {
-						return diag.Errorf("multiple options cannot have the same display name %q", displayName)
+						return diag.Errorf("multiple options cannot have the same name %q", option.Name)
 					}
-
-					rawValue, ok := option["value"]
-					if !ok {
-						return diag.Errorf("no value for %+v\n", option)
-					}
-					value, ok := rawValue.(string)
-					if !ok {
-						return diag.Errorf("")
-					}
-					_, exists = optionValues[value]
+					_, exists = values[option.Value]
 					if exists {
-						return diag.Errorf("multiple options cannot have the same value %q", value)
+						return diag.Errorf("multiple options cannot have the same value %q", option.Value)
 					}
-					err := valueIsType(typ, value)
+					err := valueIsType(parameter.Type, option.Value)
 					if err != nil {
 						return err
 					}
-
-					optionValues[value] = nil
-					optionDisplayNames[displayName] = nil
+					values[option.Value] = nil
+					names[option.Name] = nil
 				}
 			}
 
@@ -280,26 +265,26 @@ func valueIsType(typ, value string) diag.Diagnostics {
 	return nil
 }
 
-func ValueValidatesType(typ, value, regex string, min, max int) error {
+func (v *Validation) Valid(typ, value string) error {
 	if typ != "number" {
-		if min != 0 {
+		if v.Min != 0 {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
-		if max != 0 {
+		if v.Max != 0 {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
 		}
 	}
-	if typ != "string" && regex != "" {
+	if typ != "string" && v.Regex != "" {
 		return fmt.Errorf("a regex cannot be specified for a %s type", typ)
 	}
 	switch typ {
 	case "bool":
 		return nil
 	case "string":
-		if regex == "" {
+		if v.Regex == "" {
 			return nil
 		}
-		regex, err := regexp.Compile(regex)
+		regex, err := regexp.Compile(v.Regex)
 		if err != nil {
 			return fmt.Errorf("compile regex %q: %s", regex, err)
 		}
@@ -312,11 +297,11 @@ func ValueValidatesType(typ, value, regex string, min, max int) error {
 		if err != nil {
 			return fmt.Errorf("parse value %s as int: %s", value, err)
 		}
-		if num < min {
-			return fmt.Errorf("provided value %d is less than the minimum %d", num, min)
+		if num < v.Min {
+			return fmt.Errorf("provided value %d is less than the minimum %d", num, v.Min)
 		}
-		if num > max {
-			return fmt.Errorf("provided value %d is more than the maximum %d", num, max)
+		if num > v.Max {
+			return fmt.Errorf("provided value %d is more than the maximum %d", num, v.Max)
 		}
 	}
 	return nil

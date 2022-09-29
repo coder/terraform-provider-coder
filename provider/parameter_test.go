@@ -188,7 +188,7 @@ data "coder_parameter" "region" {
 }
 `,
 	}, {
-		Name: "DuplicateOptionDisplayName",
+		Name: "DuplicateOptionName",
 		Config: `
 data "coder_parameter" "region" {
 	name = "Region"
@@ -203,7 +203,7 @@ data "coder_parameter" "region" {
 	}
 }
 `,
-		ExpectError: regexp.MustCompile("cannot have the same display name"),
+		ExpectError: regexp.MustCompile("cannot have the same name"),
 	}, {
 		Name: "DuplicateOptionValue",
 		Config: `
@@ -300,7 +300,12 @@ func TestValueValidatesType(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			err := provider.ValueValidatesType(tc.Type, tc.Value, tc.Regex, tc.Min, tc.Max)
+			v := &provider.Validation{
+				Min:   tc.Min,
+				Max:   tc.Max,
+				Regex: tc.Regex,
+			}
+			err := v.Valid(tc.Type, tc.Value)
 			if tc.Error != nil {
 				require.True(t, tc.Error.MatchString(err.Error()))
 			}
