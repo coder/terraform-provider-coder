@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"regexp"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -36,6 +37,49 @@ func parameterDataSource() *schema.Resource {
 				value = envValue
 			}
 			rd.Set("value", value)
+
+			rawValidation, exists := rd.GetOk("validation")
+			var (
+				validationRegex string
+				validationMin   int
+				validationMax   int
+			)
+			if exists {
+				validationArray, valid := rawValidation.([]interface{})
+				if !valid {
+					return diag.Errorf("validation is of wrong type %T", rawValidation)
+				}
+				validation, valid := validationArray[0].(map[string]interface{})
+				if !valid {
+					return diag.Errorf("validation is of wrong type %T", validation)
+				}
+				rawRegex, ok := validation["regex"]
+				if ok {
+					validationRegex, ok = rawRegex.(string)
+					if !ok {
+						return diag.Errorf("validation regex is of wrong type %T", rawRegex)
+					}
+				}
+				rawMin, ok := validation["min"]
+				if ok {
+					validationMin, ok = rawMin.(int)
+					if !ok {
+						return diag.Errorf("validation min is wrong type %T", rawMin)
+					}
+				}
+				rawMax, ok := validation["max"]
+				if ok {
+					validationMax, ok = rawMax.(int)
+					if !ok {
+						return diag.Errorf("validation max is wrong type %T", rawMax)
+					}
+				}
+			}
+
+			err := ValueValidatesType(typ, value, validationRegex, validationMin, validationMax)
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
 			rawOptions, exists := rd.GetOk("option")
 			if exists {
@@ -91,28 +135,30 @@ func parameterDataSource() *schema.Resource {
 			"value": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The output value of a parameter.",
+				Description: "The output value of the parameter.",
 			},
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the parameter as it appears in the interface. If this is changed, the parameter will need to be re-updated by developers.",
+				Description: "The name of the parameter as it will appear in the interface. If this is changed, developers will be re-prompted for a new value.",
 			},
 			"description": {
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "Explain what the parameter does.",
+				Description: "Describe what this parameter does.",
 			},
 			"type": {
 				Type:         schema.TypeString,
 				Default:      "string",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"number", "string", "bool"}, false),
+				Description:  `The type of this parameter. Must be one of: "number", "string", or "bool".`,
 			},
 			"immutable": {
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Description: "Whether the value can be changed after it's set initially.",
+				Default:     true,
+				Description: "Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!",
 			},
 			"default": {
 				Type:         schema.TypeString,
@@ -136,11 +182,12 @@ func parameterDataSource() *schema.Resource {
 				},
 			},
 			"option": {
-				Type:        schema.TypeList,
-				Description: "Each \"option\" block defines a single displayable value for a user to select.",
-				ForceNew:    true,
-				Optional:    true,
-				MaxItems:    64,
+				Type:          schema.TypeList,
+				Description:   "Each \"option\" block defines a value for a user to select from.",
+				ForceNew:      true,
+				Optional:      true,
+				MaxItems:      64,
+				ConflictsWith: []string{"validation"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -151,13 +198,13 @@ func parameterDataSource() *schema.Resource {
 						},
 						"description": {
 							Type:        schema.TypeString,
-							Description: "Add a description to select this item.",
+							Description: "Describe what selecting this value does.",
 							ForceNew:    true,
 							Optional:    true,
 						},
 						"value": {
 							Type:        schema.TypeString,
-							Description: "The value of this option.",
+							Description: "The value of this option set on the parameter if selected.",
 							ForceNew:    true,
 							Required:    true,
 						},
@@ -180,26 +227,31 @@ func parameterDataSource() *schema.Resource {
 				},
 			},
 			"validation": {
-				Type:     schema.TypeSet,
-				MaxItems: 1,
-				Optional: true,
+				Type:          schema.TypeList,
+				MaxItems:      1,
+				Optional:      true,
+				Description:   "Validate the input of a parameter.",
+				ConflictsWith: []string{"option"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Default:     0,
-							Description: "The minimum for a number to be.",
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Default:      0,
+							Description:  "The minimum of a number parameter.",
+							RequiredWith: []string{"validation.0.max"},
 						},
 						"max": {
-							Type:        schema.TypeInt,
-							Optional:    true,
-							Description: "The maximum for a number to be.",
+							Type:         schema.TypeInt,
+							Optional:     true,
+							Description:  "The maximum of a number parameter.",
+							RequiredWith: []string{"validation.0.min"},
 						},
 						"regex": {
-							Type:         schema.TypeString,
-							ExactlyOneOf: []string{"min", "max"},
-							Optional:     true,
+							Type:          schema.TypeString,
+							ConflictsWith: []string{"validation.0.min", "validation.0.max"},
+							Description:   "A regex for the input parameter to match against.",
+							Optional:      true,
 						},
 					},
 				},
@@ -224,6 +276,48 @@ func valueIsType(typ, value string) diag.Diagnostics {
 		// Anything is a string!
 	default:
 		return diag.Errorf("invalid type %q", typ)
+	}
+	return nil
+}
+
+func ValueValidatesType(typ, value, regex string, min, max int) error {
+	if typ != "number" {
+		if min != 0 {
+			return fmt.Errorf("a min cannot be specified for a %s type", typ)
+		}
+		if max != 0 {
+			return fmt.Errorf("a max cannot be specified for a %s type", typ)
+		}
+	}
+	if typ != "string" && regex != "" {
+		return fmt.Errorf("a regex cannot be specified for a %s type", typ)
+	}
+	switch typ {
+	case "bool":
+		return nil
+	case "string":
+		if regex == "" {
+			return nil
+		}
+		regex, err := regexp.Compile(regex)
+		if err != nil {
+			return fmt.Errorf("compile regex %q: %s", regex, err)
+		}
+		matched := regex.MatchString(value)
+		if !matched {
+			return fmt.Errorf("value %q does not match %q", value, regex)
+		}
+	case "number":
+		num, err := strconv.Atoi(value)
+		if err != nil {
+			return fmt.Errorf("parse value %s as int: %s", value, err)
+		}
+		if num < min {
+			return fmt.Errorf("provided value %d is less than the minimum %d", num, min)
+		}
+		if num > max {
+			return fmt.Errorf("provided value %d is more than the maximum %d", num, max)
+		}
 	}
 	return nil
 }

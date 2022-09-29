@@ -19,18 +19,83 @@ func TestParameter(t *testing.T) {
 		ExpectError *regexp.Regexp
 		Check       func(state *terraform.ResourceState)
 	}{{
-		Name: "NumberValidation",
+		Name: "FieldsExist",
 		Config: `
-provider "coder" {}
+data "coder_parameter" "region" {
+	name = "Region"
+	type = "string"
+	description = "Some option!"
+	immutable = false
+	icon = "/icon/region.svg"
+	option {
+		name = "US Central"
+		value = "us-central1-a"
+		icon = "/icon/central.svg"
+		description = "Select for central!"
+	}
+	option {
+		name = "US East"
+		value = "us-east1-a"
+		icon = "/icon/east.svg"
+		description = "Select for east!"
+	}
+}
+`,
+		Check: func(state *terraform.ResourceState) {
+			attrs := state.Primary.Attributes
+			for key, value := range map[string]interface{}{
+				"name":                 "Region",
+				"type":                 "string",
+				"description":          "Some option!",
+				"immutable":            "false",
+				"icon":                 "/icon/region.svg",
+				"option.0.name":        "US Central",
+				"option.0.value":       "us-central1-a",
+				"option.0.icon":        "/icon/central.svg",
+				"option.0.description": "Select for central!",
+				"option.1.name":        "US East",
+				"option.1.value":       "us-east1-a",
+				"option.1.icon":        "/icon/east.svg",
+				"option.1.description": "Select for east!",
+			} {
+				require.Equal(t, value, attrs[key])
+			}
+		},
+	}, {
+		Name: "ValidationWithOptions",
+		Config: `
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "number"
+	option {
+		name = "1"
+		value = "1"
+	}
+	validation {
+		regex = "1"
+	}
 }
 `,
+		ExpectError: regexp.MustCompile("conflicts with option"),
+	}, {
+		Name: "NumberValidation",
+		Config: `
+data "coder_parameter" "region" {
+	name = "Region"
+	type = "number"
+	default = 2
+	validation {
+		min = 1
+		max = 5
+	}
+}
+`,
+		Check: func(state *terraform.ResourceState) {
+
+		},
 	}, {
 		Name: "DefaultNotNumber",
 		Config: `
-provider "coder" {}
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "number"
@@ -41,7 +106,6 @@ data "coder_parameter" "region" {
 	}, {
 		Name: "DefaultNotBool",
 		Config: `
-provider "coder" {}
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "bool"
@@ -52,7 +116,6 @@ data "coder_parameter" "region" {
 	}, {
 		Name: "OptionNotBool",
 		Config: `
-provider "coder" {}
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "bool"
@@ -69,7 +132,6 @@ data "coder_parameter" "region" {
 	}, {
 		Name: "MultipleOptions",
 		Config: `
-provider "coder" {}
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "string"
@@ -81,24 +143,6 @@ data "coder_parameter" "region" {
 	}
 	option {
 		name = "2"
-		value = "2"
-	}
-}
-
-data "google_compute_regions" "regions" {}
-
-data "coder_parameter" "region" {
-	name = "Region"
-	type = "string"
-	icon = "/icon/asdasd.svg"
-	option {
-		name = "United States"
-		value = "us-central1-a"
-		icon = "/icon/usa.svg"
-		description = "If you live in America, select this!"
-	}
-	option {
-		name = "Europe"
 		value = "2"
 	}
 }
@@ -118,7 +162,6 @@ data "coder_parameter" "region" {
 	}, {
 		Name: "DefaultWithOption",
 		Config: `
-provider "coder" {}
 data "coder_parameter" "region" {
 	name = "Region"
 	default = "hi"
@@ -136,7 +179,6 @@ data "coder_parameter" "region" {
 	}, {
 		Name: "SingleOption",
 		Config: `
-provider "coder" {}
 data "coder_parameter" "region" {
 	name = "Region"
 	option {
@@ -148,7 +190,6 @@ data "coder_parameter" "region" {
 	}, {
 		Name: "DuplicateOptionDisplayName",
 		Config: `
-provider "coder" {}
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "string"
@@ -166,7 +207,6 @@ data "coder_parameter" "region" {
 	}, {
 		Name: "DuplicateOptionValue",
 		Config: `
-provider "coder" {}
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "string"
@@ -206,6 +246,64 @@ data "coder_parameter" "region" {
 					},
 				}},
 			})
+		})
+	}
+}
+
+func TestValueValidatesType(t *testing.T) {
+	t.Parallel()
+	for _, tc := range []struct {
+		Name,
+		Type,
+		Value,
+		Regex string
+		Min,
+		Max int
+		Error *regexp.Regexp
+	}{{
+		Name:  "StringWithMin",
+		Type:  "string",
+		Min:   1,
+		Error: regexp.MustCompile("cannot be specified"),
+	}, {
+		Name:  "StringWithMax",
+		Type:  "string",
+		Max:   1,
+		Error: regexp.MustCompile("cannot be specified"),
+	}, {
+		Name:  "NonStringWithRegex",
+		Type:  "number",
+		Regex: "banana",
+		Error: regexp.MustCompile("a regex cannot be specified"),
+	}, {
+		Name:  "Bool",
+		Type:  "bool",
+		Value: "true",
+	}, {
+		Name:  "InvalidNumber",
+		Type:  "number",
+		Value: "hi",
+		Error: regexp.MustCompile("parse value hi as int"),
+	}, {
+		Name:  "NumberBelowMin",
+		Type:  "number",
+		Value: "0",
+		Min:   1,
+		Error: regexp.MustCompile("is less than the minimum"),
+	}, {
+		Name:  "NumberAboveMax",
+		Type:  "number",
+		Value: "1",
+		Max:   0,
+		Error: regexp.MustCompile("is more than the maximum"),
+	}} {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			err := provider.ValueValidatesType(tc.Type, tc.Value, tc.Regex, tc.Min, tc.Max)
+			if tc.Error != nil {
+				require.True(t, tc.Error.MatchString(err.Error()))
+			}
 		})
 	}
 }
