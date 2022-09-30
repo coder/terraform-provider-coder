@@ -63,6 +63,7 @@ func New() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"coder_workspace":   workspaceDataSource(),
 			"coder_provisioner": provisionerDataSource(),
+			"coder_parameter":   parameterDataSource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"coder_agent":          agentResource(),
