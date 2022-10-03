@@ -53,6 +53,7 @@ Optional:
 
 Optional:
 
+- `error` (String) An error message to display if the value doesn't match the provided regex.
 - `max` (Number) The maximum of a number parameter.
 - `min` (Number) The minimum of a number parameter.
 - `regex` (String) A regex for the input parameter to match against.

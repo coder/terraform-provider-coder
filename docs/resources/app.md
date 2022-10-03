@@ -64,7 +64,7 @@ resource "coder_app" "intellij" {
 
 - `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "url" may be specified, but not both.
 - `healthcheck` (Block Set, Max: 1) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
-- `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
+- `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
 - `name` (String) A display name to identify the app.
 - `relative_path` (Boolean) Specifies whether the URL will be accessed via a relative path or wildcard. Use if wildcard routing is unavailable.
 - `url` (String) A URL to be proxied to from inside the workspace. Either "command" or "url" may be specified, but not both.
