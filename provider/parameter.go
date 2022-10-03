@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"net/url"
 	"os"
@@ -26,6 +28,7 @@ type Validation struct {
 	Min   int
 	Max   int
 	Regex string
+	Error string
 }
 
 type Parameter struct {
@@ -79,7 +82,7 @@ func parameterDataSource() *schema.Resource {
 				}
 				value = parameter.Default
 			}
-			envValue, ok := os.LookupEnv(fmt.Sprintf("CODER_PARAMETER_%s", parameter.Name))
+			envValue, ok := os.LookupEnv(ParameterEnvironmentVariable(parameter.Name))
 			if ok {
 				value = envValue
 			}
@@ -238,6 +241,12 @@ func parameterDataSource() *schema.Resource {
 							Description:   "A regex for the input parameter to match against.",
 							Optional:      true,
 						},
+						"error": {
+							Type:         schema.TypeString,
+							Optional:     true,
+							RequiredWith: []string{"validation.0.regex"},
+							Description:  "An error message to display if the value doesn't match the provided regex.",
+						},
 					},
 				},
 			},
@@ -292,6 +301,9 @@ func (v *Validation) Valid(typ, value string) error {
 		if !matched {
 			return fmt.Errorf("value %q does not match %q", value, regex)
 		}
+		if v.Error == "" {
+			return fmt.Errorf("an error must be specified with a regex validation")
+		}
 	case "number":
 		num, err := strconv.Atoi(value)
 		if err != nil {
@@ -305,4 +317,12 @@ func (v *Validation) Valid(typ, value string) error {
 		}
 	}
 	return nil
+}
+
+// ParameterEnvironmentVariable returns the environment variable to specify for
+// a parameter by it's name. It's hashed because spaces and special characters
+// can be used in parameter names that may not be valid in env vars.
+func ParameterEnvironmentVariable(name string) string {
+	sum := sha256.Sum256([]byte(name))
+	return "CODER_PARAMETER_" + hex.EncodeToString(sum[:])
 }

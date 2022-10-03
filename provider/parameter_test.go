@@ -73,10 +73,24 @@ data "coder_parameter" "region" {
 	}
 	validation {
 		regex = "1"
+		error = "Not 1"
 	}
 }
 `,
 		ExpectError: regexp.MustCompile("conflicts with option"),
+	}, {
+		Name: "ValidationRegexMissingError",
+		Config: `
+data "coder_parameter" "region" {
+	name = "Region"
+	type = "string"
+	default = "hello"
+	validation {
+		regex = "hello"
+	}
+}
+`,
+		ExpectError: regexp.MustCompile("an error must be specified"),
 	}, {
 		Name: "NumberValidation",
 		Config: `
@@ -90,9 +104,6 @@ data "coder_parameter" "region" {
 	}
 }
 `,
-		Check: func(state *terraform.ResourceState) {
-
-		},
 	}, {
 		Name: "DefaultNotNumber",
 		Config: `

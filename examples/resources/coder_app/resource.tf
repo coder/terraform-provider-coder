@@ -26,13 +26,13 @@ resource "coder_app" "code-server" {
 resource "coder_app" "vim" {
   agent_id = coder_agent.dev.id
   name     = "Vim"
-  icon     = data.coder_workspace.me.access_url + "/icons/vim.svg"
+  icon     = "${data.coder_workspace.me.access_url}/icon/vim.svg"
   command  = "vim"
 }
 
 resource "coder_app" "intellij" {
   agent_id = coder_agent.dev.id
-  icon     = data.coder_workspace.me.access_url + "/icons/intellij.svg"
+  icon     = "${data.coder_workspace.me.access_url}/icon/intellij.svg"
   name     = "JetBrains IntelliJ"
   command  = "projector run"
 }
