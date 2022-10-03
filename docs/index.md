@@ -62,4 +62,5 @@ resource "google_compute_instance" "dev" {
 
 ### Optional
 
+- `host` (String) This overrides the host in the "url" property, but preserve the port.
 - `url` (String) The URL to access Coder.

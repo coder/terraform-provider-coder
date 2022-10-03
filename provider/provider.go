@@ -12,7 +12,7 @@ import (
 	"golang.org/x/xerrors"
 )
 
-type config struct {
+type Config struct {
 	URL *url.URL
 }
 
@@ -35,6 +35,11 @@ func New() *schema.Provider {
 					return nil, nil
 				},
 			},
+			"host": {
+				Type:        schema.TypeString,
+				Description: "This overrides the host in the \"url\" property, but preserve the port.",
+				Optional:    true,
+			},
 		},
 		ConfigureContextFunc: func(c context.Context, resourceData *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			rawURL, ok := resourceData.Get("url").(string)
@@ -56,7 +61,7 @@ func New() *schema.Provider {
 				}
 				parsed.Host = rawHost
 			}
-			return config{
+			return Config{
 				URL: parsed,
 			}, nil
 		},

@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"reflect"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -54,24 +53,11 @@ func workspaceDataSource() *schema.Resource {
 			}
 			rd.SetId(id)
 
-			config, valid := i.(config)
+			config, valid := i.(Config)
 			if !valid {
 				return diag.Errorf("config was unexpected type %q", reflect.TypeOf(i).String())
 			}
 			rd.Set("access_url", config.URL.String())
-
-			rawPort := config.URL.Port()
-			if rawPort == "" {
-				rawPort = "80"
-				if config.URL.Scheme == "https" {
-					rawPort = "443"
-				}
-			}
-			port, err := strconv.Atoi(rawPort)
-			if err != nil {
-				return diag.Errorf("couldn't parse port %q", port)
-			}
-			rd.Set("access_port", port)
 
 			return nil
 		},
@@ -80,11 +66,6 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The access URL of the Coder deployment provisioning this workspace.",
-			},
-			"access_port": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "The access port of the Coder deployment provisioning this workspace.",
 			},
 			"start_count": {
 				Type:        schema.TypeInt,

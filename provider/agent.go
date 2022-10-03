@@ -128,7 +128,7 @@ func agentInstanceResource() *schema.Resource {
 // updateInitScript fetches parameters from a "coder_agent" to produce the
 // agent script from environment variables.
 func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
-	config, valid := i.(config)
+	config, valid := i.(Config)
 	if !valid {
 		return diag.Errorf("config was unexpected type %q", reflect.TypeOf(i).String())
 	}
