@@ -60,12 +60,21 @@ func appResource() *schema.Resource {
 				Optional:    true,
 			},
 			"relative_path": {
-				Type: schema.TypeBool,
+				Type:       schema.TypeBool,
+				Deprecated: "`relative_path` on apps is deprecated, use `subdomain` instead.",
 				Description: "Specifies whether the URL will be accessed via a relative " +
-					"path or wildcard. Use if wildcard routing is unavailable.",
-				ForceNew:      true,
-				Optional:      true,
-				ConflictsWith: []string{"command"},
+					"path or wildcard. Use if wildcard routing is unavailable. Defaults to true.",
+				ForceNew: true,
+				Optional: true,
+			},
+			"subdomain": {
+				Type: schema.TypeBool,
+				Description: "Determines whether the app will be accessed via it's own " +
+					"subdomain or whether it will be accessed via a path on Coder. If " +
+					"wildcards have not been setup by the administrator then apps with " +
+					"\"subdomain\" set to true will not be accessible. Defaults to false.",
+				ForceNew: true,
+				Optional: true,
 			},
 			"url": {
 				Type: schema.TypeString,

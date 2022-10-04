@@ -29,7 +29,7 @@ func TestApp(t *testing.T) {
 					agent_id = coder_agent.dev.id
 					name = "code-server"
 					icon = "builtin:vim"
-					relative_path = true
+					subdomain = false
 					url = "http://localhost:13337"
 					healthcheck {
 						url = "http://localhost:13337/healthz"
@@ -47,7 +47,7 @@ func TestApp(t *testing.T) {
 					"agent_id",
 					"name",
 					"icon",
-					"relative_path",
+					"subdomain",
 					"url",
 					"healthcheck.0.url",
 					"healthcheck.0.interval",
