@@ -77,7 +77,7 @@ func appResource() *schema.Resource {
 				ForceNew: true,
 				Optional: true,
 			},
-			"sharing_level": {
+			"share": {
 				Type: schema.TypeString,
 				Description: "Determines the sharing level of the app. " +
 					"Application sharing is an enterprise feature and any " +
@@ -107,7 +107,7 @@ func appResource() *schema.Resource {
 						return nil
 					}
 
-					return diag.Errorf(`invalid app sharing_level %q, must be one of "owner", "template", "authenticated", "public"`, valStr)
+					return diag.Errorf(`invalid app share %q, must be one of "owner", "template", "authenticated", "public"`, valStr)
 				},
 			},
 			"url": {

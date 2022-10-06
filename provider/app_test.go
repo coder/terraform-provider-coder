@@ -56,7 +56,7 @@ func TestApp(t *testing.T) {
 						"subdomain",
 						// Should be set by default even though it isn't
 						// specified.
-						"sharing_level",
+						"share",
 						"url",
 						"healthcheck.0.url",
 						"healthcheck.0.interval",
@@ -90,7 +90,7 @@ func TestApp(t *testing.T) {
 			{
 				name:        "InvalidValue",
 				value:       "blah",
-				expectError: regexp.MustCompile(`invalid app sharing_level "blah"`),
+				expectError: regexp.MustCompile(`invalid app share "blah"`),
 			},
 			{
 				name:        "ExplicitOwner",
@@ -122,7 +122,7 @@ func TestApp(t *testing.T) {
 
 				sharingLine := ""
 				if c.value != "" {
-					sharingLine = fmt.Sprintf("sharing_level = %q", c.value)
+					sharingLine = fmt.Sprintf("share = %q", c.value)
 				}
 				config := fmt.Sprintf(`
 				provider "coder" {
@@ -151,9 +151,9 @@ func TestApp(t *testing.T) {
 					resource := state.Modules[0].Resources["coder_app.code-server"]
 					require.NotNil(t, resource)
 
-					// Read sharing_level and ensure it matches the expected
+					// Read share and ensure it matches the expected
 					// value.
-					value := resource.Primary.Attributes["sharing_level"]
+					value := resource.Primary.Attributes["share"]
 					require.Equal(t, c.expectValue, value)
 					return nil
 				}

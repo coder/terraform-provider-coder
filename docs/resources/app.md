@@ -26,12 +26,12 @@ EOF
 }
 
 resource "coder_app" "code-server" {
-  agent_id      = coder_agent.dev.id
-  name          = "VS Code"
-  icon          = data.coder_workspace.me.access_url + "/icons/vscode.svg"
-  url           = "http://localhost:13337"
-  sharing_level = "owner"
-  subdomain     = false
+  agent_id  = coder_agent.dev.id
+  name      = "VS Code"
+  icon      = data.coder_workspace.me.access_url + "/icons/vscode.svg"
+  url       = "http://localhost:13337"
+  share     = "owner"
+  subdomain = false
   healthcheck {
     url       = "http://localhost:13337/healthz"
     interval  = 5
@@ -68,7 +68,7 @@ resource "coder_app" "intellij" {
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
 - `name` (String) A display name to identify the app.
 - `relative_path` (Boolean, Deprecated) Specifies whether the URL will be accessed via a relative path or wildcard. Use if wildcard routing is unavailable. Defaults to true.
-- `sharing_level` (String) Determines the sharing level of the app. Application sharing is an enterprise feature and any values will be ignored (and sharing disabled) if your deployment is not entitled to use application sharing. Valid values are "owner", "template", "authenticated" and "public". Level "owner" disables sharing on the app, so only the workspace owner can access it. Level "template" shares the app with all users that can read the workspace's template. Level "authenticated" shares the app with all authenticated users. Level "public" shares it with any user, including unauthenticated users. Permitted application sharing levels can be controlled via a flag on "coder server". Defaults to "owner" (sharing disabled).
+- `share` (String) Determines the sharing level of the app. Application sharing is an enterprise feature and any values will be ignored (and sharing disabled) if your deployment is not entitled to use application sharing. Valid values are "owner", "template", "authenticated" and "public". Level "owner" disables sharing on the app, so only the workspace owner can access it. Level "template" shares the app with all users that can read the workspace's template. Level "authenticated" shares the app with all authenticated users. Level "public" shares it with any user, including unauthenticated users. Permitted application sharing levels can be controlled via a flag on "coder server". Defaults to "owner" (sharing disabled).
 - `subdomain` (Boolean) Determines whether the app will be accessed via it's own subdomain or whether it will be accessed via a path on Coder. If wildcards have not been setup by the administrator then apps with "subdomain" set to true will not be accessible. Defaults to false.
 - `url` (String) A URL to be proxied to from inside the workspace. Either "command" or "url" may be specified, but not both.
 
