@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -75,6 +76,39 @@ func appResource() *schema.Resource {
 					"\"subdomain\" set to true will not be accessible. Defaults to false.",
 				ForceNew: true,
 				Optional: true,
+			},
+			"sharing_level": {
+				Type: schema.TypeString,
+				Description: "Determines the sharing level of the app. " +
+					"Application sharing is an enterprise feature and any " +
+					"values will be ignored (and sharing disabled) if your " +
+					"deployment is not entitled to use application sharing. " +
+					`Valid values are "owner", "template", "authenticated" ` +
+					`and "public". Level "owner" disables sharing on the ` +
+					"app, so only the workspace owner can access it. Level " +
+					`"template" shares the app with all users that can read ` +
+					`the workspace's template. Level "authenticated" shares ` +
+					`the app with all authenticated users. Level "public" ` +
+					"shares it with any user, including unauthenticated " +
+					"users. Permitted application sharing levels can be " +
+					`controlled via a flag on "coder server". Defaults to ` +
+					`"owner" (sharing disabled).`,
+				ForceNew: true,
+				Optional: true,
+				Default:  "owner",
+				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+					valStr, ok := val.(string)
+					if !ok {
+						return diag.Errorf("expected string, got %T", val)
+					}
+
+					switch valStr {
+					case "owner", "template", "authenticated", "public":
+						return nil
+					}
+
+					return diag.Errorf(`invalid app sharing_level %q, must be one of "owner", "template", "authenticated", "public"`, valStr)
+				},
 			},
 			"url": {
 				Type: schema.TypeString,
