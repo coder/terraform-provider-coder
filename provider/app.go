@@ -80,17 +80,16 @@ func appResource() *schema.Resource {
 			"share": {
 				Type: schema.TypeString,
 				Description: `Determines the "level" which the application ` +
-					`is shared at. Valid levels are "owner", "template", ` +
-					`"authenticated" and "public". Level "owner" disables ` +
-					"sharing on the app, so only the workspace owner can " +
-					`access it. Level "template" shares the app with all users ` +
-					`that can read the workspace's template. Level ` +
-					`"authenticated" shares the app with all authenticated ` +
-					`users. Level "public" shares it with any user, ` +
-					"including unauthenticated users. Permitted application " +
-					"sharing levels can be configured site-wide via a flag " +
-					`on "coder server" (enterprise only). Defaults to ` +
-					`"owner" (sharing disabled).`,
+					`is shared at. Valid levels are "owner" (default), ` +
+					`"template", "authenticated" and "public". Level "owner" ` +
+					"disables sharing on the app, so only the workspace " +
+					`owner can access it. Level "template" shares the app ` +
+					"with users that can read the workspace's template. " +
+					`Level "authenticated" shares the app with all ` +
+					`authenticated users. Level "public" shares it with any ` +
+					"user, including unauthenticated users. Permitted " +
+					"application sharing levels can be configured site-wide " +
+					`via a flag on "coder server" (enterprise only).`,
 				ForceNew: true,
 				Optional: true,
 				Default:  "owner",
