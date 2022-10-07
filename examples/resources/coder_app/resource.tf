@@ -15,6 +15,7 @@ resource "coder_app" "code-server" {
   name      = "VS Code"
   icon      = data.coder_workspace.me.access_url + "/icons/vscode.svg"
   url       = "http://localhost:13337"
+  share     = "owner"
   subdomain = false
   healthcheck {
     url       = "http://localhost:13337/healthz"
