@@ -98,11 +98,6 @@ func TestApp(t *testing.T) {
 				expectValue: "owner",
 			},
 			{
-				name:        "ExplicitTemplate",
-				value:       "template",
-				expectValue: "template",
-			},
-			{
 				name:        "ExplicitAuthenticated",
 				value:       "authenticated",
 				expectValue: "authenticated",

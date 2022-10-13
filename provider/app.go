@@ -81,15 +81,13 @@ func appResource() *schema.Resource {
 				Type: schema.TypeString,
 				Description: `Determines the "level" which the application ` +
 					`is shared at. Valid levels are "owner" (default), ` +
-					`"template", "authenticated" and "public". Level "owner" ` +
-					"disables sharing on the app, so only the workspace " +
-					`owner can access it. Level "template" shares the app ` +
-					"with users that can read the workspace's template. " +
-					`Level "authenticated" shares the app with all ` +
-					`authenticated users. Level "public" shares it with any ` +
-					"user, including unauthenticated users. Permitted " +
+					`"authenticated" and "public". Level "owner" disables ` +
+					"sharing on the app, so only the workspace owner can " +
+					`access it. Level "authenticated" shares the app with ` +
+					`all authenticated users. Level "public" shares it with ` +
+					"any user, including unauthenticated users. Permitted " +
 					"application sharing levels can be configured site-wide " +
-					`via a flag on "coder server" (Enterprise only).`,
+					"via a flag on `coder server` (Enterprise only).",
 				ForceNew: true,
 				Optional: true,
 				Default:  "owner",
@@ -100,11 +98,11 @@ func appResource() *schema.Resource {
 					}
 
 					switch valStr {
-					case "owner", "template", "authenticated", "public":
+					case "owner", "authenticated", "public":
 						return nil
 					}
 
-					return diag.Errorf(`invalid app share %q, must be one of "owner", "template", "authenticated", "public"`, valStr)
+					return diag.Errorf(`invalid app share %q, must be one of "owner", "authenticated", "public"`, valStr)
 				},
 			},
 			"url": {
