@@ -27,6 +27,7 @@ EOF
 
 resource "coder_app" "code-server" {
   agent_id  = coder_agent.dev.id
+  slug      = "code-server"
   name      = "VS Code"
   icon      = data.coder_workspace.me.access_url + "/icons/vscode.svg"
   url       = "http://localhost:13337"
@@ -41,6 +42,7 @@ resource "coder_app" "code-server" {
 
 resource "coder_app" "vim" {
   agent_id = coder_agent.dev.id
+  slug     = "vim"
   name     = "Vim"
   icon     = "${data.coder_workspace.me.access_url}/icon/vim.svg"
   command  = "vim"
@@ -49,6 +51,7 @@ resource "coder_app" "vim" {
 resource "coder_app" "intellij" {
   agent_id = coder_agent.dev.id
   icon     = "${data.coder_workspace.me.access_url}/icon/intellij.svg"
+  slug     = "intellij"
   name     = "JetBrains IntelliJ"
   command  = "projector run"
 }
@@ -60,13 +63,15 @@ resource "coder_app" "intellij" {
 ### Required
 
 - `agent_id` (String) The "id" property of a "coder_agent" resource to associate with.
+- `slug` (String) A hostname-friendly name for the app. This is used in URLs to access the app. May contain alphanumerics and hyphens. Cannot start/end with a hyphen or contain two consecutive hyphens.
 
 ### Optional
 
 - `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "url" may be specified, but not both.
+- `display_name` (String) A display name to identify the app. Defaults to the slug.
 - `healthcheck` (Block Set, Max: 1) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
-- `name` (String) A display name to identify the app.
+- `name` (String, Deprecated) A display name to identify the app.
 - `relative_path` (Boolean, Deprecated) Specifies whether the URL will be accessed via a relative path or wildcard. Use if wildcard routing is unavailable. Defaults to true.
 - `share` (String) Determines the "level" which the application is shared at. Valid levels are "owner" (default), "authenticated" and "public". Level "owner" disables sharing on the app, so only the workspace owner can access it. Level "authenticated" shares the app with all authenticated users. Level "public" shares it with any user, including unauthenticated users. Permitted application sharing levels can be configured site-wide via a flag on `coder server` (Enterprise only).
 - `subdomain` (Boolean) Determines whether the app will be accessed via it's own subdomain or whether it will be accessed via a path on Coder. If wildcards have not been setup by the administrator then apps with "subdomain" set to true will not be accessible. Defaults to false.
