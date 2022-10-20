@@ -33,7 +33,8 @@ func TestApp(t *testing.T) {
 				}
 				resource "coder_app" "code-server" {
 					agent_id = coder_agent.dev.id
-					name = "code-server"
+					slug = "code-server"
+					display_name = "code-server"
 					icon = "builtin:vim"
 					subdomain = false
 					url = "http://localhost:13337"
@@ -51,7 +52,8 @@ func TestApp(t *testing.T) {
 					require.NotNil(t, resource)
 					for _, key := range []string{
 						"agent_id",
-						"name",
+						"slug",
+						"display_name",
 						"icon",
 						"subdomain",
 						// Should be set by default even though it isn't
@@ -128,7 +130,8 @@ func TestApp(t *testing.T) {
 				}
 				resource "coder_app" "code-server" {
 					agent_id = coder_agent.dev.id
-					name = "code-server"
+					slug = "code-server"
+					display_name = "code-server"
 					icon = "builtin:vim"
 					url = "http://localhost:13337"
 					%s
