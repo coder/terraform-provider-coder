@@ -31,6 +31,7 @@ func TestAgent(t *testing.T) {
 						hi = "test"
 					}
 					startup_script = "echo test"
+					troubleshooting_url = "https://example.com/troubleshoot"
 				}
 				`,
 			Check: func(state *terraform.State) error {
@@ -46,6 +47,8 @@ func TestAgent(t *testing.T) {
 					"dir",
 					"env.hi",
 					"startup_script",
+					"connection_timeout",
+					"troubleshooting_url",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)
