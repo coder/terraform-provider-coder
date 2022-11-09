@@ -11,12 +11,13 @@ EOF
 }
 
 resource "coder_app" "code-server" {
-  agent_id  = coder_agent.dev.id
-  name      = "VS Code"
-  icon      = data.coder_workspace.me.access_url + "/icons/vscode.svg"
-  url       = "http://localhost:13337"
-  share     = "owner"
-  subdomain = false
+  agent_id     = coder_agent.dev.id
+  slug         = "code-server"
+  display_name = "VS Code"
+  icon         = data.coder_workspace.me.access_url + "/icons/vscode.svg"
+  url          = "http://localhost:13337"
+  share        = "owner"
+  subdomain    = false
   healthcheck {
     url       = "http://localhost:13337/healthz"
     interval  = 5
@@ -25,15 +26,17 @@ resource "coder_app" "code-server" {
 }
 
 resource "coder_app" "vim" {
-  agent_id = coder_agent.dev.id
-  name     = "Vim"
-  icon     = "${data.coder_workspace.me.access_url}/icon/vim.svg"
-  command  = "vim"
+  agent_id     = coder_agent.dev.id
+  slug         = "vim"
+  display_name = "Vim"
+  icon         = "${data.coder_workspace.me.access_url}/icon/vim.svg"
+  command      = "vim"
 }
 
 resource "coder_app" "intellij" {
-  agent_id = coder_agent.dev.id
-  icon     = "${data.coder_workspace.me.access_url}/icon/intellij.svg"
-  name     = "JetBrains IntelliJ"
-  command  = "projector run"
+  agent_id     = coder_agent.dev.id
+  icon         = "${data.coder_workspace.me.access_url}/icon/intellij.svg"
+  slug         = "intellij"
+  display_name = "JetBrains IntelliJ"
+  command      = "projector run"
 }

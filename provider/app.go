@@ -3,11 +3,24 @@ package provider
 import (
 	"context"
 	"net/url"
+	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+var (
+	// appSlugRegex is the regex used to validate the slug of a coder_app
+	// resource. It must be a valid hostname and cannot contain two consecutive
+	// hyphens or start/end with a hyphen.
+	//
+	// This regex is duplicated in the Coder source code, so make sure to update
+	// it there as well.
+	//
+	// There are test cases for this regex in the Coder product.
+	appSlugRegex = regexp.MustCompile(`^[a-z0-9](-?[a-z0-9])*$`)
 )
 
 func appResource() *schema.Resource {
@@ -54,19 +67,40 @@ func appResource() *schema.Resource {
 					return nil, nil
 				},
 			},
-			"name": {
+			"slug": {
+				Type: schema.TypeString,
+				Description: "A hostname-friendly name for the app. This is " +
+					"used in URLs to access the app. May contain " +
+					"alphanumerics and hyphens. Cannot start/end with a " +
+					"hyphen or contain two consecutive hyphens.",
+				ForceNew: true,
+				Required: true,
+				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+					valStr, ok := val.(string)
+					if !ok {
+						return diag.Errorf("expected string, got %T", val)
+					}
+
+					if !appSlugRegex.MatchString(valStr) {
+						return diag.Errorf("invalid coder_app slug, must be a valid hostname (%q, cannot contain two consecutive hyphens or start/end with a hyphen): %q", appSlugRegex.String(), valStr)
+					}
+
+					return nil
+				},
+			},
+			"display_name": {
 				Type:        schema.TypeString,
-				Description: "A display name to identify the app.",
+				Description: "A display name to identify the app. Defaults to the slug.",
 				ForceNew:    true,
 				Optional:    true,
 			},
-			"relative_path": {
-				Type:       schema.TypeBool,
-				Deprecated: "`relative_path` on apps is deprecated, use `subdomain` instead.",
-				Description: "Specifies whether the URL will be accessed via a relative " +
-					"path or wildcard. Use if wildcard routing is unavailable. Defaults to true.",
-				ForceNew: true,
-				Optional: true,
+			"name": {
+				Type:          schema.TypeString,
+				Description:   "A display name to identify the app.",
+				Deprecated:    "`name` on apps is deprecated, use `display_name` instead",
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"display_name"},
 			},
 			"subdomain": {
 				Type: schema.TypeBool,
@@ -76,6 +110,15 @@ func appResource() *schema.Resource {
 					"\"subdomain\" set to true will not be accessible. Defaults to false.",
 				ForceNew: true,
 				Optional: true,
+			},
+			"relative_path": {
+				Type:       schema.TypeBool,
+				Deprecated: "`relative_path` on apps is deprecated, use `subdomain` instead.",
+				Description: "Specifies whether the URL will be accessed via a relative " +
+					"path or wildcard. Use if wildcard routing is unavailable. Defaults to true.",
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"subdomain"},
 			},
 			"share": {
 				Type: schema.TypeString,
