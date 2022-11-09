@@ -29,7 +29,7 @@ resource "coder_app" "code-server" {
   agent_id     = coder_agent.dev.id
   slug         = "code-server"
   display_name = "VS Code"
-  icon         = data.coder_workspace.me.access_url + "/icons/vscode.svg"
+  icon         = data.coder_workspace.me.access_url + "/icon/vscode.svg"
   url          = "http://localhost:13337"
   share        = "owner"
   subdomain    = false
