@@ -89,11 +89,12 @@ func agentResource() *schema.Resource {
 				Computed:    true,
 			},
 			"connection_timeout": {
-				Type:        schema.TypeInt,
-				Default:     120,
-				ForceNew:    true,
-				Optional:    true,
-				Description: "Time in seconds until the agent is marked as timed out when a connection with the server cannot be established.",
+				Type:         schema.TypeInt,
+				Default:      120,
+				ForceNew:     true,
+				Optional:     true,
+				Description:  "Time in seconds until the agent is marked as timed out when a connection with the server cannot be established. A value of zero never marks the agent as timed out.",
+				ValidateFunc: validation.IntAtLeast(0),
 			},
 			"troubleshooting_url": {
 				Type:        schema.TypeString,
