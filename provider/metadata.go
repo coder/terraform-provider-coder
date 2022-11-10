@@ -61,6 +61,12 @@ func metadataResource() *schema.Resource {
 					return nil, nil
 				},
 			},
+			"cost": {
+				Type:        schema.TypeInt,
+				Description: "(Enterprise) The amount of quota units this resource consumes",
+				ForceNew:    true,
+				Optional:    true,
+			},
 			"item": {
 				Type:        schema.TypeList,
 				Description: "Each \"item\" block defines a single metadata item consisting of a key/value pair.",
