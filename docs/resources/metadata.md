@@ -28,6 +28,8 @@ resource "tls_private_key" "example_key_pair" {
 resource "coder_metadata" "pod_info" {
   count       = data.coder_workspace.me.start_count
   resource_id = kubernetes_pod.dev[0].id
+  # (Enterprise-only) this resource consumes 200 quota units
+  cost = 200
   item {
     key   = "description"
     value = "This description will show up in the Coder dashboard."
@@ -55,6 +57,7 @@ resource "coder_metadata" "pod_info" {
 
 ### Optional
 
+- `cost` (Number) (Enterprise) The amount of quota units this resource consumes
 - `hide` (Boolean) Hide the resource from the UI.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
 
