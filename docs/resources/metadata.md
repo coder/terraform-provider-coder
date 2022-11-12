@@ -3,12 +3,12 @@
 page_title: "coder_metadata Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to attach key/value pairs to a resource. They will be displayed in the Coder dashboard.
+  Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard.
 ---
 
 # coder_metadata (Resource)
 
-Use this resource to attach key/value pairs to a resource. They will be displayed in the Coder dashboard.
+Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard.
 
 ## Example Usage
 

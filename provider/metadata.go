@@ -11,7 +11,7 @@ import (
 
 func metadataResource() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this resource to attach key/value pairs to a resource. They will be " +
+		Description: "Use this resource to attach metadata to a resource. They will be " +
 			"displayed in the Coder dashboard.",
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
