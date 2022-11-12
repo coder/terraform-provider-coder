@@ -61,17 +61,19 @@ func metadataResource() *schema.Resource {
 					return nil, nil
 				},
 			},
-			"cost": {
-				Type:        schema.TypeInt,
-				Description: "(Enterprise) The amount of quota units this resource consumes",
-				ForceNew:    true,
-				Optional:    true,
+			"daily_cost": {
+				Type: schema.TypeInt,
+				Description: "(Enterprise) The cost of this resource every 24 hours." +
+					" Use the smallest denomination of your preferred currency." +
+					" For example, if you work in USD, use cents.",
+				ForceNew: true,
+				Optional: true,
 			},
 			"item": {
 				Type:        schema.TypeList,
 				Description: "Each \"item\" block defines a single metadata item consisting of a key/value pair.",
 				ForceNew:    true,
-				Required:    true,
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"key": {
