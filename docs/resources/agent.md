@@ -50,6 +50,7 @@ resource "kubernetes_pod" "dev" {
 - `connection_timeout` (Number) Time in seconds until the agent is marked as timed out when a connection with the server cannot be established.
 - `dir` (String) The starting directory when a user creates a shell session. Defaults to $HOME.
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
+- `motd_file` (String) The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.
 - `startup_script` (String) A script to run after the agent starts.
 - `troubleshooting_url` (String) A URL to a document with instructions for troubleshooting problems with the agent.
 

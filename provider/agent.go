@@ -101,6 +101,12 @@ func agentResource() *schema.Resource {
 				Optional:    true,
 				Description: "A URL to a document with instructions for troubleshooting problems with the agent.",
 			},
+			"motd_file": {
+				Type:        schema.TypeString,
+				ForceNew:    true,
+				Optional:    true,
+				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.",
+			},
 		},
 	}
 }
