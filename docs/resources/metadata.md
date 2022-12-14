@@ -29,7 +29,7 @@ resource "coder_metadata" "pod_info" {
   count       = data.coder_workspace.me.start_count
   resource_id = kubernetes_pod.dev[0].id
   # (Enterprise-only) this resource consumes 200 quota units
-  cost = 200
+  daily_cost = 200
   item {
     key   = "description"
     value = "This description will show up in the Coder dashboard."
