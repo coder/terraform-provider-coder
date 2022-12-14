@@ -156,6 +156,15 @@ func appResource() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{"command"},
 			},
+			"external": {
+				Type: schema.TypeBool,
+				Description: "Specifies whether \"url\" is opened on the client machine " +
+					"instead of proxied through the workspace.",
+				Default:       false,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"healthcheck", "command", "subdomain", "share"},
+			},
 			"healthcheck": {
 				Type:          schema.TypeSet,
 				Description:   "HTTP health checking to determine the application readiness.",
