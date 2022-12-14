@@ -29,7 +29,7 @@ resource "coder_app" "code-server" {
   agent_id     = coder_agent.dev.id
   slug         = "code-server"
   display_name = "VS Code"
-  icon         = data.coder_workspace.me.access_url + "/icons/vscode.svg"
+  icon         = data.coder_workspace.me.access_url + "/icon/code.svg"
   url          = "http://localhost:13337"
   share        = "owner"
   subdomain    = false
@@ -70,7 +70,7 @@ resource "coder_app" "intellij" {
 - `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either "command" or "url" may be specified, but not both.
 - `display_name` (String) A display name to identify the app. Defaults to the slug.
 - `healthcheck` (Block Set, Max: 1) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
-- `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icons/<path>"`.
+- `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a built-in icon with `data.coder_workspace.me.access_url + "/icon/<path>"`.
 - `name` (String, Deprecated) A display name to identify the app.
 - `relative_path` (Boolean, Deprecated) Specifies whether the URL will be accessed via a relative path or wildcard. Use if wildcard routing is unavailable. Defaults to true.
 - `share` (String) Determines the "level" which the application is shared at. Valid levels are "owner" (default), "authenticated" and "public". Level "owner" disables sharing on the app, so only the workspace owner can access it. Level "authenticated" shares the app with all authenticated users. Level "public" shares it with any user, including unauthenticated users. Permitted application sharing levels can be configured site-wide via a flag on `coder server` (Enterprise only).
