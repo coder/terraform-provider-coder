@@ -56,7 +56,7 @@ func appResource() *schema.Resource {
 				Type: schema.TypeString,
 				Description: "A URL to an icon that will display in the dashboard. View built-in " +
 					"icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a " +
-					"built-in icon with `data.coder_workspace.me.access_url + \"/icons/<path>\"`.",
+					"built-in icon with `data.coder_workspace.me.access_url + \"/icon/<path>\"`.",
 				ForceNew: true,
 				Optional: true,
 				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
