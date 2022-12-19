@@ -56,7 +56,7 @@ func appResource() *schema.Resource {
 				Type: schema.TypeString,
 				Description: "A URL to an icon that will display in the dashboard. View built-in " +
 					"icons here: https://github.com/coder/coder/tree/main/site/static/icons. Use a " +
-					"built-in icon with `data.coder_workspace.me.access_url + \"/icons/<path>\"`.",
+					"built-in icon with `data.coder_workspace.me.access_url + \"/icon/<path>\"`.",
 				ForceNew: true,
 				Optional: true,
 				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
@@ -155,6 +155,15 @@ func appResource() *schema.Resource {
 				ForceNew:      true,
 				Optional:      true,
 				ConflictsWith: []string{"command"},
+			},
+			"external": {
+				Type: schema.TypeBool,
+				Description: "Specifies whether \"url\" is opened on the client machine " +
+					"instead of proxied through the workspace.",
+				Default:       false,
+				ForceNew:      true,
+				Optional:      true,
+				ConflictsWith: []string{"healthcheck", "command", "subdomain", "share"},
 			},
 			"healthcheck": {
 				Type:          schema.TypeSet,
