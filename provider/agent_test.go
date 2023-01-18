@@ -31,9 +31,11 @@ func TestAgent(t *testing.T) {
 						hi = "test"
 					}
 					startup_script = "echo test"
+					startup_script_timeout = 120
 					troubleshooting_url = "https://example.com/troubleshoot"
 					motd_file = "/etc/motd"
 					shutdown_script = "echo bye bye"
+					allow_login_before_ready = false
 				}
 				`,
 			Check: func(state *terraform.State) error {
@@ -49,10 +51,12 @@ func TestAgent(t *testing.T) {
 					"dir",
 					"env.hi",
 					"startup_script",
+					"startup_script_timeout",
 					"connection_timeout",
 					"troubleshooting_url",
 					"motd_file",
 					"shutdown_script",
+					"allow_login_before_ready",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)
