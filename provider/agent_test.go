@@ -35,7 +35,7 @@ func TestAgent(t *testing.T) {
 					troubleshooting_url = "https://example.com/troubleshoot"
 					motd_file = "/etc/motd"
 					shutdown_script = "echo bye bye"
-					allow_login_before_ready = false
+					delay_login_until_ready = false
 				}
 				`,
 			Check: func(state *terraform.State) error {
@@ -56,7 +56,7 @@ func TestAgent(t *testing.T) {
 					"troubleshooting_url",
 					"motd_file",
 					"shutdown_script",
-					"allow_login_before_ready",
+					"delay_login_until_ready",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)
