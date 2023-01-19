@@ -77,7 +77,7 @@ func agentResource() *schema.Resource {
 			},
 			"startup_script": {
 				ForceNew:    true,
-				Description: "A script to run after the agent starts. The script should exit when it is done to signal that the agent is ready to accept connections.",
+				Description: "A script to run after the agent starts. The script should exit when it is done to signal that the agent is ready.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -122,12 +122,12 @@ func agentResource() *schema.Resource {
 				Optional:    true,
 				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.",
 			},
-			"allow_login_before_ready": {
+			"delay_login_until_ready": {
 				Type:        schema.TypeBool,
-				Default:     true, // TODO(mafredri): Change default to false in a future version.
+				Default:     false, // Change default value to true in a future release.
 				ForceNew:    true,
 				Optional:    true,
-				Description: "Allow users to login to the workspace before the agent is ready. Note that, when enabled, the agent could still be executing the startup script and the workspace in an incomplete state when logging in.",
+				Description: "This option defines whether or not user logins to the workspace agent are delayed until the agent is ready. When disabled, users may see an incomplete workspace upon logging in.",
 			},
 		},
 	}
