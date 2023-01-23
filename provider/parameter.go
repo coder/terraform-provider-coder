@@ -300,12 +300,12 @@ func (v *Validation) Valid(typ, value string) error {
 		if err != nil {
 			return fmt.Errorf("compile regex %q: %s", regex, err)
 		}
-		matched := regex.MatchString(value)
-		if !matched {
-			return fmt.Errorf("value %q does not match %q", value, regex)
-		}
 		if v.Error == "" {
 			return fmt.Errorf("an error must be specified with a regex validation")
+		}
+		matched := regex.MatchString(value)
+		if !matched {
+			return fmt.Errorf("%s (value %q does not match %q)", v.Error, value, regex)
 		}
 	case "number":
 		num, err := strconv.Atoi(value)
