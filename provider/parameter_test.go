@@ -294,7 +294,7 @@ func TestValueValidatesType(t *testing.T) {
 		Name:  "InvalidNumber",
 		Type:  "number",
 		Value: "hi",
-		Error: regexp.MustCompile("parse value hi as int"),
+		Error: regexp.MustCompile("is not a number"),
 	}, {
 		Name:  "NumberBelowMin",
 		Type:  "number",
@@ -307,6 +307,11 @@ func TestValueValidatesType(t *testing.T) {
 		Value: "1",
 		Max:   0,
 		Error: regexp.MustCompile("is more than the maximum"),
+	}, {
+		Name:  "InvalidBool",
+		Type:  "bool",
+		Value: "cat",
+		Error: regexp.MustCompile("boolean value can be either"),
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
@@ -318,7 +323,7 @@ func TestValueValidatesType(t *testing.T) {
 			}
 			err := v.Valid(tc.Type, tc.Value)
 			if tc.Error != nil {
-				require.True(t, tc.Error.MatchString(err.Error()))
+				require.True(t, tc.Error.MatchString(err.Error()), "got: %s", err.Error())
 			}
 		})
 	}
