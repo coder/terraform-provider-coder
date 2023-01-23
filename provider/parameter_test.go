@@ -267,7 +267,8 @@ func TestValueValidatesType(t *testing.T) {
 		Name,
 		Type,
 		Value,
-		Regex string
+		Regex,
+		RegexError string
 		Min,
 		Max int
 		Error *regexp.Regexp
@@ -312,6 +313,13 @@ func TestValueValidatesType(t *testing.T) {
 		Type:  "bool",
 		Value: "cat",
 		Error: regexp.MustCompile("boolean value can be either"),
+	}, {
+		Name:       "BadStringWithRegex",
+		Type:       "string",
+		Regex:      "banana",
+		RegexError: "bad fruit",
+		Value:      "apple",
+		Error:      regexp.MustCompile(`bad fruit`),
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
@@ -320,6 +328,7 @@ func TestValueValidatesType(t *testing.T) {
 				Min:   tc.Min,
 				Max:   tc.Max,
 				Regex: tc.Regex,
+				Error: tc.RegexError,
 			}
 			err := v.Valid(tc.Type, tc.Value)
 			if tc.Error != nil {
