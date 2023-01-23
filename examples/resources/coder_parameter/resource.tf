@@ -28,16 +28,19 @@ data "coder_parameter" "is_public_instance" {
   name = "Is public instance?"
   icon = "/icon/docker.svg"
   type = "bool"
+  default = false
 }
 
 data "coder_parameter" "cores" {
   name = "CPU Cores"
   icon = "/icon/"
+  default = 3
 }
 
 data "coder_parameter" "disk_size" {
   name = "Disk Size"
   type = "number"
+  default = "9"
   validation {
     # This can apply to number and string types.
     min = 0
