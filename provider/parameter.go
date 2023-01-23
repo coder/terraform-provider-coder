@@ -288,6 +288,9 @@ func (v *Validation) Valid(typ, value string) error {
 	}
 	switch typ {
 	case "bool":
+		if value != "true" && value != "false" {
+			return fmt.Errorf(`boolean value can be either "true" or "false"`)
+		}
 		return nil
 	case "string":
 		if v.Regex == "" {
@@ -307,13 +310,13 @@ func (v *Validation) Valid(typ, value string) error {
 	case "number":
 		num, err := strconv.Atoi(value)
 		if err != nil {
-			return fmt.Errorf("parse value %s as int: %s", value, err)
+			return fmt.Errorf("value %q is not a number", value)
 		}
 		if num < v.Min {
-			return fmt.Errorf("provided value %d is less than the minimum %d", num, v.Min)
+			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
 		}
 		if num > v.Max {
-			return fmt.Errorf("provided value %d is more than the maximum %d", num, v.Max)
+			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
 		}
 	}
 	return nil
