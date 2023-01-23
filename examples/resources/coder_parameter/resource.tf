@@ -24,8 +24,8 @@ data "coder_parameter" "ami" {
   }
 }
 
-data "coder_parameter" "image" {
-  name = "Docker Image"
+data "coder_parameter" "is_public_instance" {
+  name = "Is public instance?"
   icon = "/icon/docker.svg"
   type = "bool"
 }
