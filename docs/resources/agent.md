@@ -48,9 +48,9 @@ resource "kubernetes_pod" "dev" {
 
 - `auth` (String) The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".
 - `connection_timeout` (Number) Time in seconds until the agent is marked as timed out when a connection with the server cannot be established. A value of zero never marks the agent as timed out.
-- `delay_login_until_ready` (Boolean) This option defines whether or not user logins to the workspace agent are delayed until the agent is ready. When disabled, users may see an incomplete workspace upon logging in.
 - `dir` (String) The starting directory when a user creates a shell session. Defaults to $HOME.
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
+- `login_before_ready` (Boolean) This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.
 - `motd_file` (String) The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.
 - `shutdown_script` (String) A script to run before the agent is stopped. The script should exit when it is done to signal that the workspace can be stopped.
 - `startup_script` (String) A script to run after the agent starts. The script should exit when it is done to signal that the agent is ready.

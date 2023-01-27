@@ -122,12 +122,12 @@ func agentResource() *schema.Resource {
 				Optional:    true,
 				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.",
 			},
-			"delay_login_until_ready": {
+			"login_before_ready": {
 				Type:        schema.TypeBool,
-				Default:     false, // Change default value to true in a future release.
+				Default:     true, // Change default value to false in a future release.
 				ForceNew:    true,
 				Optional:    true,
-				Description: "This option defines whether or not user logins to the workspace agent are delayed until the agent is ready. When disabled, users may see an incomplete workspace upon logging in.",
+				Description: "This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.",
 			},
 		},
 	}
