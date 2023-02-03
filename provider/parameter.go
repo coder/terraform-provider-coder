@@ -242,9 +242,14 @@ func parameterDataSource() *schema.Resource {
 							Description:  "The maximum of a number parameter.",
 							RequiredWith: []string{"validation.0.min"},
 						},
+						"monotonic": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Number monotonicity, either increasing or decreasing.",
+						},
 						"regex": {
 							Type:          schema.TypeString,
-							ConflictsWith: []string{"validation.0.min", "validation.0.max"},
+							ConflictsWith: []string{"validation.0.min", "validation.0.max", "validation.0.monotonic"},
 							Description:   "A regex for the input parameter to match against.",
 							Optional:      true,
 						},
