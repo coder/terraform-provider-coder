@@ -25,11 +25,18 @@ type Option struct {
 }
 
 type Validation struct {
-	Min   int
-	Max   int
+	Min       int
+	Max       int
+	Monotonic string
+
 	Regex string
 	Error string
 }
+
+const (
+	ValidationMonotonicIncreasing = "increasing"
+	ValidationMonotonicDecreasing = "decreasing"
+)
 
 type Parameter struct {
 	Value       string
@@ -317,6 +324,9 @@ func (v *Validation) Valid(typ, value string) error {
 		}
 		if num > v.Max {
 			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
+		}
+		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
+			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
 		}
 	}
 	return nil

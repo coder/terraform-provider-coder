@@ -271,7 +271,8 @@ func TestValueValidatesType(t *testing.T) {
 		RegexError string
 		Min,
 		Max int
-		Error *regexp.Regexp
+		Monotonic string
+		Error     *regexp.Regexp
 	}{{
 		Name:  "StringWithMin",
 		Type:  "string",
@@ -320,18 +321,42 @@ func TestValueValidatesType(t *testing.T) {
 		RegexError: "bad fruit",
 		Value:      "apple",
 		Error:      regexp.MustCompile(`bad fruit`),
+	}, {
+		Name:      "InvalidMonotonicity",
+		Type:      "number",
+		Value:     "1",
+		Min:       0,
+		Max:       2,
+		Monotonic: "foobar",
+		Error:     regexp.MustCompile(`number monotonicity can be either "increasing" or "decreasing"`),
+	}, {
+		Name:      "IncreasingMonotonicity",
+		Type:      "number",
+		Value:     "1",
+		Min:       0,
+		Max:       2,
+		Monotonic: "increasing",
+	}, {
+		Name:      "DecreasingMonotonicity",
+		Type:      "number",
+		Value:     "1",
+		Min:       0,
+		Max:       2,
+		Monotonic: "decreasing",
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			v := &provider.Validation{
-				Min:   tc.Min,
-				Max:   tc.Max,
-				Regex: tc.Regex,
-				Error: tc.RegexError,
+				Min:       tc.Min,
+				Max:       tc.Max,
+				Monotonic: tc.Monotonic,
+				Regex:     tc.Regex,
+				Error:     tc.RegexError,
 			}
 			err := v.Valid(tc.Type, tc.Value)
 			if tc.Error != nil {
+				require.Error(t, err)
 				require.True(t, tc.Error.MatchString(err.Error()), "got: %s", err.Error())
 			}
 		})
