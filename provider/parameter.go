@@ -25,11 +25,18 @@ type Option struct {
 }
 
 type Validation struct {
-	Min   int
-	Max   int
+	Min       int
+	Max       int
+	Monotonic string
+
 	Regex string
 	Error string
 }
+
+const (
+	ValidationMonotonicIncreasing = "increasing"
+	ValidationMonotonicDecreasing = "decreasing"
+)
 
 type Parameter struct {
 	Value       string
@@ -235,9 +242,14 @@ func parameterDataSource() *schema.Resource {
 							Description:  "The maximum of a number parameter.",
 							RequiredWith: []string{"validation.0.min"},
 						},
+						"monotonic": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "Number monotonicity, either increasing or decreasing.",
+						},
 						"regex": {
 							Type:          schema.TypeString,
-							ConflictsWith: []string{"validation.0.min", "validation.0.max"},
+							ConflictsWith: []string{"validation.0.min", "validation.0.max", "validation.0.monotonic"},
 							Description:   "A regex for the input parameter to match against.",
 							Optional:      true,
 						},
@@ -317,6 +329,9 @@ func (v *Validation) Valid(typ, value string) error {
 		}
 		if num > v.Max {
 			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
+		}
+		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
+			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
 		}
 	}
 	return nil

@@ -40,10 +40,23 @@ data "coder_parameter" "cores" {
 data "coder_parameter" "disk_size" {
   name = "Disk Size"
   type = "number"
-  default = "9"
+  default = "5"
   validation {
-    # This can apply to number and string types.
+    # This can apply to number.
     min = 0
     max = 10
+    monotonic = "increasing"
+  }
+}
+
+data "coder_parameter" "cat_lives" {
+  name = "Cat Live"
+  type = "number"
+  default = "9"
+  validation {
+    # This can apply to number.
+    min = 0
+    max = 10
+    monotonic = "decreasing"
   }
 }
