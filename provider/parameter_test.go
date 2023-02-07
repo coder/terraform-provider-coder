@@ -25,10 +25,10 @@ data "coder_parameter" "region" {
 	name = "Region"
 	type = "string"
 	description = "Some option!"
-	description_markdown = <<EOT
-# Select the machine image
-See the [registry](https://container.registry.blah/namespace) for options.
-EOT
+	description_markdown = <<-EOT
+		# Select the machine image
+		See the [registry](https://container.registry.blah/namespace) for options.
+		EOT
 	mutable = true
 	icon = "/icon/region.svg"
 	option {

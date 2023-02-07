@@ -18,10 +18,10 @@ data "coder_parameter" "example" {
 data "coder_parameter" "ami" {
   name = "Machine Image"
   description = "Provide the machine image."
-  description_markdown = <<EOT
-# Select the machine image
-See the [registry](https://container.registry.blah/namespace) for options.
-  EOT
+  description_markdown = <<-EOT
+    # Select the machine image
+    See the [registry](https://container.registry.blah/namespace) for options.
+    EOT
   option {
     value = "ami-xxxxxxxx"
     name  = "Ubuntu"
