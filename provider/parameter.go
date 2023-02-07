@@ -39,15 +39,16 @@ const (
 )
 
 type Parameter struct {
-	Value       string
-	Name        string
-	Description string
-	Type        string
-	Mutable     bool
-	Default     string
-	Icon        string
-	Option      []Option
-	Validation  []Validation
+	Value               string
+	Name                string
+	Description         string
+	DescriptionMarkdown string
+	Type                string
+	Mutable             bool
+	Default             string
+	Icon                string
+	Option              []Option
+	Validation          []Validation
 }
 
 func parameterDataSource() *schema.Resource {
@@ -58,25 +59,27 @@ func parameterDataSource() *schema.Resource {
 
 			var parameter Parameter
 			err := mapstructure.Decode(struct {
-				Value       interface{}
-				Name        interface{}
-				Description interface{}
-				Type        interface{}
-				Mutable     interface{}
-				Default     interface{}
-				Icon        interface{}
-				Option      interface{}
-				Validation  interface{}
+				Value               interface{}
+				Name                interface{}
+				Description         interface{}
+				DescriptionMarkdown interface{}
+				Type                interface{}
+				Mutable             interface{}
+				Default             interface{}
+				Icon                interface{}
+				Option              interface{}
+				Validation          interface{}
 			}{
-				Value:       rd.Get("value"),
-				Name:        rd.Get("name"),
-				Description: rd.Get("description"),
-				Type:        rd.Get("type"),
-				Mutable:     rd.Get("mutable"),
-				Default:     rd.Get("default"),
-				Icon:        rd.Get("icon"),
-				Option:      rd.Get("option"),
-				Validation:  rd.Get("validation"),
+				Value:               rd.Get("value"),
+				Name:                rd.Get("name"),
+				Description:         rd.Get("description"),
+				DescriptionMarkdown: rd.Get("description_markdown"),
+				Type:                rd.Get("type"),
+				Mutable:             rd.Get("mutable"),
+				Default:             rd.Get("default"),
+				Icon:                rd.Get("icon"),
+				Option:              rd.Get("option"),
+				Validation:          rd.Get("validation"),
 			}, &parameter)
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
@@ -141,6 +144,11 @@ func parameterDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "Describe what this parameter does.",
+			},
+			"description_markdown": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Alternative description with Markdown tags.",
 			},
 			"type": {
 				Type:         schema.TypeString,
