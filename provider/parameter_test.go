@@ -24,8 +24,7 @@ func TestParameter(t *testing.T) {
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "string"
-	description = "Some option!"
-	description_markdown = <<-EOT
+	description = <<-EOT
 		# Select the machine image
 		See the [registry](https://container.registry.blah/namespace) for options.
 		EOT
@@ -50,8 +49,7 @@ data "coder_parameter" "region" {
 			for key, value := range map[string]interface{}{
 				"name":                 "Region",
 				"type":                 "string",
-				"description":          "Some option!",
-				"description_markdown": "# Select the machine image\nSee the [registry](https://container.registry.blah/namespace) for options.\n",
+				"description":          "# Select the machine image\nSee the [registry](https://container.registry.blah/namespace) for options.\n",
 				"mutable":              "true",
 				"icon":                 "/icon/region.svg",
 				"option.0.name":        "US Central",
