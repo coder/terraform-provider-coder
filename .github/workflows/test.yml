@@ -5,10 +5,10 @@ name: Tests
 on:
   pull_request:
     paths-ignore:
-      - 'README.md'
+      - "README.md"
   push:
     paths-ignore:
-      - 'README.md'
+      - "README.md"
 
 jobs:
   build:
@@ -16,23 +16,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+        id: go
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: '1.17'
-      id: go
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
+      - name: Get dependencies
+        run: |
+          go mod download
 
-    - name: Get dependencies
-      run: |
-        go mod download
-
-    - name: Build
-      run: |
-        go build -v .
+      - name: Build
+        run: |
+          go build -v .
 
   # run acceptance tests in a matrix with Terraform core versions
   test:
@@ -44,31 +43,65 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - '1.0.*'
-          - '1.1.*'
+          - "1.0.*"
+          - "1.1.*"
+          - "1.2.*"
+          - "1.3.*"
     steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+        id: go
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: '1.17'
-      id: go
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
 
-    - uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: ${{ matrix.terraform }}
-        terraform_wrapper: false
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v3
+      - name: Get dependencies
+        run: |
+          go mod download
 
-    - name: Get dependencies
-      run: |
-        go mod download
-        
-    - name: TF acceptance tests
-      timeout-minutes: 10
-      env:
-        TF_ACC: "1"
-      run: |
-        go test -v -cover ./provider/
+      - name: TF acceptance tests
+        timeout-minutes: 10
+        env:
+          TF_ACC: "1"
+        run: |
+          go test -v -cover ./provider/
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+        id: go
+
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "1.3.*"
+          terraform_wrapper: false
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: |
+          go mod download
+
+      - name: Lint fmt
+        run: |
+          make fmt
+          git diff --exit-code
+
+      - name: Lint gen
+        run: |
+          make gen
+          git diff --exit-code
