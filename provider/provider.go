@@ -35,6 +35,11 @@ func New() *schema.Provider {
 					return nil, nil
 				},
 			},
+			"feature_use_managed_variables": {
+				Type:        schema.TypeBool,
+				Description: "Feature: use managed Terraform variables. If disabled, Terraform variables will be included in legacy Parameter Schema.",
+				Optional:    true,
+			},
 		},
 		ConfigureContextFunc: func(c context.Context, resourceData *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			rawURL, ok := resourceData.Get("url").(string)

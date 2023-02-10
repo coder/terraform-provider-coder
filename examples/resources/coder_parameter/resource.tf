@@ -1,3 +1,7 @@
+provider "coder" {
+  feature_use_managed_variables = true
+}
+
 data "coder_parameter" "example" {
   name        = "Region"
   description = "Specify a region to place your workspace."
