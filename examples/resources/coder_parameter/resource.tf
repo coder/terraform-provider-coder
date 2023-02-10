@@ -16,7 +16,7 @@ data "coder_parameter" "example" {
 }
 
 data "coder_parameter" "ami" {
-  name = "Machine Image"
+  name        = "Machine Image"
   description = <<-EOT
     # Provide the machine image
     See the [registry](https://container.registry.blah/namespace) for options.
@@ -29,39 +29,39 @@ data "coder_parameter" "ami" {
 }
 
 data "coder_parameter" "is_public_instance" {
-  name = "Is public instance?"
-  type = "bool"
-  icon = "/icon/docker.svg"
+  name    = "Is public instance?"
+  type    = "bool"
+  icon    = "/icon/docker.svg"
   default = false
 }
 
 data "coder_parameter" "cores" {
-  name = "CPU Cores"
-  type = "number"
-  icon = "/icon/cpu.svg"
+  name    = "CPU Cores"
+  type    = "number"
+  icon    = "/icon/cpu.svg"
   default = 3
 }
 
 data "coder_parameter" "disk_size" {
-  name = "Disk Size"
-  type = "number"
+  name    = "Disk Size"
+  type    = "number"
   default = "5"
   validation {
     # This can apply to number.
-    min = 0
-    max = 10
+    min       = 0
+    max       = 10
     monotonic = "increasing"
   }
 }
 
 data "coder_parameter" "cat_lives" {
-  name = "Cat Lives"
-  type = "number"
+  name    = "Cat Lives"
+  type    = "number"
   default = "9"
   validation {
     # This can apply to number.
-    min = 0
-    max = 10
+    min       = 0
+    max       = 10
     monotonic = "decreasing"
   }
 }
