@@ -35,6 +35,7 @@ func TestAgent(t *testing.T) {
 					troubleshooting_url = "https://example.com/troubleshoot"
 					motd_file = "/etc/motd"
 					shutdown_script = "echo bye bye"
+					shutdown_script_timeout = 120
 					login_before_ready = false
 				}
 				`,
@@ -56,6 +57,7 @@ func TestAgent(t *testing.T) {
 					"troubleshooting_url",
 					"motd_file",
 					"shutdown_script",
+					"shutdown_script_timeout",
 					"login_before_ready",
 				} {
 					value := resource.Primary.Attributes[key]
