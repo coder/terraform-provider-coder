@@ -37,7 +37,7 @@ func New() *schema.Provider {
 			},
 			"feature_use_managed_variables": {
 				Type:        schema.TypeBool,
-				Description: "Feature: user managed Terraform variables. If disabled, Terraform variables will be included in legacy Parameter Schema.",
+				Description: "Feature: use managed Terraform variables. If disabled, Terraform variables will be included in legacy Parameter Schema.",
 				Optional:    true,
 			},
 		},
