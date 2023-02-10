@@ -53,8 +53,9 @@ resource "kubernetes_pod" "dev" {
 - `login_before_ready` (Boolean) This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.
 - `motd_file` (String) The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.
 - `shutdown_script` (String) A script to run before the agent is stopped. The script should exit when it is done to signal that the workspace can be stopped.
+- `shutdown_script_timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out during shutdown, this happens when the shutdown script has not completed (exited) in the given time.
 - `startup_script` (String) A script to run after the agent starts. The script should exit when it is done to signal that the agent is ready.
-- `startup_script_timeout` (Number) Time in seconds until the agent ready status is marked as timed out, this happens when the startup script has not completed (exited) in the given time.
+- `startup_script_timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out during start, this happens when the startup script has not completed (exited) in the given time.
 - `troubleshooting_url` (String) A URL to a document with instructions for troubleshooting problems with the agent.
 
 ### Read-Only

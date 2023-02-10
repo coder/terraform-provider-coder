@@ -86,7 +86,7 @@ func agentResource() *schema.Resource {
 				Default:      300,
 				ForceNew:     true,
 				Optional:     true,
-				Description:  "Time in seconds until the agent ready status is marked as timed out, this happens when the startup script has not completed (exited) in the given time.",
+				Description:  "Time in seconds until the agent lifecycle status is marked as timed out during start, this happens when the startup script has not completed (exited) in the given time.",
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"shutdown_script": {
@@ -94,6 +94,14 @@ func agentResource() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 				Description: "A script to run before the agent is stopped. The script should exit when it is done to signal that the workspace can be stopped.",
+			},
+			"shutdown_script_timeout": {
+				Type:         schema.TypeInt,
+				Default:      300,
+				ForceNew:     true,
+				Optional:     true,
+				Description:  "Time in seconds until the agent lifecycle status is marked as timed out during shutdown, this happens when the shutdown script has not completed (exited) in the given time.",
+				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"token": {
 				ForceNew:    true,
