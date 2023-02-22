@@ -69,6 +69,7 @@ func New() *schema.Provider {
 			"coder_workspace":   workspaceDataSource(),
 			"coder_provisioner": provisionerDataSource(),
 			"coder_parameter":   parameterDataSource(),
+			"coder_git_auth":    gitAuthDataSource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"coder_agent":          agentResource(),
