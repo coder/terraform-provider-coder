@@ -122,6 +122,13 @@ func parameterDataSource() *schema.Resource {
 					values[option.Value] = nil
 					names[option.Name] = nil
 				}
+
+				if parameter.Default != "" {
+					_, defaultIsValid := values[parameter.Default]
+					if !defaultIsValid {
+						return diag.Errorf("default value %q must be defined as one of options", parameter.Default)
+					}
+				}
 			}
 
 			return nil
@@ -156,10 +163,9 @@ func parameterDataSource() *schema.Resource {
 				Description: "Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!",
 			},
 			"default": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				Description:  "A default value for the parameter.",
-				ExactlyOneOf: []string{"option"},
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "A default value for the parameter.",
 			},
 			"icon": {
 				Type: schema.TypeString,
