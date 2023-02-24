@@ -174,7 +174,38 @@ data "coder_parameter" "region" {
 			}
 		},
 	}, {
-		Name: "DefaultWithOption",
+		Name: "ValidDefaultWithOptions",
+		Config: `
+data "coder_parameter" "region" {
+	name = "Region"
+	type = "string"
+	default = "2"
+	option {
+		name = "1"
+		value = "1"
+		icon = "/icon/code.svg"
+		description = "Something!"
+	}
+	option {
+		name = "2"
+		value = "2"
+	}
+}
+`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                 "Region",
+				"option.#":             "2",
+				"option.0.name":        "1",
+				"option.0.value":       "1",
+				"option.0.icon":        "/icon/code.svg",
+				"option.0.description": "Something!",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "InvalidDefaultWithOption",
 		Config: `
 data "coder_parameter" "region" {
 	name = "Region"
@@ -189,7 +220,7 @@ data "coder_parameter" "region" {
 	}
 }
 `,
-		ExpectError: regexp.MustCompile("Invalid combination of arguments"),
+		ExpectError: regexp.MustCompile("must be defined as one of options"),
 	}, {
 		Name: "SingleOption",
 		Config: `
