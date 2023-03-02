@@ -80,6 +80,9 @@ func parameterDataSource() *schema.Resource {
 				Option:      rd.Get("option"),
 				Validation:  rd.Get("validation"),
 				Required: func() bool {
+					// This hack allows for checking if the "default" field is present in the .tf file.
+					// If "default" is missing or is "null", then it means that this field is required,
+					// and user must provide a value for it.
 					val := rd.GetRawConfig().AsValueMap()["default"].IsNull()
 					rd.Set("required", val)
 					return val
