@@ -48,6 +48,7 @@ type Parameter struct {
 	Icon        string
 	Option      []Option
 	Validation  []Validation
+	Required    bool
 }
 
 func parameterDataSource() *schema.Resource {
@@ -67,6 +68,7 @@ func parameterDataSource() *schema.Resource {
 				Icon        interface{}
 				Option      interface{}
 				Validation  interface{}
+				Required    interface{}
 			}{
 				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
@@ -77,6 +79,11 @@ func parameterDataSource() *schema.Resource {
 				Icon:        rd.Get("icon"),
 				Option:      rd.Get("option"),
 				Validation:  rd.Get("validation"),
+				Required: func() bool {
+					val := rd.GetRawConfig().AsValueMap()["default"].IsNull()
+					rd.Set("required", val)
+					return val
+				}(),
 			}, &parameter)
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
@@ -130,7 +137,6 @@ func parameterDataSource() *schema.Resource {
 					}
 				}
 			}
-
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
@@ -267,6 +273,11 @@ func parameterDataSource() *schema.Resource {
 						},
 					},
 				},
+			},
+			"required": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether this value is required.",
 			},
 		},
 	}
