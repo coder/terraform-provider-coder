@@ -283,7 +283,7 @@ data "coder_parameter" "region" {
 			}
 		},
 	}, {
-		Name: "OptionalParameterDefaultNull",
+		Name: "RequiredParameterDefaultNull",
 		Config: `
 data "coder_parameter" "region" {
 	name = "Region"
@@ -317,13 +317,22 @@ data "coder_parameter" "region" {
 			}
 		},
 	}, {
-		Name: "RequiredParameterDefaultEmpty",
+		Name: "OptionalParameterDefaultNotEmpty",
 		Config: `
 data "coder_parameter" "region" {
 	name = "Region"
 	type = "string"
 	default = "us-east-1"
 }`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":     "Region",
+				"type":     "string",
+				"optional": "true",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
