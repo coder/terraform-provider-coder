@@ -277,13 +277,13 @@ data "coder_parameter" "region" {
 			for key, expected := range map[string]string{
 				"name":     "Region",
 				"type":     "string",
-				"required": "true",
+				"optional": "false",
 			} {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}
 		},
 	}, {
-		Name: "RequiredParameterDefaultNull",
+		Name: "OptionalParameterDefaultNull",
 		Config: `
 data "coder_parameter" "region" {
 	name = "Region"
@@ -294,13 +294,13 @@ data "coder_parameter" "region" {
 			for key, expected := range map[string]string{
 				"name":     "Region",
 				"type":     "string",
-				"required": "true",
+				"optional": "false",
 			} {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}
 		},
 	}, {
-		Name: "RequiredParameterDefaultEmpty",
+		Name: "OptionalParameterDefaultEmpty",
 		Config: `
 data "coder_parameter" "region" {
 	name = "Region"
@@ -311,7 +311,7 @@ data "coder_parameter" "region" {
 			for key, expected := range map[string]string{
 				"name":     "Region",
 				"type":     "string",
-				"required": "false",
+				"optional": "true",
 			} {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}

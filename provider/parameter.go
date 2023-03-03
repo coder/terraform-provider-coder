@@ -48,7 +48,7 @@ type Parameter struct {
 	Icon        string
 	Option      []Option
 	Validation  []Validation
-	Required    bool
+	Optional    bool
 }
 
 func parameterDataSource() *schema.Resource {
@@ -68,7 +68,7 @@ func parameterDataSource() *schema.Resource {
 				Icon        interface{}
 				Option      interface{}
 				Validation  interface{}
-				Required    interface{}
+				Optional    interface{}
 			}{
 				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
@@ -79,12 +79,12 @@ func parameterDataSource() *schema.Resource {
 				Icon:        rd.Get("icon"),
 				Option:      rd.Get("option"),
 				Validation:  rd.Get("validation"),
-				Required: func() bool {
+				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
 					// and user must provide a value for it.
-					val := rd.GetRawConfig().AsValueMap()["default"].IsNull()
-					rd.Set("required", val)
+					val := !rd.GetRawConfig().AsValueMap()["default"].IsNull()
+					rd.Set("optional", val)
 					return val
 				}(),
 			}, &parameter)
@@ -277,10 +277,10 @@ func parameterDataSource() *schema.Resource {
 					},
 				},
 			},
-			"required": {
+			"optional": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Whether this value is required.",
+				Description: "Whether this value is optional.",
 			},
 		},
 	}
