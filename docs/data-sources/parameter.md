@@ -32,6 +32,7 @@ Use this data source to configure editable options for workspaces.
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `optional` (Boolean) Whether this value is optional.
 - `value` (String) The output value of the parameter.
 
 <a id="nestedblock--option"></a>

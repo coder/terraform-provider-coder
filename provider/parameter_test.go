@@ -266,6 +266,73 @@ data "coder_parameter" "region" {
 }
 `,
 		ExpectError: regexp.MustCompile("cannot have the same value"),
+	}, {
+		Name: "RequiredParameterNoDefault",
+		Config: `
+data "coder_parameter" "region" {
+	name = "Region"
+	type = "string"
+}`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":     "Region",
+				"type":     "string",
+				"optional": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "RequiredParameterDefaultNull",
+		Config: `
+data "coder_parameter" "region" {
+	name = "Region"
+	type = "string"
+	default = null
+}`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":     "Region",
+				"type":     "string",
+				"optional": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "OptionalParameterDefaultEmpty",
+		Config: `
+data "coder_parameter" "region" {
+	name = "Region"
+	type = "string"
+	default = ""
+}`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":     "Region",
+				"type":     "string",
+				"optional": "true",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "OptionalParameterDefaultNotEmpty",
+		Config: `
+data "coder_parameter" "region" {
+	name = "Region"
+	type = "string"
+	default = "us-east-1"
+}`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":     "Region",
+				"type":     "string",
+				"optional": "true",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {

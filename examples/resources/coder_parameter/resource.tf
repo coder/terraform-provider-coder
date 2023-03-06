@@ -70,3 +70,8 @@ data "coder_parameter" "cat_lives" {
     monotonic = "decreasing"
   }
 }
+
+data "coder_parameter" "fairy_tale" {
+  name = "Fairy Tale"
+  type = "string"
+}
