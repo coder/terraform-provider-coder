@@ -49,6 +49,8 @@ type Parameter struct {
 	Option      []Option
 	Validation  []Validation
 	Optional    bool
+
+	LegacyVariable string
 }
 
 func parameterDataSource() *schema.Resource {
@@ -69,16 +71,28 @@ func parameterDataSource() *schema.Resource {
 				Option      interface{}
 				Validation  interface{}
 				Optional    interface{}
+
+				LegacyVariable interface{}
 			}{
 				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
 				Description: rd.Get("description"),
 				Type:        rd.Get("type"),
 				Mutable:     rd.Get("mutable"),
-				Default:     rd.Get("default"),
-				Icon:        rd.Get("icon"),
-				Option:      rd.Get("option"),
-				Validation:  rd.Get("validation"),
+				Default: func() interface{} {
+					standardMode := rd.GetRawConfig().AsValueMap()["legacy_variable"].IsNull()
+					if standardMode {
+						return rd.Get("default")
+					}
+
+					// legacy variable is linked
+					legacyVariable := rd.GetRawConfig().AsValueMap()["legacy_variable"].AsString()
+					rd.Set("default", legacyVariable)
+					return legacyVariable
+				}(),
+				Icon:       rd.Get("icon"),
+				Option:     rd.Get("option"),
+				Validation: rd.Get("validation"),
 				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
@@ -87,6 +101,7 @@ func parameterDataSource() *schema.Resource {
 					rd.Set("optional", val)
 					return val
 				}(),
+				LegacyVariable: rd.Get("legacy_variable"),
 			}, &parameter)
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
@@ -281,6 +296,11 @@ func parameterDataSource() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 				Description: "Whether this value is optional.",
+			},
+			"legacy_variable": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The name of the Terraform variable used by legacy parameters. Coder will use it to lookup the parameter value.",
 			},
 		},
 	}
