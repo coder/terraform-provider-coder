@@ -6,7 +6,7 @@ variable "old_account_name" {
 }
 
 data "coder_parameter" "account_name" {
-  name                 = "Account Name"
-  type                 = "string"
+  name            = "Account Name"
+  type            = "string"
   legacy_variable = var.old_account_name
 }
