@@ -8,5 +8,5 @@ variable "old_account_name" {
 data "coder_parameter" "account_name" {
   name                 = "Account Name"
   type                 = "string"
-  legacy_variable_name = var.old_account_name
+  legacy_variable = var.old_account_name
 }
