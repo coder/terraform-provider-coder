@@ -21,29 +21,29 @@ func TestParameter(t *testing.T) {
 	}{{
 		Name: "FieldsExist",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			description = <<-EOT
-				# Select the machine image
-				See the [registry](https://container.registry.blah/namespace) for options.
-				EOT
-			mutable = true
-			icon = "/icon/region.svg"
-			option {
-				name = "US Central"
-				value = "us-central1-a"
-				icon = "/icon/central.svg"
-				description = "Select for central!"
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				description = <<-EOT
+					# Select the machine image
+					See the [registry](https://container.registry.blah/namespace) for options.
+					EOT
+				mutable = true
+				icon = "/icon/region.svg"
+				option {
+					name = "US Central"
+					value = "us-central1-a"
+					icon = "/icon/central.svg"
+					description = "Select for central!"
+				}
+				option {
+					name = "US East"
+					value = "us-east1-a"
+					icon = "/icon/east.svg"
+					description = "Select for east!"
+				}
 			}
-			option {
-				name = "US East"
-				value = "us-east1-a"
-				icon = "/icon/east.svg"
-				description = "Select for east!"
-			}
-		}
-		`,
+			`,
 		Check: func(state *terraform.ResourceState) {
 			attrs := state.Primary.Attributes
 			for key, value := range map[string]interface{}{
@@ -67,100 +67,100 @@ func TestParameter(t *testing.T) {
 	}, {
 		Name: "ValidationWithOptions",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "number"
-			option {
-				name = "1"
-				value = "1"
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				option {
+					name = "1"
+					value = "1"
+				}
+				validation {
+					regex = "1"
+					error = "Not 1"
+				}
 			}
-			validation {
-				regex = "1"
-				error = "Not 1"
-			}
-		}
-		`,
+			`,
 		ExpectError: regexp.MustCompile("conflicts with option"),
 	}, {
 		Name: "ValidationRegexMissingError",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			default = "hello"
-			validation {
-				regex = "hello"
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				default = "hello"
+				validation {
+					regex = "hello"
+				}
 			}
-		}
-		`,
+			`,
 		ExpectError: regexp.MustCompile("an error must be specified"),
 	}, {
 		Name: "NumberValidation",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "number"
-			default = 2
-			validation {
-				min = 1
-				max = 5
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					min = 1
+					max = 5
+				}
 			}
-		}
-		`,
+			`,
 	}, {
 		Name: "DefaultNotNumber",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "number"
-			default = true
-		}
-		`,
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = true
+			}
+			`,
 		ExpectError: regexp.MustCompile("is not a number"),
 	}, {
 		Name: "DefaultNotBool",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "bool"
-			default = 5
-		}
-		`,
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "bool"
+				default = 5
+			}
+			`,
 		ExpectError: regexp.MustCompile("is not a bool"),
 	}, {
 		Name: "OptionNotBool",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "bool"
-			option {
-				value = 1
-				name = 1
-			}
-			option {
-				value = 2
-				name = 2
-			}
-		}`,
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "bool"
+				option {
+					value = 1
+					name = 1
+				}
+				option {
+					value = 2
+					name = 2
+				}
+			}`,
 		ExpectError: regexp.MustCompile("\"2\" is not a bool"),
 	}, {
 		Name: "MultipleOptions",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			option {
-				name = "1"
-				value = "1"
-				icon = "/icon/code.svg"
-				description = "Something!"
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				option {
+					name = "1"
+					value = "1"
+					icon = "/icon/code.svg"
+					description = "Something!"
+				}
+				option {
+					name = "2"
+					value = "2"
+				}
 			}
-			option {
-				name = "2"
-				value = "2"
-			}
-		}
-		`,
+			`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
 				"name":                 "Region",
@@ -176,22 +176,22 @@ func TestParameter(t *testing.T) {
 	}, {
 		Name: "ValidDefaultWithOptions",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			default = "2"
-			option {
-				name = "1"
-				value = "1"
-				icon = "/icon/code.svg"
-				description = "Something!"
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				default = "2"
+				option {
+					name = "1"
+					value = "1"
+					icon = "/icon/code.svg"
+					description = "Something!"
+				}
+				option {
+					name = "2"
+					value = "2"
+				}
 			}
-			option {
-				name = "2"
-				value = "2"
-			}
-		}
-		`,
+			`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
 				"name":                 "Region",
@@ -207,72 +207,72 @@ func TestParameter(t *testing.T) {
 	}, {
 		Name: "InvalidDefaultWithOption",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			default = "hi"
-			option {
-				name = "1"
-				value = "1"
+			data "coder_parameter" "region" {
+				name = "Region"
+				default = "hi"
+				option {
+					name = "1"
+					value = "1"
+				}
+				option {
+					name = "2"
+					value = "2"
+				}
 			}
-			option {
-				name = "2"
-				value = "2"
-			}
-		}
-		`,
+			`,
 		ExpectError: regexp.MustCompile("must be defined as one of options"),
 	}, {
 		Name: "SingleOption",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			option {
-				name = "1"
-				value = "1"
+			data "coder_parameter" "region" {
+				name = "Region"
+				option {
+					name = "1"
+					value = "1"
+				}
 			}
-		}
-		`,
+			`,
 	}, {
 		Name: "DuplicateOptionName",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			option {
-				name = "1"
-				value = "1"
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				option {
+					name = "1"
+					value = "1"
+				}
+				option {
+					name = "1"
+					value = "2"
+				}
 			}
-			option {
-				name = "1"
-				value = "2"
-			}
-		}
-		`,
+			`,
 		ExpectError: regexp.MustCompile("cannot have the same name"),
 	}, {
 		Name: "DuplicateOptionValue",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			option {
-				name = "1"
-				value = "1"
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				option {
+					name = "1"
+					value = "1"
+				}
+				option {
+					name = "2"
+					value = "1"
+				}
 			}
-			option {
-				name = "2"
-				value = "1"
-			}
-		}
-		`,
+			`,
 		ExpectError: regexp.MustCompile("cannot have the same value"),
 	}, {
 		Name: "RequiredParameterNoDefault",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-		}`,
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+			}`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
 				"name":     "Region",
@@ -285,11 +285,11 @@ func TestParameter(t *testing.T) {
 	}, {
 		Name: "RequiredParameterDefaultNull",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			default = null
-		}`,
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				default = null
+			}`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
 				"name":     "Region",
@@ -302,11 +302,11 @@ func TestParameter(t *testing.T) {
 	}, {
 		Name: "OptionalParameterDefaultEmpty",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			default = ""
-		}`,
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				default = ""
+			}`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
 				"name":     "Region",
@@ -319,11 +319,11 @@ func TestParameter(t *testing.T) {
 	}, {
 		Name: "OptionalParameterDefaultNotEmpty",
 		Config: `
-		data "coder_parameter" "region" {
-			name = "Region"
-			type = "string"
-			default = "us-east-1"
-		}`,
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				default = "us-east-1"
+			}`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
 				"name":     "Region",
@@ -345,14 +345,16 @@ data "coder_parameter" "region" {
 	name = "Region"
 	type = "string"
 	default = "will-be-ignored"
+	legacy_variable_name = "old_region"
 	legacy_variable = var.old_region
 }`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
-				"name":            "Region",
-				"type":            "string",
-				"default":         "fake-region",
-				"legacy_variable": "fake-region",
+				"name":                 "Region",
+				"type":                 "string",
+				"default":              "fake-region",
+				"legacy_variable_name": "old_region",
+				"legacy_variable":      "fake-region",
 			} {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}

@@ -50,7 +50,8 @@ type Parameter struct {
 	Validation  []Validation
 	Optional    bool
 
-	LegacyVariable string
+	LegacyVariableName string
+	LegacyVariable     string
 }
 
 func parameterDataSource() *schema.Resource {
@@ -72,7 +73,8 @@ func parameterDataSource() *schema.Resource {
 				Validation  interface{}
 				Optional    interface{}
 
-				LegacyVariable interface{}
+				LegacyVariableName interface{}
+				LegacyVariable     interface{}
 			}{
 				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
@@ -101,7 +103,8 @@ func parameterDataSource() *schema.Resource {
 					rd.Set("optional", val)
 					return val
 				}(),
-				LegacyVariable: rd.Get("legacy_variable"),
+				LegacyVariableName: rd.Get("legacy_variable_name"),
+				LegacyVariable:     rd.Get("legacy_variable"),
 			}, &parameter)
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
@@ -297,10 +300,17 @@ func parameterDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "Whether this value is optional.",
 			},
+			"legacy_variable_name": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"legacy_variable"},
+				Description:  "Name of the legacy Terraform variable. Coder will use it to lookup the variable value.",
+			},
 			"legacy_variable": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The name of the Terraform variable used by legacy parameters. Coder will use it to lookup the parameter value.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				RequiredWith: []string{"legacy_variable_name"},
+				Description:  "Reference to the Terraform variable. Coder will use it to lookup the default value.",
 			},
 		},
 	}
