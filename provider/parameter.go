@@ -310,7 +310,7 @@ func parameterDataSource() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				RequiredWith: []string{"legacy_variable_name"},
-				Description:  "Reference to the legacy parameter. Coder will use it to lookup the default value.",
+				Description:  "Reference to the Terraform variable. Coder will use it to lookup the default value.",
 			},
 		},
 	}
