@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
@@ -180,8 +181,8 @@ func parameterDataSource() *schema.Resource {
 				Type:         schema.TypeString,
 				Default:      "string",
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"number", "string", "bool"}, false),
-				Description:  `The type of this parameter. Must be one of: "number", "string", or "bool".`,
+				ValidateFunc: validation.StringInSlice([]string{"number", "string", "bool", "list(string)"}, false),
+				Description:  `The type of this parameter. Must be one of: "number", "string", "bool", or "list(string)".`,
 			},
 			"mutable": {
 				Type:        schema.TypeBool,
@@ -327,6 +328,12 @@ func valueIsType(typ, value string) diag.Diagnostics {
 		_, err := strconv.ParseBool(value)
 		if err != nil {
 			return diag.Errorf("%q is not a bool", value)
+		}
+	case "list(string)":
+		var items []string
+		err := json.Unmarshal([]byte(value), &items)
+		if err != nil {
+			return diag.Errorf("%q is not an array of strings", value)
 		}
 	case "string":
 		// Anything is a string!
