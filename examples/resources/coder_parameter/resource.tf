@@ -79,5 +79,5 @@ data "coder_parameter" "fairy_tale" {
 data "coder_parameter" "users" {
   name    = "System users"
   type    = "list(string)"
-  default = ["root", "user1", "user2"]
+  default = jsonencode(["root", "user1", "user2"])
 }
