@@ -71,7 +71,7 @@ func TestAgent(t *testing.T) {
 	})
 }
 
-func TestAgentInstance(t *testing.T) {
+func TestAgent_Instance(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
@@ -106,6 +106,50 @@ func TestAgentInstance(t *testing.T) {
 					require.NotNil(t, value)
 					require.Greater(t, len(value), 0)
 				}
+				return nil
+			},
+		}},
+	})
+}
+
+func TestAgent_Metadata(t *testing.T) {
+	t.Parallel()
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+				provider "coder" {
+					url = "https://example.com"
+				}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+					metadata {
+						key = "process_count"
+						display_name = "Process Count"
+						cmd = "ps aux | wc -l"
+						interval = 5
+					}
+				}
+				`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+
+				resource := state.Modules[0].Resources["coder_agent.dev"]
+				require.NotNil(t, resource)
+
+				t.Logf("resource: %v", resource.Primary.Attributes)
+
+				attr := resource.Primary.Attributes
+				require.Equal(t, "1", attr["metadata.#"])
+				require.Equal(t, "process_count", attr["metadata.0.key"])
+				require.Equal(t, "Process Count", attr["metadata.0.display_name"])
+				require.Equal(t, "ps aux | wc -l", attr["metadata.0.cmd"])
+				require.Equal(t, "5", attr["metadata.0.interval"])
 				return nil
 			},
 		}},
