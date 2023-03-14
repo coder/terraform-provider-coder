@@ -28,7 +28,7 @@ Use this data source to configure editable options for workspaces.
 - `legacy_variable_name` (String) Name of the legacy Terraform variable. Coder will use it to lookup the variable value.
 - `mutable` (Boolean) Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!
 - `option` (Block List, Max: 64) Each "option" block defines a value for a user to select from. (see [below for nested schema](#nestedblock--option))
-- `type` (String) The type of this parameter. Must be one of: "number", "string", or "bool".
+- `type` (String) The type of this parameter. Must be one of: "number", "string", "bool", or "list(string)".
 - `validation` (Block List, Max: 1) Validate the input of a parameter. (see [below for nested schema](#nestedblock--validation))
 
 ### Read-Only
