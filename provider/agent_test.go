@@ -37,6 +37,7 @@ func TestAgent(t *testing.T) {
 					shutdown_script = "echo bye bye"
 					shutdown_script_timeout = 120
 					login_before_ready = false
+					ssh_max_timeout = "1m"
 				}
 				`,
 			Check: func(state *terraform.State) error {
