@@ -165,6 +165,12 @@ func agentResource() *schema.Resource {
 								Type: schema.TypeString,
 							},
 						},
+						"timeout": {
+							Type:        schema.TypeInt,
+							Description: "The maximum time the command is allowed to run in seconds.",
+							ForceNew:    true,
+							Optional:    true,
+						},
 						"interval": {
 							Type:        schema.TypeInt,
 							Description: "The interval in seconds at which to refresh this metadata item. ",

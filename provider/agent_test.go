@@ -132,6 +132,7 @@ func TestAgent_Metadata(t *testing.T) {
 						display_name = "Process Count"
 						cmd = ["sh", "-c", "ps aux | wc -l"]
 						interval = 5
+						timeout = 1
 					}
 				}
 				`,
@@ -153,6 +154,7 @@ func TestAgent_Metadata(t *testing.T) {
 				require.Equal(t, "-c", attr["metadata.0.cmd.1"])
 				require.Equal(t, "ps aux | wc -l", attr["metadata.0.cmd.2"])
 				require.Equal(t, "5", attr["metadata.0.interval"])
+				require.Equal(t, "1", attr["metadata.0.timeout"])
 				return nil
 			},
 		}},
