@@ -390,6 +390,12 @@ func (v *Validation) Valid(typ, value string) error {
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
 			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
 		}
+	case "list(string)":
+		var listOfStrings []string
+		err := json.Unmarshal([]byte(value), &listOfStrings)
+		if err != nil {
+			return fmt.Errorf("value %q is not valid list of strings", value)
+		}
 	}
 	return nil
 }
