@@ -515,16 +515,16 @@ func TestValueValidatesType(t *testing.T) {
 		Max:       2,
 		Monotonic: "decreasing",
 	}, {
-		Name:  "ValidListOfString",
+		Name:  "ValidListOfStrings",
 		Type:  "list(string)",
 		Value: `["first","second","third"]`,
 	}, {
-		Name:  "InvalidListOfString",
+		Name:  "InvalidListOfStrings",
 		Type:  "list(string)",
 		Value: `["first","second","third"`,
 		Error: regexp.MustCompile("is not valid list of strings"),
 	}, {
-		Name:  "EmptyListOfString",
+		Name:  "EmptyListOfStrings",
 		Type:  "list(string)",
 		Value: `[]`,
 	}} {
