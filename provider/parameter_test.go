@@ -514,6 +514,19 @@ func TestValueValidatesType(t *testing.T) {
 		Min:       0,
 		Max:       2,
 		Monotonic: "decreasing",
+	}, {
+		Name:  "ValidListOfStrings",
+		Type:  "list(string)",
+		Value: `["first","second","third"]`,
+	}, {
+		Name:  "InvalidListOfStrings",
+		Type:  "list(string)",
+		Value: `["first","second","third"`,
+		Error: regexp.MustCompile("is not valid list of strings"),
+	}, {
+		Name:  "EmptyListOfStrings",
+		Type:  "list(string)",
+		Value: `[]`,
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
@@ -529,6 +542,8 @@ func TestValueValidatesType(t *testing.T) {
 			if tc.Error != nil {
 				require.Error(t, err)
 				require.True(t, tc.Error.MatchString(err.Error()), "got: %s", err.Error())
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}
