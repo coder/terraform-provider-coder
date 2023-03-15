@@ -157,10 +157,13 @@ func agentResource() *schema.Resource {
 							Optional:    true,
 						},
 						"cmd": {
-							Type:        schema.TypeString,
+							Type:        schema.TypeList,
 							Description: "The command that retrieves the value of this metadata item.",
 							ForceNew:    true,
 							Required:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
 						},
 						"interval": {
 							Type:        schema.TypeInt,
