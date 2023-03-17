@@ -42,6 +42,9 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("owner_id", ownerID)
 
+			ownerOIDCAccessToken := os.Getenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN")
+			_ = rd.Set("owner_oidc_access_token", ownerOIDCAccessToken)
+
 			name := os.Getenv("CODER_WORKSPACE_NAME")
 			if name == "" {
 				name = "default"
@@ -110,6 +113,13 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "UUID of the workspace owner.",
+			},
+			"owner_oidc_access_token": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Description: "A valid OpenID Connect access token of the workspace owner. " +
+					"This is only available if the workspace owner authenticated with OpenID Connect. " +
+					"If a valid token cannot be obtained, this value will be an empty string.",
 			},
 			"id": {
 				Type:        schema.TypeString,
