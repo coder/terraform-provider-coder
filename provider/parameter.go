@@ -51,8 +51,8 @@ type Parameter struct {
 	Validation  []Validation
 	Optional    bool
 
-	LegacyVariableName string
-	LegacyVariable     string
+	LegacyVariableName string `mapstructure:"legacy_variable_name"`
+	LegacyVariable     string `mapstructure:"legacy_variable"`
 }
 
 func parameterDataSource() *schema.Resource {
