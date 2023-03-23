@@ -70,9 +70,9 @@ resource "kubernetes_pod" "dev" {
 
 Required:
 
-- `cmd` (List of String) The command that retrieves the value of this metadata item.
 - `interval` (Number) The interval in seconds at which to refresh this metadata item.
 - `key` (String) The key of this metadata item.
+- `script` (String) The script that retrieves the value of this metadata item.
 
 Optional:
 

@@ -156,9 +156,9 @@ func agentResource() *schema.Resource {
 							ForceNew:    true,
 							Optional:    true,
 						},
-						"cmd": {
-							Type:        schema.TypeList,
-							Description: "The command that retrieves the value of this metadata item.",
+						"script": {
+							Type:        schema.TypeString,
+							Description: "The script that retrieves the value of this metadata item.",
 							ForceNew:    true,
 							Required:    true,
 							Elem: &schema.Schema{

@@ -130,7 +130,7 @@ func TestAgent_Metadata(t *testing.T) {
 					metadata {
 						key = "process_count"
 						display_name = "Process Count"
-						cmd = ["sh", "-c", "ps aux | wc -l"]
+						script = "ps aux | wc -l"
 						interval = 5
 						timeout = 1
 					}
@@ -149,10 +149,7 @@ func TestAgent_Metadata(t *testing.T) {
 				require.Equal(t, "1", attr["metadata.#"])
 				require.Equal(t, "process_count", attr["metadata.0.key"])
 				require.Equal(t, "Process Count", attr["metadata.0.display_name"])
-				require.Equal(t, "3", attr["metadata.0.cmd.#"])
-				require.Equal(t, "sh", attr["metadata.0.cmd.0"])
-				require.Equal(t, "-c", attr["metadata.0.cmd.1"])
-				require.Equal(t, "ps aux | wc -l", attr["metadata.0.cmd.2"])
+				require.Equal(t, "ps aux | wc -l", attr["metadata.0.script"])
 				require.Equal(t, "5", attr["metadata.0.interval"])
 				require.Equal(t, "1", attr["metadata.0.timeout"])
 				return nil
