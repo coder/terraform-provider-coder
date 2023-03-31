@@ -42,7 +42,7 @@ const (
 type Parameter struct {
 	Value       string
 	Name        string
-	DisplayName string
+	DisplayName string `mapstructure:"display_name"`
 	Description string
 	Type        string
 	Mutable     bool
