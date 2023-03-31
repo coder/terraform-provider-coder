@@ -51,6 +51,7 @@ resource "kubernetes_pod" "dev" {
 - `dir` (String) The starting directory when a user creates a shell session. Defaults to $HOME.
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
 - `login_before_ready` (Boolean) This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.
+- `metadata` (Block List) Each "metadata" block defines a single item consisting of a key/value pair. This feature is in alpha and may break in future releases. (see [below for nested schema](#nestedblock--metadata))
 - `motd_file` (String) The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.
 - `shutdown_script` (String) A script to run before the agent is stopped. The script should exit when it is done to signal that the workspace can be stopped.
 - `shutdown_script_timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out during shutdown, this happens when the shutdown script has not completed (exited) in the given time.
@@ -63,5 +64,19 @@ resource "kubernetes_pod" "dev" {
 - `id` (String) The ID of this resource.
 - `init_script` (String) Run this script on startup of an instance to initialize the agent.
 - `token` (String, Sensitive) Set the environment variable "CODER_AGENT_TOKEN" with this token to authenticate an agent.
+
+<a id="nestedblock--metadata"></a>
+### Nested Schema for `metadata`
+
+Required:
+
+- `interval` (Number) The interval in seconds at which to refresh this metadata item.
+- `key` (String) The key of this metadata item.
+- `script` (String) The script that retrieves the value of this metadata item.
+
+Optional:
+
+- `display_name` (String) The user-facing name of this value.
+- `timeout` (Number) The maximum time the command is allowed to run in seconds.
 
 

@@ -137,6 +137,49 @@ func agentResource() *schema.Resource {
 				Optional:    true,
 				Description: "This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.",
 			},
+			"metadata": {
+				Type:        schema.TypeList,
+				Description: "Each \"metadata\" block defines a single item consisting of a key/value pair. This feature is in alpha and may break in future releases.",
+				ForceNew:    true,
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:        schema.TypeString,
+							Description: "The key of this metadata item.",
+							ForceNew:    true,
+							Required:    true,
+						},
+						"display_name": {
+							Type:        schema.TypeString,
+							Description: "The user-facing name of this value.",
+							ForceNew:    true,
+							Optional:    true,
+						},
+						"script": {
+							Type:        schema.TypeString,
+							Description: "The script that retrieves the value of this metadata item.",
+							ForceNew:    true,
+							Required:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+						"timeout": {
+							Type:        schema.TypeInt,
+							Description: "The maximum time the command is allowed to run in seconds.",
+							ForceNew:    true,
+							Optional:    true,
+						},
+						"interval": {
+							Type:        schema.TypeInt,
+							Description: "The interval in seconds at which to refresh this metadata item. ",
+							ForceNew:    true,
+							Required:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
