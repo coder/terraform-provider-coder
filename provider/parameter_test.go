@@ -22,7 +22,8 @@ func TestParameter(t *testing.T) {
 		Name: "FieldsExist",
 		Config: `
 			data "coder_parameter" "region" {
-				name = "Region"
+				name = "region"
+				display_name = "Region"
 				type = "string"
 				description = <<-EOT
 					# Select the machine image
@@ -47,7 +48,8 @@ func TestParameter(t *testing.T) {
 		Check: func(state *terraform.ResourceState) {
 			attrs := state.Primary.Attributes
 			for key, value := range map[string]interface{}{
-				"name":                 "Region",
+				"name":                 "region",
+				"display_name":         "Region",
 				"type":                 "string",
 				"description":          "# Select the machine image\nSee the [registry](https://container.registry.blah/namespace) for options.\n",
 				"mutable":              "true",
