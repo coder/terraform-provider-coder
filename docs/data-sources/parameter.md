@@ -17,12 +17,13 @@ Use this data source to configure editable options for workspaces.
 
 ### Required
 
-- `name` (String) The name of the parameter as it will appear in the interface. If this is changed, developers will be re-prompted for a new value.
+- `name` (String) The name of the parameter. If this is changed, developers will be re-prompted for a new value.
 
 ### Optional
 
 - `default` (String) A default value for the parameter.
 - `description` (String) Describe what this parameter does.
+- `display_name` (String) The displayed name of the parameter as it will appear in the interface.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `data.coder_workspace.me.access_url + "/icon/<path>"`.
 - `legacy_variable` (String) Reference to the Terraform variable. Coder will use it to lookup the default value.
 - `legacy_variable_name` (String) Name of the legacy Terraform variable. Coder will use it to lookup the variable value.

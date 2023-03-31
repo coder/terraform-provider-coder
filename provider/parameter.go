@@ -42,6 +42,7 @@ const (
 type Parameter struct {
 	Value       string
 	Name        string
+	DisplayName string
 	Description string
 	Type        string
 	Mutable     bool
@@ -65,6 +66,7 @@ func parameterDataSource() *schema.Resource {
 			err := mapstructure.Decode(struct {
 				Value       interface{}
 				Name        interface{}
+				DisplayName interface{}
 				Description interface{}
 				Type        interface{}
 				Mutable     interface{}
@@ -79,6 +81,7 @@ func parameterDataSource() *schema.Resource {
 			}{
 				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
+				DisplayName: rd.Get("display_name"),
 				Description: rd.Get("description"),
 				Type:        rd.Get("type"),
 				Mutable:     rd.Get("mutable"),
@@ -170,7 +173,12 @@ func parameterDataSource() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the parameter as it will appear in the interface. If this is changed, developers will be re-prompted for a new value.",
+				Description: "The name of the parameter. If this is changed, developers will be re-prompted for a new value.",
+			},
+			"display_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The displayed name of the parameter as it will appear in the interface.",
 			},
 			"description": {
 				Type:        schema.TypeString,
