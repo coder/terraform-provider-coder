@@ -28,6 +28,7 @@ resource "kubernetes_pod" "dev" {
 
 - `access_port` (Number) The access port of the Coder deployment provisioning this workspace.
 - `access_url` (String) The access URL of the Coder deployment provisioning this workspace.
+- `coder_session_token` (String) Session token for interfacing with a Coder deployment. It is regenerated everytime a workspace is started.
 - `id` (String) UUID of the workspace.
 - `name` (String) Name of the workspace.
 - `owner` (String) Username of the workspace owner.
