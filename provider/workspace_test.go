@@ -14,7 +14,7 @@ import (
 func TestWorkspace(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
 	t.Setenv("CODER_WORKSPACE_OWNER_EMAIL", "owner123@example.com")
-	t.Setenv("CODER_SESSION_TOKEN", "abc123")
+	t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", "abc123")
 
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
@@ -41,7 +41,7 @@ func TestWorkspace(t *testing.T) {
 				require.Equal(t, "8080", attribs["access_port"])
 				require.Equal(t, "owner123", attribs["owner"])
 				require.Equal(t, "owner123@example.com", attribs["owner_email"])
-				require.Equal(t, "abc123", attribs["coder_session_token"])
+				require.Equal(t, "abc123", attribs["owner_session_token"])
 				return nil
 			},
 		}},

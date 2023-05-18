@@ -28,13 +28,13 @@ resource "kubernetes_pod" "dev" {
 
 - `access_port` (Number) The access port of the Coder deployment provisioning this workspace.
 - `access_url` (String) The access URL of the Coder deployment provisioning this workspace.
-- `coder_session_token` (String) Session token for interfacing with a Coder deployment. It is regenerated everytime a workspace is started.
 - `id` (String) UUID of the workspace.
 - `name` (String) Name of the workspace.
 - `owner` (String) Username of the workspace owner.
 - `owner_email` (String) Email address of the workspace owner.
 - `owner_id` (String) UUID of the workspace owner.
 - `owner_oidc_access_token` (String) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
+- `owner_session_token` (String) Session token for interfacing with a Coder deployment. It is regenerated everytime a workspace is started.
 - `start_count` (Number) A computed count based on "transition" state. If "start", count will equal 1.
 - `transition` (String) Either "start" or "stop". Use this to start/stop resources with "count".
 

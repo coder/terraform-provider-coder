@@ -51,8 +51,8 @@ func workspaceDataSource() *schema.Resource {
 			}
 			rd.Set("name", name)
 
-			sessionToken := os.Getenv("CODER_SESSION_TOKEN")
-			_ = rd.Set("coder_session_token", sessionToken)
+			sessionToken := os.Getenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN")
+			_ = rd.Set("owner_session_token", sessionToken)
 
 			id := os.Getenv("CODER_WORKSPACE_ID")
 			if id == "" {
@@ -134,7 +134,7 @@ func workspaceDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "Name of the workspace.",
 			},
-			"coder_session_token": {
+			"owner_session_token": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Session token for interfacing with a Coder deployment. It is regenerated everytime a workspace is started.",
