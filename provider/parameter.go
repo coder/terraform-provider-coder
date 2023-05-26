@@ -26,8 +26,8 @@ type Option struct {
 }
 
 type Validation struct {
-	Min       int
-	Max       int
+	Min       *int
+	Max       *int
 	Monotonic string
 
 	Regex string
@@ -272,17 +272,14 @@ func parameterDataSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Default:      0,
-							Description:  "The minimum of a number parameter.",
-							RequiredWith: []string{"validation.0.max"},
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The minimum of a number parameter.",
 						},
 						"max": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Description:  "The maximum of a number parameter.",
-							RequiredWith: []string{"validation.0.min"},
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The maximum of a number parameter.",
 						},
 						"monotonic": {
 							Type:        schema.TypeString,
@@ -353,10 +350,10 @@ func valueIsType(typ, value string) diag.Diagnostics {
 
 func (v *Validation) Valid(typ, value string) error {
 	if typ != "number" {
-		if v.Min != 0 {
+		if v.Min != nil {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
-		if v.Max != 0 {
+		if v.Max != nil {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
 		}
 	}
@@ -389,10 +386,10 @@ func (v *Validation) Valid(typ, value string) error {
 		if err != nil {
 			return fmt.Errorf("value %q is not a number", value)
 		}
-		if num < v.Min {
+		if v.Min != nil && num < *v.Min {
 			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
 		}
-		if num > v.Max {
+		if v.Max != nil && num > *v.Max {
 			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
