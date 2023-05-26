@@ -62,8 +62,25 @@ func parameterDataSource() *schema.Resource {
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
+			// 1. Read raw config to check if ptr fields are nil
+			// 2. Update rd with nil values (it is already broken)
+
+			//vm := rd.GetRawConfig().AsValueMap()["validation"].AsValueSlice()[0].AsValueMap()
+			//log.Println(vm)
+
+			val := rd.Get("validation")
+			v := val.([]interface{})
+			k := v[0].(map[string]interface{})
+			k["min"] = nil
+			k["max"] = nil
+			v[0] = k
+			err := rd.Set("validation", v)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
 			var parameter Parameter
-			err := mapstructure.Decode(struct {
+			err = mapstructure.Decode(struct {
 				Value       interface{}
 				Name        interface{}
 				DisplayName interface{}
@@ -98,7 +115,7 @@ func parameterDataSource() *schema.Resource {
 				}(),
 				Icon:       rd.Get("icon"),
 				Option:     rd.Get("option"),
-				Validation: rd.Get("validation"),
+				Validation: val,
 				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
