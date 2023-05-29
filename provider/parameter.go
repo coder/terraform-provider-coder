@@ -12,10 +12,12 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
+	"golang.org/x/xerrors"
 )
 
 type Option struct {
@@ -62,19 +64,12 @@ func parameterDataSource() *schema.Resource {
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
-			// 1. Read raw config to check if ptr fields are nil
-			// 2. Update rd with nil values (it is already broken)
+			fixedValidation, err := fixValidationResourceData(rd.GetRawConfig(), rd.Get("validation"))
+			if err != nil {
+				return diag.FromErr(err)
+			}
 
-			//vm := rd.GetRawConfig().AsValueMap()["validation"].AsValueSlice()[0].AsValueMap()
-			//log.Println(vm)
-
-			val := rd.Get("validation")
-			v := val.([]interface{})
-			k := v[0].(map[string]interface{})
-			k["min"] = nil
-			k["max"] = nil
-			v[0] = k
-			err := rd.Set("validation", v)
+			err = rd.Set("validation", fixedValidation)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -115,7 +110,7 @@ func parameterDataSource() *schema.Resource {
 				}(),
 				Icon:       rd.Get("icon"),
 				Option:     rd.Get("option"),
-				Validation: val,
+				Validation: fixedValidation,
 				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
@@ -337,6 +332,47 @@ func parameterDataSource() *schema.Resource {
 			},
 		},
 	}
+}
+
+func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (interface{}, error) {
+	// Read validation from raw config
+	rawValidation, ok := rawConfig.AsValueMap()["validation"]
+	if !ok {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	rawValidationArr := rawValidation.AsValueSlice()
+	if len(rawValidationArr) == 0 {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	rawValidationRule := rawValidationArr[0].AsValueMap()
+
+	// Load validation from resource data
+	vArr, ok := validation.([]interface{})
+	if !ok {
+		return nil, xerrors.New("validation should be an array")
+	}
+
+	if len(vArr) == 0 {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	validationRule, ok := vArr[0].(map[string]interface{})
+	if !ok {
+		return nil, xerrors.New("validation rule should be a map")
+	}
+
+	// Fix the resource data
+	if rawValidationRule["min"].IsNull() {
+		validationRule["min"] = nil
+	}
+	if rawValidationRule["max"].IsNull() {
+		validationRule["max"] = nil
+	}
+
+	vArr[0] = validationRule
+	return vArr, nil
 }
 
 func valueIsType(typ, value string) diag.Diagnostics {

@@ -110,6 +110,30 @@ func TestParameter(t *testing.T) {
 			}
 			`,
 	}, {
+		Name: "NumberValidation_Min",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					min = 1
+				}
+			}
+			`,
+	}, {
+		Name: "NumberValidation_Max",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					max = 9
+				}
+			}
+			`,
+	}, {
 		Name: "DefaultNotNumber",
 		Config: `
 			data "coder_parameter" "region" {
