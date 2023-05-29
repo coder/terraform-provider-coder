@@ -503,7 +503,7 @@ func TestValueValidatesType(t *testing.T) {
 	}, {
 		Name:  "NumberAboveMax",
 		Type:  "number",
-		Value: "1",
+		Value: "2",
 		Max:   ptrNumber(1),
 		Error: regexp.MustCompile("is more than the maximum"),
 	}, {
