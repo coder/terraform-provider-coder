@@ -370,8 +370,6 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 	if rawValidationRule["max"].IsNull() {
 		validationRule["max"] = nil
 	}
-
-	vArr[0] = validationRule
 	return vArr, nil
 }
 
