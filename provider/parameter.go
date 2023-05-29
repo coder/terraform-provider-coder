@@ -12,10 +12,12 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
+	"golang.org/x/xerrors"
 )
 
 type Option struct {
@@ -26,8 +28,8 @@ type Option struct {
 }
 
 type Validation struct {
-	Min       int
-	Max       int
+	Min       *int
+	Max       *int
 	Monotonic string
 
 	Regex string
@@ -62,8 +64,18 @@ func parameterDataSource() *schema.Resource {
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
+			fixedValidation, err := fixValidationResourceData(rd.GetRawConfig(), rd.Get("validation"))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			err = rd.Set("validation", fixedValidation)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
 			var parameter Parameter
-			err := mapstructure.Decode(struct {
+			err = mapstructure.Decode(struct {
 				Value       interface{}
 				Name        interface{}
 				DisplayName interface{}
@@ -98,7 +110,7 @@ func parameterDataSource() *schema.Resource {
 				}(),
 				Icon:       rd.Get("icon"),
 				Option:     rd.Get("option"),
-				Validation: rd.Get("validation"),
+				Validation: fixedValidation,
 				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
@@ -272,17 +284,14 @@ func parameterDataSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Default:      0,
-							Description:  "The minimum of a number parameter.",
-							RequiredWith: []string{"validation.0.max"},
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The minimum of a number parameter.",
 						},
 						"max": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Description:  "The maximum of a number parameter.",
-							RequiredWith: []string{"validation.0.min"},
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The maximum of a number parameter.",
 						},
 						"monotonic": {
 							Type:        schema.TypeString,
@@ -325,6 +334,45 @@ func parameterDataSource() *schema.Resource {
 	}
 }
 
+func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (interface{}, error) {
+	// Read validation from raw config
+	rawValidation, ok := rawConfig.AsValueMap()["validation"]
+	if !ok {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	rawValidationArr := rawValidation.AsValueSlice()
+	if len(rawValidationArr) == 0 {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	rawValidationRule := rawValidationArr[0].AsValueMap()
+
+	// Load validation from resource data
+	vArr, ok := validation.([]interface{})
+	if !ok {
+		return nil, xerrors.New("validation should be an array")
+	}
+
+	if len(vArr) == 0 {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	validationRule, ok := vArr[0].(map[string]interface{})
+	if !ok {
+		return nil, xerrors.New("validation rule should be a map")
+	}
+
+	// Fix the resource data
+	if rawValidationRule["min"].IsNull() {
+		validationRule["min"] = nil
+	}
+	if rawValidationRule["max"].IsNull() {
+		validationRule["max"] = nil
+	}
+	return vArr, nil
+}
+
 func valueIsType(typ, value string) diag.Diagnostics {
 	switch typ {
 	case "number":
@@ -353,10 +401,10 @@ func valueIsType(typ, value string) diag.Diagnostics {
 
 func (v *Validation) Valid(typ, value string) error {
 	if typ != "number" {
-		if v.Min != 0 {
+		if v.Min != nil {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
-		if v.Max != 0 {
+		if v.Max != nil {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
 		}
 	}
@@ -389,10 +437,10 @@ func (v *Validation) Valid(typ, value string) error {
 		if err != nil {
 			return fmt.Errorf("value %q is not a number", value)
 		}
-		if num < v.Min {
+		if v.Min != nil && num < *v.Min {
 			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
 		}
-		if num > v.Max {
+		if v.Max != nil && num > *v.Max {
 			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
