@@ -19,6 +19,34 @@ func TestParameter(t *testing.T) {
 		ExpectError *regexp.Regexp
 		Check       func(state *terraform.ResourceState)
 	}{{
+		Name: "NumberValidation_Max",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					max = 9
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":             "Region",
+				"type":             "number",
+				"validation.#":     "1",
+				"default":          "2",
+				"validation.0.max": "9",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+
+			_, foundDisplayName := state.Primary.Attributes["display_name"]
+			require.False(t, foundDisplayName, "display_name = "+state.Primary.Attributes["display_name"])
+			_, foundValidationMin := state.Primary.Attributes["validation.0.min"]
+			require.False(t, foundValidationMin, "validation.0.min = "+state.Primary.Attributes["validation.0.min"])
+		},
+	}, {
 		Name: "FieldsExist",
 		Config: `
 			data "coder_parameter" "region" {
