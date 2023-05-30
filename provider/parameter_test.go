@@ -499,13 +499,13 @@ func TestValueValidatesType(t *testing.T) {
 		Type:  "number",
 		Value: "0",
 		Min:   ptrNumber(1),
-		Error: regexp.MustCompile("is less than the minimum"),
+		Error: regexp.MustCompile("is less than the minimum 1"),
 	}, {
 		Name:  "NumberAboveMax",
 		Type:  "number",
 		Value: "2",
 		Max:   ptrNumber(1),
-		Error: regexp.MustCompile("is more than the maximum"),
+		Error: regexp.MustCompile("is more than the maximum 1"),
 	}, {
 		Name:  "InvalidBool",
 		Type:  "bool",
