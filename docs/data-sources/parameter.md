@@ -65,7 +65,7 @@ Optional:
 
 Read-Only:
 
-- `max_ok` (Boolean) Helper field to check if max is present
-- `min_ok` (Boolean) Helper field to check if min is present
+- `max_disabled` (Boolean) Helper field to check if max is present
+- `min_disabled` (Boolean) Helper field to check if min is present
 
 
