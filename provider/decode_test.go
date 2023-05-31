@@ -3,10 +3,11 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/coder/terraform-provider-coder/provider"
 	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/coder/terraform-provider-coder/provider"
 )
 
 func TestDecode(t *testing.T) {
@@ -38,6 +39,6 @@ func TestDecode(t *testing.T) {
 	assert.Equal(t, displayName, param.DisplayName)
 	assert.Equal(t, legacyVariable, param.LegacyVariable)
 	assert.Equal(t, legacyVariableName, param.LegacyVariableName)
-	assert.Equal(t, (*int)(nil), param.Validation[0].Min)
-	assert.Equal(t, 5, *param.Validation[0].Max)
+	assert.Equal(t, 5, param.Validation[0].Max)
+	assert.Equal(t, 0, param.Validation[0].Min)
 }

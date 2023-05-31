@@ -492,18 +492,18 @@ func TestValueValidatesType(t *testing.T) {
 		Regex,
 		RegexError string
 		Min,
-		Max *int
+		Max int
 		Monotonic string
 		Error     *regexp.Regexp
 	}{{
 		Name:  "StringWithMin",
 		Type:  "string",
-		Min:   ptrNumber(1),
+		Min:   1,
 		Error: regexp.MustCompile("cannot be specified"),
 	}, {
 		Name:  "StringWithMax",
 		Type:  "string",
-		Max:   ptrNumber(1),
+		Max:   1,
 		Error: regexp.MustCompile("cannot be specified"),
 	}, {
 		Name:  "NonStringWithRegex",
@@ -523,13 +523,13 @@ func TestValueValidatesType(t *testing.T) {
 		Name:  "NumberBelowMin",
 		Type:  "number",
 		Value: "0",
-		Min:   ptrNumber(1),
+		Min:   1,
 		Error: regexp.MustCompile("is less than the minimum 1"),
 	}, {
 		Name:  "NumberAboveMax",
 		Type:  "number",
 		Value: "2",
-		Max:   ptrNumber(1),
+		Max:   1,
 		Error: regexp.MustCompile("is more than the maximum 1"),
 	}, {
 		Name:  "InvalidBool",
@@ -547,23 +547,23 @@ func TestValueValidatesType(t *testing.T) {
 		Name:      "InvalidMonotonicity",
 		Type:      "number",
 		Value:     "1",
-		Min:       ptrNumber(0),
-		Max:       ptrNumber(2),
+		Min:       0,
+		Max:       2,
 		Monotonic: "foobar",
 		Error:     regexp.MustCompile(`number monotonicity can be either "increasing" or "decreasing"`),
 	}, {
 		Name:      "IncreasingMonotonicity",
 		Type:      "number",
 		Value:     "1",
-		Min:       ptrNumber(0),
-		Max:       ptrNumber(2),
+		Min:       0,
+		Max:       2,
 		Monotonic: "increasing",
 	}, {
 		Name:      "DecreasingMonotonicity",
 		Type:      "number",
 		Value:     "1",
-		Min:       ptrNumber(0),
-		Max:       ptrNumber(2),
+		Min:       0,
+		Max:       2,
 		Monotonic: "decreasing",
 	}, {
 		Name:  "ValidListOfStrings",
@@ -598,8 +598,4 @@ func TestValueValidatesType(t *testing.T) {
 			}
 		})
 	}
-}
-
-func ptrNumber(i int) *int {
-	return &i
 }
