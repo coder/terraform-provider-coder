@@ -19,56 +19,6 @@ func TestParameter(t *testing.T) {
 		ExpectError *regexp.Regexp
 		Check       func(state *terraform.ResourceState)
 	}{{
-		Name: "NumberValidation_Max",
-		Config: `
-			data "coder_parameter" "region" {
-				name = "Region"
-				type = "number"
-				default = 2
-				validation {
-					max = 9
-				}
-			}
-			`,
-		Check: func(state *terraform.ResourceState) {
-			for key, expected := range map[string]string{
-				"name":                      "Region",
-				"type":                      "number",
-				"validation.#":              "1",
-				"default":                   "2",
-				"validation.0.max":          "9",
-				"validation.0.min_disabled": "true",
-				"validation.0.max_disabled": "false",
-			} {
-				require.Equal(t, expected, state.Primary.Attributes[key])
-			}
-		},
-	}, {
-		Name: "NumberValidation_MinZero",
-		Config: `
-			data "coder_parameter" "region" {
-				name = "Region"
-				type = "number"
-				default = 2
-				validation {
-					min = 0
-				}
-			}
-			`,
-		Check: func(state *terraform.ResourceState) {
-			for key, expected := range map[string]string{
-				"name":                      "Region",
-				"type":                      "number",
-				"validation.#":              "1",
-				"default":                   "2",
-				"validation.0.min":          "0",
-				"validation.0.min_disabled": "false",
-				"validation.0.max_disabled": "true",
-			} {
-				require.Equal(t, expected, state.Primary.Attributes[key])
-			}
-		},
-	}, {
 		Name: "FieldsExist",
 		Config: `
 			data "coder_parameter" "region" {
@@ -173,30 +123,6 @@ func TestParameter(t *testing.T) {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}
 		},
-	}, {
-		Name: "NumberValidation_Min",
-		Config: `
-			data "coder_parameter" "region" {
-				name = "Region"
-				type = "number"
-				default = 2
-				validation {
-					min = 1
-				}
-			}
-			`,
-	}, {
-		Name: "NumberValidation_Max",
-		Config: `
-			data "coder_parameter" "region" {
-				name = "Region"
-				type = "number"
-				default = 2
-				validation {
-					max = 9
-				}
-			}
-			`,
 	}, {
 		Name: "DefaultNotNumber",
 		Config: `
@@ -492,6 +418,133 @@ data "coder_parameter" "region" {
 				attributeValue, ok := state.Primary.Attributes[key]
 				require.True(t, ok, "attribute %q is expected", key)
 				require.Equal(t, expected, attributeValue)
+			}
+		},
+	}, {
+		Name: "NumberValidation_Max",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					max = 9
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.max":          "9",
+				"validation.0.min_disabled": "true",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_MaxZero",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = -1
+				validation {
+					max = 0
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "-1",
+				"validation.0.max":          "0",
+				"validation.0.min_disabled": "true",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_Min",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					min = 1
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.min":          "1",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "true",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_MinZero",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					min = 0
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.min":          "0",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "true",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_MinMaxZero",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 0
+				validation {
+					max = 0
+					min = 0
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "0",
+				"validation.0.min":          "0",
+				"validation.0.max":          "0",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
 			}
 		},
 	}} {
