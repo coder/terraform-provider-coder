@@ -587,6 +587,19 @@ data "coder_parameter" "region" {
 			}
 			`,
 		ExpectError: regexp.MustCompile("is more than the maximum"),
+	}, {
+		Name: "NumberValidation_BoolWithMin",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "bool"
+				default = true
+				validation {
+					min = 7
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("a min cannot be specified for a bool type"),
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
