@@ -63,4 +63,9 @@ Optional:
 - `monotonic` (String) Number monotonicity, either increasing or decreasing.
 - `regex` (String) A regex for the input parameter to match against.
 
+Read-Only:
+
+- `max_ok` (Boolean) Helper field to check if max is present
+- `min_ok` (Boolean) Helper field to check if min is present
+
 

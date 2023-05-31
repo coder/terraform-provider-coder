@@ -28,9 +28,9 @@ type Option struct {
 }
 
 type Validation struct {
-	Min   *int
+	Min   int
 	MinOk bool `mapstructure:"min_ok"`
-	Max   *int
+	Max   int
 	MaxOk bool `mapstructure:"max_ok"`
 
 	Monotonic string
@@ -420,10 +420,10 @@ func valueIsType(typ, value string) diag.Diagnostics {
 
 func (v *Validation) Valid(typ, value string) error {
 	if typ != "number" {
-		if v.Min != nil {
+		if v.MinOk {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
-		if v.Max != nil {
+		if v.MaxOk {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
 		}
 	}
@@ -456,11 +456,11 @@ func (v *Validation) Valid(typ, value string) error {
 		if err != nil {
 			return fmt.Errorf("value %q is not a number", value)
 		}
-		if v.Min != nil && num < *v.Min {
-			return fmt.Errorf("value %d is less than the minimum %d", num, *v.Min)
+		if v.MinOk && num < v.Min {
+			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
 		}
-		if v.Max != nil && num > *v.Max {
-			return fmt.Errorf("value %d is more than the maximum %d", num, *v.Max)
+		if v.MaxOk && num > v.Max {
+			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
 			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
