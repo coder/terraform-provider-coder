@@ -376,14 +376,6 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 		return nil, xerrors.New("validation rule should be a map")
 	}
 
-	// Fix the resource data
-	if rawValidationRule["min"].IsNull() {
-		validationRule["min"] = nil
-	}
-	if rawValidationRule["max"].IsNull() {
-		validationRule["max"] = nil
-	}
-
 	validationRule["min_disabled"] = rawValidationRule["min"].IsNull()
 	validationRule["max_disabled"] = rawValidationRule["max"].IsNull()
 	return vArr, nil
@@ -417,10 +409,10 @@ func valueIsType(typ, value string) diag.Diagnostics {
 
 func (v *Validation) Valid(typ, value string) error {
 	if typ != "number" {
-		if !v.MinDisabled && v.Min != 0 {
+		if !v.MinDisabled {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
-		if !v.MaxDisabled && v.Max != 0 {
+		if !v.MaxDisabled {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
 		}
 	}
