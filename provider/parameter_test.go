@@ -32,13 +32,38 @@ func TestParameter(t *testing.T) {
 			`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
-				"name":                "Region",
-				"type":                "number",
-				"validation.#":        "1",
-				"default":             "2",
-				"validation.0.max":    "9",
-				"validation.0.min_ok": "false",
-				"validation.0.max_ok": "true",
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.max":          "9",
+				"validation.0.min_disabled": "true",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_MinZero",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					min = 0
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.min":          "0",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "true",
 			} {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}
@@ -493,21 +518,21 @@ func TestValueValidatesType(t *testing.T) {
 		RegexError string
 		Min,
 		Max int
-		MinOk, MaxOk bool
-		Monotonic    string
-		Error        *regexp.Regexp
+		MinDisabled, MaxDisabled bool
+		Monotonic                string
+		Error                    *regexp.Regexp
 	}{{
-		Name:  "StringWithMin",
-		Type:  "string",
-		Min:   1,
-		MinOk: true,
-		Error: regexp.MustCompile("cannot be specified"),
+		Name:        "StringWithMin",
+		Type:        "string",
+		Min:         1,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("cannot be specified"),
 	}, {
-		Name:  "StringWithMax",
-		Type:  "string",
-		Max:   1,
-		MaxOk: true,
-		Error: regexp.MustCompile("cannot be specified"),
+		Name:        "StringWithMax",
+		Type:        "string",
+		Max:         1,
+		MinDisabled: true,
+		Error:       regexp.MustCompile("cannot be specified"),
 	}, {
 		Name:  "NonStringWithRegex",
 		Type:  "number",
@@ -523,19 +548,19 @@ func TestValueValidatesType(t *testing.T) {
 		Value: "hi",
 		Error: regexp.MustCompile("is not a number"),
 	}, {
-		Name:  "NumberBelowMin",
-		Type:  "number",
-		Value: "0",
-		Min:   1,
-		MinOk: true,
-		Error: regexp.MustCompile("is less than the minimum 1"),
+		Name:        "NumberBelowMin",
+		Type:        "number",
+		Value:       "0",
+		Min:         1,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("is less than the minimum 1"),
 	}, {
-		Name:  "NumberAboveMax",
-		Type:  "number",
-		Value: "2",
-		Max:   1,
-		MaxOk: true,
-		Error: regexp.MustCompile("is more than the maximum 1"),
+		Name:        "NumberAboveMax",
+		Type:        "number",
+		Value:       "2",
+		Max:         1,
+		MinDisabled: true,
+		Error:       regexp.MustCompile("is more than the maximum 1"),
 	}, {
 		Name:  "InvalidBool",
 		Type:  "bool",
@@ -553,9 +578,7 @@ func TestValueValidatesType(t *testing.T) {
 		Type:      "number",
 		Value:     "1",
 		Min:       0,
-		MinOk:     true,
 		Max:       2,
-		MaxOk:     true,
 		Monotonic: "foobar",
 		Error:     regexp.MustCompile(`number monotonicity can be either "increasing" or "decreasing"`),
 	}, {
@@ -563,18 +586,14 @@ func TestValueValidatesType(t *testing.T) {
 		Type:      "number",
 		Value:     "1",
 		Min:       0,
-		MinOk:     true,
 		Max:       2,
-		MaxOk:     true,
 		Monotonic: "increasing",
 	}, {
 		Name:      "DecreasingMonotonicity",
 		Type:      "number",
 		Value:     "1",
 		Min:       0,
-		MinOk:     true,
 		Max:       2,
-		MaxOk:     true,
 		Monotonic: "decreasing",
 	}, {
 		Name:  "ValidListOfStrings",
@@ -594,13 +613,13 @@ func TestValueValidatesType(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			v := &provider.Validation{
-				Min:       tc.Min,
-				MinOk:     tc.MinOk,
-				Max:       tc.Max,
-				MaxOk:     tc.MaxOk,
-				Monotonic: tc.Monotonic,
-				Regex:     tc.Regex,
-				Error:     tc.RegexError,
+				Min:         tc.Min,
+				MinDisabled: tc.MinDisabled,
+				Max:         tc.Max,
+				MaxDisabled: tc.MaxDisabled,
+				Monotonic:   tc.Monotonic,
+				Regex:       tc.Regex,
+				Error:       tc.RegexError,
 			}
 			err := v.Valid(tc.Type, tc.Value)
 			if tc.Error != nil {

@@ -28,10 +28,10 @@ type Option struct {
 }
 
 type Validation struct {
-	Min   int
-	MinOk bool `mapstructure:"min_ok"`
-	Max   int
-	MaxOk bool `mapstructure:"max_ok"`
+	Min         int
+	MinDisabled bool `mapstructure:"min_disabled"`
+	Max         int
+	MaxDisabled bool `mapstructure:"max_disabled"`
 
 	Monotonic string
 
@@ -291,7 +291,7 @@ func parameterDataSource() *schema.Resource {
 							Optional:    true,
 							Description: "The minimum of a number parameter.",
 						},
-						"min_ok": {
+						"min_disabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Helper field to check if min is present",
@@ -301,7 +301,7 @@ func parameterDataSource() *schema.Resource {
 							Optional:    true,
 							Description: "The maximum of a number parameter.",
 						},
-						"max_ok": {
+						"max_disabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
 							Description: "Helper field to check if max is present",
@@ -384,8 +384,8 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 		validationRule["max"] = nil
 	}
 
-	validationRule["min_ok"] = !rawValidationRule["min"].IsNull()
-	validationRule["max_ok"] = !rawValidationRule["max"].IsNull()
+	validationRule["min_disabled"] = rawValidationRule["min"].IsNull()
+	validationRule["max_disabled"] = rawValidationRule["max"].IsNull()
 	return vArr, nil
 }
 
@@ -417,10 +417,10 @@ func valueIsType(typ, value string) diag.Diagnostics {
 
 func (v *Validation) Valid(typ, value string) error {
 	if typ != "number" {
-		if v.MinOk {
+		if !v.MinDisabled && v.Min != 0 {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
-		if v.MaxOk {
+		if !v.MaxDisabled && v.Max != 0 {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
 		}
 	}
@@ -453,10 +453,10 @@ func (v *Validation) Valid(typ, value string) error {
 		if err != nil {
 			return fmt.Errorf("value %q is not a number", value)
 		}
-		if v.MinOk && num < v.Min {
+		if !v.MinDisabled && num < v.Min {
 			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
 		}
-		if v.MaxOk && num > v.Max {
+		if !v.MaxDisabled && num > v.Max {
 			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {

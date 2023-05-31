@@ -26,10 +26,10 @@ func TestDecode(t *testing.T) {
 		"legacy_variable_name": legacyVariableName,
 		"validation": []map[string]interface{}{
 			{
-				"min":    nil,
-				"min_ok": false,
-				"max":    5,
-				"max_ok": true,
+				"min":          nil,
+				"min_disabled": false,
+				"max":          5,
+				"max_disabled": true,
 			},
 		},
 	}
@@ -41,7 +41,7 @@ func TestDecode(t *testing.T) {
 	assert.Equal(t, legacyVariable, param.LegacyVariable)
 	assert.Equal(t, legacyVariableName, param.LegacyVariableName)
 	assert.Equal(t, 5, param.Validation[0].Max)
-	assert.True(t, param.Validation[0].MaxOk)
+	assert.True(t, param.Validation[0].MaxDisabled)
 	assert.Equal(t, 0, param.Validation[0].Min)
-	assert.False(t, param.Validation[0].MinOk)
+	assert.False(t, param.Validation[0].MinDisabled)
 }
