@@ -547,6 +547,46 @@ data "coder_parameter" "region" {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}
 		},
+	}, {
+		Name: "NumberValidation_LesserThanMin",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 5
+				validation {
+					min = 7
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("is less than the minimum"),
+	}, {
+		Name: "NumberValidation_GreaterThanMin",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 5
+				validation {
+					max = 3
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("is more than the maximum"),
+	}, {
+		Name: "NumberValidation_NotInRange",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 8
+				validation {
+					min = 3
+					max = 5
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("is more than the maximum"),
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
