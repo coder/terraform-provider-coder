@@ -379,16 +379,13 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 	// Fix the resource data
 	if rawValidationRule["min"].IsNull() {
 		validationRule["min"] = nil
-		validationRule["min_ok"] = false
-	} else {
-		validationRule["min_ok"] = true
 	}
 	if rawValidationRule["max"].IsNull() {
 		validationRule["max"] = nil
-		validationRule["max_ok"] = false
-	} else {
-		validationRule["max_ok"] = true
 	}
+
+	validationRule["min_ok"] = !rawValidationRule["min"].IsNull()
+	validationRule["max_ok"] = !rawValidationRule["max"].IsNull()
 	return vArr, nil
 }
 
