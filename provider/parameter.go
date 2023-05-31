@@ -28,8 +28,11 @@ type Option struct {
 }
 
 type Validation struct {
-	Min       *int
-	Max       *int
+	Min   *int
+	MinOk bool `mapstructure:"min_ok"`
+	Max   *int
+	MaxOk bool `mapstructure:"max_ok"`
+
 	Monotonic string
 
 	Regex string
@@ -288,10 +291,20 @@ func parameterDataSource() *schema.Resource {
 							Optional:    true,
 							Description: "The minimum of a number parameter.",
 						},
+						"min_ok": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Helper field to check if min is present",
+						},
 						"max": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Description: "The maximum of a number parameter.",
+						},
+						"max_ok": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Helper field to check if max is present",
 						},
 						"monotonic": {
 							Type:        schema.TypeString,
@@ -366,9 +379,15 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 	// Fix the resource data
 	if rawValidationRule["min"].IsNull() {
 		validationRule["min"] = nil
+		validationRule["min_ok"] = false
+	} else {
+		validationRule["min_ok"] = true
 	}
 	if rawValidationRule["max"].IsNull() {
 		validationRule["max"] = nil
+		validationRule["max_ok"] = false
+	} else {
+		validationRule["max_ok"] = true
 	}
 	return vArr, nil
 }

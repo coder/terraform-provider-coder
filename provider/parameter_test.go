@@ -32,19 +32,16 @@ func TestParameter(t *testing.T) {
 			`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
-				"name":             "Region",
-				"type":             "number",
-				"validation.#":     "1",
-				"default":          "2",
-				"validation.0.max": "9",
+				"name":                "Region",
+				"type":                "number",
+				"validation.#":        "1",
+				"default":             "2",
+				"validation.0.max":    "9",
+				"validation.0.min_ok": "false",
+				"validation.0.max_ok": "true",
 			} {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}
-
-			_, foundDisplayName := state.Primary.Attributes["display_name"]
-			require.False(t, foundDisplayName, "display_name = "+state.Primary.Attributes["display_name"])
-			_, foundValidationMin := state.Primary.Attributes["validation.0.min"]
-			require.False(t, foundValidationMin, "validation.0.min = "+state.Primary.Attributes["validation.0.min"])
 		},
 	}, {
 		Name: "FieldsExist",
