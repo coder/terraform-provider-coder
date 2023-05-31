@@ -159,6 +159,20 @@ func TestParameter(t *testing.T) {
 				}
 			}
 			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.min":          "1",
+				"validation.0.max":          "5",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
 	}, {
 		Name: "NumberValidation_Min",
 		Config: `
