@@ -28,8 +28,11 @@ type Option struct {
 }
 
 type Validation struct {
-	Min       *int
-	Max       *int
+	Min         int
+	MinDisabled bool `mapstructure:"min_disabled"`
+	Max         int
+	MaxDisabled bool `mapstructure:"max_disabled"`
+
 	Monotonic string
 
 	Regex string
@@ -288,10 +291,20 @@ func parameterDataSource() *schema.Resource {
 							Optional:    true,
 							Description: "The minimum of a number parameter.",
 						},
+						"min_disabled": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Helper field to check if min is present",
+						},
 						"max": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Description: "The maximum of a number parameter.",
+						},
+						"max_disabled": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Helper field to check if max is present",
 						},
 						"monotonic": {
 							Type:        schema.TypeString,
@@ -363,13 +376,8 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 		return nil, xerrors.New("validation rule should be a map")
 	}
 
-	// Fix the resource data
-	if rawValidationRule["min"].IsNull() {
-		validationRule["min"] = nil
-	}
-	if rawValidationRule["max"].IsNull() {
-		validationRule["max"] = nil
-	}
+	validationRule["min_disabled"] = rawValidationRule["min"].IsNull()
+	validationRule["max_disabled"] = rawValidationRule["max"].IsNull()
 	return vArr, nil
 }
 
@@ -401,10 +409,10 @@ func valueIsType(typ, value string) diag.Diagnostics {
 
 func (v *Validation) Valid(typ, value string) error {
 	if typ != "number" {
-		if v.Min != nil {
+		if !v.MinDisabled {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
-		if v.Max != nil {
+		if !v.MaxDisabled {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
 		}
 	}
@@ -437,11 +445,11 @@ func (v *Validation) Valid(typ, value string) error {
 		if err != nil {
 			return fmt.Errorf("value %q is not a number", value)
 		}
-		if v.Min != nil && num < *v.Min {
-			return fmt.Errorf("value %d is less than the minimum %d", num, *v.Min)
+		if !v.MinDisabled && num < v.Min {
+			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
 		}
-		if v.Max != nil && num > *v.Max {
-			return fmt.Errorf("value %d is more than the maximum %d", num, *v.Max)
+		if !v.MaxDisabled && num > v.Max {
+			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
 			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)

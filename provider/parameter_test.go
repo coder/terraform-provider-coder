@@ -109,30 +109,20 @@ func TestParameter(t *testing.T) {
 				}
 			}
 			`,
-	}, {
-		Name: "NumberValidation_Min",
-		Config: `
-			data "coder_parameter" "region" {
-				name = "Region"
-				type = "number"
-				default = 2
-				validation {
-					min = 1
-				}
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.min":          "1",
+				"validation.0.max":          "5",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
 			}
-			`,
-	}, {
-		Name: "NumberValidation_Max",
-		Config: `
-			data "coder_parameter" "region" {
-				name = "Region"
-				type = "number"
-				default = 2
-				validation {
-					max = 9
-				}
-			}
-			`,
+		},
 	}, {
 		Name: "DefaultNotNumber",
 		Config: `
@@ -430,6 +420,186 @@ data "coder_parameter" "region" {
 				require.Equal(t, expected, attributeValue)
 			}
 		},
+	}, {
+		Name: "NumberValidation_Max",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					max = 9
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.max":          "9",
+				"validation.0.min_disabled": "true",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_MaxZero",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = -1
+				validation {
+					max = 0
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "-1",
+				"validation.0.max":          "0",
+				"validation.0.min_disabled": "true",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_Min",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					min = 1
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.min":          "1",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "true",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_MinZero",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 2
+				validation {
+					min = 0
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "2",
+				"validation.0.min":          "0",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "true",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_MinMaxZero",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 0
+				validation {
+					max = 0
+					min = 0
+				}
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]string{
+				"name":                      "Region",
+				"type":                      "number",
+				"validation.#":              "1",
+				"default":                   "0",
+				"validation.0.min":          "0",
+				"validation.0.max":          "0",
+				"validation.0.min_disabled": "false",
+				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_LesserThanMin",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 5
+				validation {
+					min = 7
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("is less than the minimum"),
+	}, {
+		Name: "NumberValidation_GreaterThanMin",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 5
+				validation {
+					max = 3
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("is more than the maximum"),
+	}, {
+		Name: "NumberValidation_NotInRange",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 8
+				validation {
+					min = 3
+					max = 5
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("is more than the maximum"),
+	}, {
+		Name: "NumberValidation_BoolWithMin",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "bool"
+				default = true
+				validation {
+					min = 7
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("a min cannot be specified for a bool type"),
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
@@ -467,102 +637,121 @@ func TestValueValidatesType(t *testing.T) {
 		Regex,
 		RegexError string
 		Min,
-		Max *int
-		Monotonic string
-		Error     *regexp.Regexp
+		Max int
+		MinDisabled, MaxDisabled bool
+		Monotonic                string
+		Error                    *regexp.Regexp
 	}{{
-		Name:  "StringWithMin",
-		Type:  "string",
-		Min:   ptrNumber(1),
-		Error: regexp.MustCompile("cannot be specified"),
+		Name:        "StringWithMin",
+		Type:        "string",
+		Min:         1,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("cannot be specified"),
 	}, {
-		Name:  "StringWithMax",
-		Type:  "string",
-		Max:   ptrNumber(1),
-		Error: regexp.MustCompile("cannot be specified"),
+		Name:        "StringWithMax",
+		Type:        "string",
+		Max:         1,
+		MinDisabled: true,
+		Error:       regexp.MustCompile("cannot be specified"),
 	}, {
 		Name:  "NonStringWithRegex",
 		Type:  "number",
 		Regex: "banana",
 		Error: regexp.MustCompile("a regex cannot be specified"),
 	}, {
-		Name:  "Bool",
-		Type:  "bool",
-		Value: "true",
+		Name:        "Bool",
+		Type:        "bool",
+		Value:       "true",
+		MinDisabled: true,
+		MaxDisabled: true,
 	}, {
 		Name:  "InvalidNumber",
 		Type:  "number",
 		Value: "hi",
 		Error: regexp.MustCompile("is not a number"),
 	}, {
-		Name:  "NumberBelowMin",
-		Type:  "number",
-		Value: "0",
-		Min:   ptrNumber(1),
-		Error: regexp.MustCompile("is less than the minimum 1"),
+		Name:        "NumberBelowMin",
+		Type:        "number",
+		Value:       "0",
+		Min:         1,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("is less than the minimum 1"),
 	}, {
-		Name:  "NumberAboveMax",
-		Type:  "number",
-		Value: "2",
-		Max:   ptrNumber(1),
-		Error: regexp.MustCompile("is more than the maximum 1"),
+		Name:        "NumberAboveMax",
+		Type:        "number",
+		Value:       "2",
+		Max:         1,
+		MinDisabled: true,
+		Error:       regexp.MustCompile("is more than the maximum 1"),
 	}, {
-		Name:  "InvalidBool",
-		Type:  "bool",
-		Value: "cat",
-		Error: regexp.MustCompile("boolean value can be either"),
+		Name:        "InvalidBool",
+		Type:        "bool",
+		Value:       "cat",
+		MinDisabled: true,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("boolean value can be either"),
 	}, {
-		Name:       "BadStringWithRegex",
-		Type:       "string",
-		Regex:      "banana",
-		RegexError: "bad fruit",
-		Value:      "apple",
-		Error:      regexp.MustCompile(`bad fruit`),
+		Name:        "BadStringWithRegex",
+		Type:        "string",
+		Regex:       "banana",
+		RegexError:  "bad fruit",
+		Value:       "apple",
+		MinDisabled: true,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile(`bad fruit`),
 	}, {
 		Name:      "InvalidMonotonicity",
 		Type:      "number",
 		Value:     "1",
-		Min:       ptrNumber(0),
-		Max:       ptrNumber(2),
+		Min:       0,
+		Max:       2,
 		Monotonic: "foobar",
 		Error:     regexp.MustCompile(`number monotonicity can be either "increasing" or "decreasing"`),
 	}, {
 		Name:      "IncreasingMonotonicity",
 		Type:      "number",
 		Value:     "1",
-		Min:       ptrNumber(0),
-		Max:       ptrNumber(2),
+		Min:       0,
+		Max:       2,
 		Monotonic: "increasing",
 	}, {
 		Name:      "DecreasingMonotonicity",
 		Type:      "number",
 		Value:     "1",
-		Min:       ptrNumber(0),
-		Max:       ptrNumber(2),
+		Min:       0,
+		Max:       2,
 		Monotonic: "decreasing",
 	}, {
-		Name:  "ValidListOfStrings",
-		Type:  "list(string)",
-		Value: `["first","second","third"]`,
+		Name:        "ValidListOfStrings",
+		Type:        "list(string)",
+		Value:       `["first","second","third"]`,
+		MinDisabled: true,
+		MaxDisabled: true,
 	}, {
-		Name:  "InvalidListOfStrings",
-		Type:  "list(string)",
-		Value: `["first","second","third"`,
-		Error: regexp.MustCompile("is not valid list of strings"),
+		Name:        "InvalidListOfStrings",
+		Type:        "list(string)",
+		Value:       `["first","second","third"`,
+		MinDisabled: true,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("is not valid list of strings"),
 	}, {
-		Name:  "EmptyListOfStrings",
-		Type:  "list(string)",
-		Value: `[]`,
+		Name:        "EmptyListOfStrings",
+		Type:        "list(string)",
+		Value:       `[]`,
+		MinDisabled: true,
+		MaxDisabled: true,
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			v := &provider.Validation{
-				Min:       tc.Min,
-				Max:       tc.Max,
-				Monotonic: tc.Monotonic,
-				Regex:     tc.Regex,
-				Error:     tc.RegexError,
+				Min:         tc.Min,
+				MinDisabled: tc.MinDisabled,
+				Max:         tc.Max,
+				MaxDisabled: tc.MaxDisabled,
+				Monotonic:   tc.Monotonic,
+				Regex:       tc.Regex,
+				Error:       tc.RegexError,
 			}
 			err := v.Valid(tc.Type, tc.Value)
 			if tc.Error != nil {
@@ -573,8 +762,4 @@ func TestValueValidatesType(t *testing.T) {
 			}
 		})
 	}
-}
-
-func ptrNumber(i int) *int {
-	return &i
 }
