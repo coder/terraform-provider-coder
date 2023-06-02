@@ -36,7 +36,7 @@ func TestAgent(t *testing.T) {
 					motd_file = "/etc/motd"
 					shutdown_script = "echo bye bye"
 					shutdown_script_timeout = 120
-					login_before_ready = false
+					startup_script_behavior = "blocking"
 				}
 				`,
 			Check: func(state *terraform.State) error {
@@ -58,7 +58,7 @@ func TestAgent(t *testing.T) {
 					"motd_file",
 					"shutdown_script",
 					"shutdown_script_timeout",
-					"login_before_ready",
+					"startup_script_behavior",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)
