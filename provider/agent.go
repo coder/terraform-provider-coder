@@ -139,6 +139,8 @@ func agentResource() *schema.Resource {
 				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.",
 			},
 			"login_before_ready": {
+				// Note: When this is removed, "startup_script_behavior" should
+				// be set to "non-blocking" by default (instead of empty string).
 				Type:          schema.TypeBool,
 				Default:       true,
 				ForceNew:      true,
