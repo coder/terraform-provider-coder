@@ -16,7 +16,7 @@ import (
 func agentResource() *schema.Resource {
 	return &schema.Resource{
 		Description: "Use this resource to associate an agent.",
-		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+		CreateContext: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			// This should be a real authentication token!
 			resourceData.SetId(uuid.NewString())
 			err := resourceData.Set("token", uuid.NewString())
@@ -25,14 +25,14 @@ func agentResource() *schema.Resource {
 			}
 			return updateInitScript(resourceData, i)
 		},
-		ReadWithoutTimeout: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			err := resourceData.Set("token", uuid.NewString())
 			if err != nil {
 				return diag.FromErr(err)
 			}
 			return updateInitScript(resourceData, i)
 		},
-		DeleteContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+		DeleteContext: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
@@ -131,11 +131,29 @@ func agentResource() *schema.Resource {
 				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.",
 			},
 			"login_before_ready": {
-				Type:        schema.TypeBool,
-				Default:     true, // Change default value to false in a future release.
-				ForceNew:    true,
-				Optional:    true,
-				Description: "This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.",
+				// Note: When this is removed, "startup_script_behavior" should
+				// be set to "non-blocking" by default (instead of empty string).
+				Type:          schema.TypeBool,
+				Default:       true,
+				ForceNew:      true,
+				Optional:      true,
+				Description:   "This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.",
+				Deprecated:    "Configure startup_script_behavior instead. This attribute will be removed in a future version of the provider.",
+				ConflictsWith: []string{"startup_script_behavior"},
+			},
+			"startup_script_behavior": {
+				// Note: Our default value is "non-blocking" but we do not set
+				// it here because we want to be able to differentiate between
+				// the user setting this or "login_before_ready". For all
+				// intents and purposes, until deprecation, setting
+				// "login_before_ready = false" is equivalent to setting
+				// "startup_script_behavior = blocking".
+				Type:          schema.TypeString,
+				ForceNew:      true,
+				Optional:      true,
+				Description:   "This option sets the behavior of the `startup_script`. When set to \"blocking\", the startup_script must exit before the workspace is ready. When set to \"non-blocking\", the startup_script may run in the background and the workspace will be ready immediately. Default is \"non-blocking\", although \"blocking\" is recommended.",
+				ValidateFunc:  validation.StringInSlice([]string{"blocking", "non-blocking"}, false),
+				ConflictsWith: []string{"login_before_ready"},
 			},
 			"metadata": {
 				Type:        schema.TypeList,
