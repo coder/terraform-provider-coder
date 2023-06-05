@@ -151,7 +151,7 @@ func agentResource() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
-				Description:   "This option sets the behavior of the startup_script. When set to \"blocking\", the startup_script must exit before the workspace is ready. When set to \"non-blocking\", the startup_script may run in the background and the workspace will be ready immediately. Default is \"non-blocking\", although \"blocking\" is recommended.",
+				Description:   "This option sets the behavior of the `startup_script`. When set to \"blocking\", the startup_script must exit before the workspace is ready. When set to \"non-blocking\", the startup_script may run in the background and the workspace will be ready immediately. Default is \"non-blocking\", although \"blocking\" is recommended.",
 				ValidateFunc:  validation.StringInSlice([]string{"blocking", "non-blocking"}, false),
 				ConflictsWith: []string{"login_before_ready"},
 			},

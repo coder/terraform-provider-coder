@@ -56,7 +56,7 @@ resource "kubernetes_pod" "dev" {
 - `shutdown_script` (String) A script to run before the agent is stopped. The script should exit when it is done to signal that the workspace can be stopped.
 - `shutdown_script_timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out during shutdown, this happens when the shutdown script has not completed (exited) in the given time.
 - `startup_script` (String) A script to run after the agent starts. The script should exit when it is done to signal that the agent is ready.
-- `startup_script_behavior` (String) This option sets the behavior of the startup_script. When set to "blocking", the startup_script must exit before the workspace is ready. When set to "non-blocking", the startup_script may run in the background and the workspace will be ready immediately. Default is "non-blocking", although "blocking" is recommended.
+- `startup_script_behavior` (String) This option sets the behavior of the `startup_script`. When set to "blocking", the startup_script must exit before the workspace is ready. When set to "non-blocking", the startup_script may run in the background and the workspace will be ready immediately. Default is "non-blocking", although "blocking" is recommended.
 - `startup_script_timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out during start, this happens when the startup script has not completed (exited) in the given time.
 - `troubleshooting_url` (String) A URL to a document with instructions for troubleshooting problems with the agent.
 
