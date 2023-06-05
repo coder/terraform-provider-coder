@@ -336,12 +336,14 @@ func parameterDataSource() *schema.Resource {
 				Optional:     true,
 				RequiredWith: []string{"legacy_variable"},
 				Description:  "Name of the legacy Terraform variable. Coder will use it to lookup the variable value.",
+				Deprecated:   "Effective from Coder v0.24.0, the parameter migration feature is no longer available. This attribute will be removed in the nearest future.",
 			},
 			"legacy_variable": {
 				Type:         schema.TypeString,
 				Optional:     true,
 				RequiredWith: []string{"legacy_variable_name"},
 				Description:  "Reference to the Terraform variable. Coder will use it to lookup the default value.",
+				Deprecated:   "Effective from Coder v0.24.0, the parameter migration feature is no longer available. This attribute will be removed in the nearest future.",
 			},
 		},
 	}

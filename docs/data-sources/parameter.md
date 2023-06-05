@@ -25,8 +25,8 @@ Use this data source to configure editable options for workspaces.
 - `description` (String) Describe what this parameter does.
 - `display_name` (String) The displayed name of the parameter as it will appear in the interface.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `data.coder_workspace.me.access_url + "/icon/<path>"`.
-- `legacy_variable` (String) Reference to the Terraform variable. Coder will use it to lookup the default value.
-- `legacy_variable_name` (String) Name of the legacy Terraform variable. Coder will use it to lookup the variable value.
+- `legacy_variable` (String, Deprecated) Reference to the Terraform variable. Coder will use it to lookup the default value.
+- `legacy_variable_name` (String, Deprecated) Name of the legacy Terraform variable. Coder will use it to lookup the variable value.
 - `mutable` (Boolean) Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!
 - `option` (Block List, Max: 64) Each "option" block defines a value for a user to select from. (see [below for nested schema](#nestedblock--option))
 - `type` (String) The type of this parameter. Must be one of: "number", "string", "bool", or "list(string)".
