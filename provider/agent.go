@@ -23,18 +23,10 @@ func agentResource() *schema.Resource {
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			err = updateStartupScriptBehaviorIfLoginBeforeReady(resourceData)
-			if err != nil {
-				return diag.FromErr(err)
-			}
 			return updateInitScript(resourceData, i)
 		},
 		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			err := resourceData.Set("token", uuid.NewString())
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			err = updateStartupScriptBehaviorIfLoginBeforeReady(resourceData)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -274,22 +266,6 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 	err = resourceData.Set("init_script", script)
 	if err != nil {
 		return diag.FromErr(err)
-	}
-	return nil
-}
-
-func updateStartupScriptBehaviorIfLoginBeforeReady(resourceData *schema.ResourceData) error {
-	if rc := resourceData.GetRawConfig(); !rc.IsNull() {
-		if attr := rc.GetAttr("login_before_ready"); !attr.IsNull() {
-			behavior := "non-blocking"
-			if attr.False() {
-				behavior = "blocking"
-			}
-			err := resourceData.Set("startup_script_behavior", behavior)
-			if err != nil {
-				return err
-			}
-		}
 	}
 	return nil
 }
