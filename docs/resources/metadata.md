@@ -80,5 +80,3 @@ Optional:
 Read-Only:
 
 - `is_null` (Boolean)
-
-

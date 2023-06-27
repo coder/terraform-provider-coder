@@ -20,5 +20,3 @@ Use this data source to get information about the Coder provisioner.
 - `arch` (String) The architecture of the host. This exposes `runtime.GOARCH` (see https://pkg.go.dev/runtime#pkg-constants).
 - `id` (String) The ID of this resource.
 - `os` (String) The operating system of the host. This exposes `runtime.GOOS` (see https://pkg.go.dev/runtime#pkg-constants).
-
-
