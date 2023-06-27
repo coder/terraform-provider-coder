@@ -43,6 +43,7 @@ func TestParameter(t *testing.T) {
 					icon = "/icon/east.svg"
 					description = "Select for east!"
 				}
+				priority = 5
 			}
 			`,
 		Check: func(state *terraform.ResourceState) {
@@ -62,6 +63,7 @@ func TestParameter(t *testing.T) {
 				"option.1.value":       "us-east1-a",
 				"option.1.icon":        "/icon/east.svg",
 				"option.1.description": "Select for east!",
+				"priority":             "5",
 			} {
 				require.Equal(t, value, attrs[key])
 			}
