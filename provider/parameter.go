@@ -338,7 +338,7 @@ func parameterDataSource() *schema.Resource {
 			"priority": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The priority of template parameters determines their position ahead of parameters with lower priorities in the UI/CLI presentation.",
+				Description: "The priority of a template parameter determines its position in the UI/CLI presentation. A higher priority parameter is positioned ahead of a lower priority one and parameters with the same priority are ordered by name in ascending order.",
 			},
 			"legacy_variable_name": {
 				Type:         schema.TypeString,
