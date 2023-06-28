@@ -41,18 +41,18 @@ data "coder_parameter" "is_public_instance" {
 }
 
 data "coder_parameter" "cores" {
-  name     = "CPU Cores"
-  type     = "number"
-  icon     = "/icon/cpu.svg"
-  default  = 3
-  priority = 10
+  name    = "CPU Cores"
+  type    = "number"
+  icon    = "/icon/cpu.svg"
+  default = 3
+  order   = 10
 }
 
 data "coder_parameter" "disk_size" {
-  name     = "Disk Size"
-  type     = "number"
-  default  = "5"
-  priority = 8
+  name    = "Disk Size"
+  type    = "number"
+  default = "5"
+  order   = 8
   validation {
     # This can apply to number.
     min       = 0

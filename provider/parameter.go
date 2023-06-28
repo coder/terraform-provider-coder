@@ -57,7 +57,7 @@ type Parameter struct {
 	Validation  []Validation
 	Optional    bool
 
-	Priority int
+	Order int
 
 	LegacyVariableName string `mapstructure:"legacy_variable_name"`
 	LegacyVariable     string `mapstructure:"legacy_variable"`
@@ -92,7 +92,7 @@ func parameterDataSource() *schema.Resource {
 				Option      interface{}
 				Validation  interface{}
 				Optional    interface{}
-				Priority    interface{}
+				Order       interface{}
 
 				LegacyVariableName interface{}
 				LegacyVariable     interface{}
@@ -125,7 +125,7 @@ func parameterDataSource() *schema.Resource {
 					rd.Set("optional", val)
 					return val
 				}(),
-				Priority:           rd.Get("priority"),
+				Order:              rd.Get("order"),
 				LegacyVariableName: rd.Get("legacy_variable_name"),
 				LegacyVariable:     rd.Get("legacy_variable"),
 			}, &parameter)
@@ -335,10 +335,10 @@ func parameterDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "Whether this value is optional.",
 			},
-			"priority": {
+			"order": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The priority of a template parameter determines its position in the UI/CLI presentation. A higher priority parameter is positioned ahead of a lower priority one and parameters with the same priority are ordered by name in ascending order.",
+				Description: "The order determines the position of a template parameter in the UI/CLI presentation. A parameter with lower order is positioned ahead of a high order one and parameters with the same order are sorted by name in ascending order.",
 			},
 			"legacy_variable_name": {
 				Type:         schema.TypeString,

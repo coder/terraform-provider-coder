@@ -29,7 +29,7 @@ Use this data source to configure editable options for workspaces.
 - `legacy_variable_name` (String, Deprecated) Name of the legacy Terraform variable. Coder will use it to lookup the variable value.
 - `mutable` (Boolean) Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!
 - `option` (Block List, Max: 64) Each "option" block defines a value for a user to select from. (see [below for nested schema](#nestedblock--option))
-- `priority` (Number) The priority of a template parameter determines its position in the UI/CLI presentation. A higher priority parameter is positioned ahead of a lower priority one and parameters with the same priority are ordered by name in ascending order.
+- `order` (Number) The order determines the position of a template parameter in the UI/CLI presentation. A parameter with lower order is positioned ahead of a high order one and parameters with the same order are sorted by name in ascending order.
 - `type` (String) The type of this parameter. Must be one of: "number", "string", "bool", or "list(string)".
 - `validation` (Block List, Max: 1) Validate the input of a parameter. (see [below for nested schema](#nestedblock--validation))
 
