@@ -37,5 +37,3 @@ resource "kubernetes_pod" "dev" {
 - `owner_session_token` (String) Session token for interfacing with a Coder deployment. It is regenerated everytime a workspace is started.
 - `start_count` (Number) A computed count based on "transition" state. If "start", count will equal 1.
 - `transition` (String) Either "start" or "stop". Use this to start/stop resources with "count".
-
-

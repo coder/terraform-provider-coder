@@ -45,12 +45,14 @@ data "coder_parameter" "cores" {
   type    = "number"
   icon    = "/icon/cpu.svg"
   default = 3
+  order   = 10
 }
 
 data "coder_parameter" "disk_size" {
   name    = "Disk Size"
   type    = "number"
   default = "5"
+  order   = 8
   validation {
     # This can apply to number.
     min       = 0

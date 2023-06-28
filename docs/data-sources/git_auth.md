@@ -46,5 +46,3 @@ EOF
 ### Read-Only
 
 - `access_token` (String) The access token returned by the git authentication provider. This can be used to pre-authenticate command-line tools.
-
-

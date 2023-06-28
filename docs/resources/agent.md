@@ -79,5 +79,3 @@ Optional:
 
 - `display_name` (String) The user-facing name of this value.
 - `timeout` (Number) The maximum time the command is allowed to run in seconds.
-
-
