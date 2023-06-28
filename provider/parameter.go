@@ -338,7 +338,7 @@ func parameterDataSource() *schema.Resource {
 			"order": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The order determines the position of a template parameter in the UI/CLI presentation. A parameter with lower order is positioned ahead of a high order one and parameters with the same order are sorted by name in ascending order.",
+				Description: "The order determines the position of a template parameter in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by name (ascending order).",
 			},
 			"legacy_variable_name": {
 				Type:         schema.TypeString,
