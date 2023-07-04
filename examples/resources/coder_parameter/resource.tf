@@ -74,8 +74,8 @@ data "coder_parameter" "cat_lives" {
 }
 
 data "coder_parameter" "fairy_tale" {
-  name = "Fairy Tale"
-  type = "string"
+  name        = "Fairy Tale"
+  type        = "string"
   prompt_user = "always"
 }
 
