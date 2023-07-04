@@ -14,6 +14,7 @@ func TestDecode(t *testing.T) {
 	const (
 		legacyVariable     = "Legacy Variable"
 		legacyVariableName = "Legacy Variable Name"
+		promptUserAlways   = "always"
 
 		displayName = "Display Name"
 	)
@@ -32,6 +33,7 @@ func TestDecode(t *testing.T) {
 				"max_disabled": true,
 			},
 		},
+		"prompt_user": promptUserAlways,
 	}
 
 	var param provider.Parameter
@@ -44,4 +46,5 @@ func TestDecode(t *testing.T) {
 	assert.True(t, param.Validation[0].MaxDisabled)
 	assert.Equal(t, 0, param.Validation[0].Min)
 	assert.False(t, param.Validation[0].MinDisabled)
+	assert.Equal(t, promptUserAlways, param.PromptUser)
 }

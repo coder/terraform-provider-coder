@@ -30,6 +30,7 @@ Use this data source to configure editable options for workspaces.
 - `mutable` (Boolean) Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!
 - `option` (Block List, Max: 64) Each "option" block defines a value for a user to select from. (see [below for nested schema](#nestedblock--option))
 - `order` (Number) The order determines the position of a template parameter in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by name (ascending order).
+- `prompt_user` (String) Prompt user for the parameter value. Coder will not persist it between workspace builds.
 - `type` (String) The type of this parameter. Must be one of: "number", "string", "bool", or "list(string)".
 - `validation` (Block List, Max: 1) Validate the input of a parameter. (see [below for nested schema](#nestedblock--validation))
 

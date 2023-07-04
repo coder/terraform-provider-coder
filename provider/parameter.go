@@ -56,8 +56,8 @@ type Parameter struct {
 	Option      []Option
 	Validation  []Validation
 	Optional    bool
-
-	Order int
+	Order       int
+	PromptUser  string `mapstructure:"prompt_user"`
 
 	LegacyVariableName string `mapstructure:"legacy_variable_name"`
 	LegacyVariable     string `mapstructure:"legacy_variable"`
@@ -93,6 +93,7 @@ func parameterDataSource() *schema.Resource {
 				Validation  interface{}
 				Optional    interface{}
 				Order       interface{}
+				PromptUser  interface{}
 
 				LegacyVariableName interface{}
 				LegacyVariable     interface{}
@@ -126,6 +127,7 @@ func parameterDataSource() *schema.Resource {
 					return val
 				}(),
 				Order:              rd.Get("order"),
+				PromptUser:         rd.Get("prompt_user"),
 				LegacyVariableName: rd.Get("legacy_variable_name"),
 				LegacyVariable:     rd.Get("legacy_variable"),
 			}, &parameter)
@@ -339,6 +341,12 @@ func parameterDataSource() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The order determines the position of a template parameter in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by name (ascending order).",
+			},
+			"prompt_user": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"always"}, false),
+				Description:  "Prompt user for the parameter value. Coder will not persist it between workspace builds.",
 			},
 			"legacy_variable_name": {
 				Type:         schema.TypeString,
