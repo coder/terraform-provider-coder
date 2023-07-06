@@ -37,7 +37,7 @@ func New() *schema.Provider {
 			},
 			"feature_use_managed_variables": {
 				Type:        schema.TypeBool,
-				Description: "Feature: use managed Terraform variables. If disabled, Terraform variables will be included in legacy Parameter Schema.",
+				Description: "Feature: use managed Terraform variables. The feature flag is not used anymore as Terraform variables are now exclusively utilized for template-wide variables.",
 				Default:     true,
 				Optional:    true,
 				Deprecated:  "Terraform variables are now exclusively utilized for template-wide variables after the removal of support for legacy parameters.",
