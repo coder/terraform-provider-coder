@@ -58,9 +58,6 @@ type Parameter struct {
 	Optional    bool
 	Order       int
 	Ephemeral   bool
-
-	LegacyVariableName string `mapstructure:"legacy_variable_name"`
-	LegacyVariable     string `mapstructure:"legacy_variable"`
 }
 
 func parameterDataSource() *schema.Resource {
@@ -94,9 +91,6 @@ func parameterDataSource() *schema.Resource {
 				Optional    interface{}
 				Order       interface{}
 				Ephemeral   interface{}
-
-				LegacyVariableName interface{}
-				LegacyVariable     interface{}
 			}{
 				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
@@ -104,20 +98,10 @@ func parameterDataSource() *schema.Resource {
 				Description: rd.Get("description"),
 				Type:        rd.Get("type"),
 				Mutable:     rd.Get("mutable"),
-				Default: func() interface{} {
-					standardMode := rd.GetRawConfig().AsValueMap()["legacy_variable"].IsNull()
-					if standardMode {
-						return rd.Get("default")
-					}
-
-					// legacy variable is linked
-					legacyVariable := rd.GetRawConfig().AsValueMap()["legacy_variable"].AsString()
-					rd.Set("default", legacyVariable)
-					return legacyVariable
-				}(),
-				Icon:       rd.Get("icon"),
-				Option:     rd.Get("option"),
-				Validation: fixedValidation,
+				Default:     rd.Get("default"),
+				Icon:        rd.Get("icon"),
+				Option:      rd.Get("option"),
+				Validation:  fixedValidation,
 				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
@@ -126,10 +110,8 @@ func parameterDataSource() *schema.Resource {
 					rd.Set("optional", val)
 					return val
 				}(),
-				Order:              rd.Get("order"),
-				Ephemeral:          rd.Get("ephemeral"),
-				LegacyVariableName: rd.Get("legacy_variable_name"),
-				LegacyVariable:     rd.Get("legacy_variable"),
+				Order:     rd.Get("order"),
+				Ephemeral: rd.Get("ephemeral"),
 			}, &parameter)
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
@@ -351,20 +333,6 @@ func parameterDataSource() *schema.Resource {
 				Default:     false,
 				Optional:    true,
 				Description: "The value of an ephemeral parameter will not be preserved between consecutive workspace builds.",
-			},
-			"legacy_variable_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				RequiredWith: []string{"legacy_variable"},
-				Description:  "Name of the legacy Terraform variable. Coder will use it to lookup the variable value.",
-				Deprecated:   "Effective from Coder v0.24.0, the parameter migration feature is no longer available. This attribute will be removed in the nearest future.",
-			},
-			"legacy_variable": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				RequiredWith: []string{"legacy_variable_name"},
-				Description:  "Reference to the Terraform variable. Coder will use it to lookup the default value.",
-				Deprecated:   "Effective from Coder v0.24.0, the parameter migration feature is no longer available. This attribute will be removed in the nearest future.",
 			},
 		},
 	}

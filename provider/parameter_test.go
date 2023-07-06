@@ -354,32 +354,6 @@ func TestParameter(t *testing.T) {
 			}
 		},
 	}, {
-		Name: "LegacyVariable",
-		Config: `
-variable "old_region" {
-  type = string
-  default = "fake-region" # for testing purposes, no need to set via env TF_...
-}
-
-data "coder_parameter" "region" {
-	name = "Region"
-	type = "string"
-	default = "will-be-ignored"
-	legacy_variable_name = "old_region"
-	legacy_variable = var.old_region
-}`,
-		Check: func(state *terraform.ResourceState) {
-			for key, expected := range map[string]string{
-				"name":                 "Region",
-				"type":                 "string",
-				"default":              "fake-region",
-				"legacy_variable_name": "old_region",
-				"legacy_variable":      "fake-region",
-			} {
-				require.Equal(t, expected, state.Primary.Attributes[key])
-			}
-		},
-	}, {
 		Name: "ListOfStrings",
 		Config: `
 data "coder_parameter" "region" {
@@ -392,32 +366,6 @@ data "coder_parameter" "region" {
 				"name":    "Region",
 				"type":    "list(string)",
 				"default": `["us-east-1","eu-west-1","ap-northeast-1"]`,
-			} {
-				attributeValue, ok := state.Primary.Attributes[key]
-				require.True(t, ok, "attribute %q is expected", key)
-				require.Equal(t, expected, attributeValue)
-			}
-		},
-	}, {
-		Name: "ListOfStringsButMigrated",
-		Config: `
-variable "old_region" {
-	type = list(string)
-	default = ["us-west-1a"] # for testing purposes, no need to set via env TF_...
-}
-
-data "coder_parameter" "region" {
-	name = "Region"
-	type = "list(string)"
-	default = "[\"us-east-1\", \"eu-west-1\", \"ap-northeast-1\"]"
-	legacy_variable_name = "old_region"
-	legacy_variable = jsonencode(var.old_region)
-}`,
-		Check: func(state *terraform.ResourceState) {
-			for key, expected := range map[string]string{
-				"name":    "Region",
-				"type":    "list(string)",
-				"default": `["us-west-1a"]`,
 			} {
 				attributeValue, ok := state.Primary.Attributes[key]
 				require.True(t, ok, "attribute %q is expected", key)
