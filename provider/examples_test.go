@@ -26,20 +26,6 @@ func TestExamples(t *testing.T) {
 			}},
 		})
 	})
-
-	t.Run("coder_parameter_migration", func(t *testing.T) {
-		t.Parallel()
-
-		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
-			Steps: []resource.TestStep{{
-				Config: mustReadFile(t, "../examples/resources/coder_parameter_migration/resource.tf"),
-			}},
-		})
-	})
 }
 
 func mustReadFile(t *testing.T, path string) string {

@@ -1,6 +1,4 @@
-provider "coder" {
-  feature_use_managed_variables = true
-}
+provider "coder" {}
 
 data "coder_parameter" "example" {
   name        = "Region"
