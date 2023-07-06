@@ -350,7 +350,7 @@ func parameterDataSource() *schema.Resource {
 				Type:        schema.TypeBool,
 				Default:     false,
 				Optional:    true,
-				Description: "The presence of the ephemeral dictates whether the parameter value will be preserved between consecutive workspace builds.",
+				Description: "The value of an ephemeral parameter will not be preserved between consecutive workspace builds.",
 			},
 			"legacy_variable_name": {
 				Type:         schema.TypeString,

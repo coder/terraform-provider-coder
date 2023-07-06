@@ -24,7 +24,7 @@ Use this data source to configure editable options for workspaces.
 - `default` (String) A default value for the parameter.
 - `description` (String) Describe what this parameter does.
 - `display_name` (String) The displayed name of the parameter as it will appear in the interface.
-- `ephemeral` (Boolean) The presence of the ephemeral dictates whether the parameter value will be preserved between consecutive workspace builds.
+- `ephemeral` (Boolean) The value of an ephemeral parameter will not be preserved between consecutive workspace builds.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `data.coder_workspace.me.access_url + "/icon/<path>"`.
 - `legacy_variable` (String, Deprecated) Reference to the Terraform variable. Coder will use it to lookup the default value.
 - `legacy_variable_name` (String, Deprecated) Name of the legacy Terraform variable. Coder will use it to lookup the variable value.
