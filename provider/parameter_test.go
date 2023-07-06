@@ -44,6 +44,7 @@ func TestParameter(t *testing.T) {
 					description = "Select for east!"
 				}
 				order = 5
+				ephemeral = true
 			}
 			`,
 		Check: func(state *terraform.ResourceState) {
@@ -64,6 +65,7 @@ func TestParameter(t *testing.T) {
 				"option.1.icon":        "/icon/east.svg",
 				"option.1.description": "Select for east!",
 				"order":                "5",
+				"ephemeral":            "true",
 			} {
 				require.Equal(t, value, attrs[key])
 			}
@@ -602,6 +604,17 @@ data "coder_parameter" "region" {
 			}
 			`,
 		ExpectError: regexp.MustCompile("a min cannot be specified for a bool type"),
+	}, {
+		Name: "ImmutableEphemeralError",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				mutable = false
+				ephemeral = true
+			}
+			`,
+		ExpectError: regexp.MustCompile("parameter can't be immutable and ephemeral"),
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {

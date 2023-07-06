@@ -56,8 +56,8 @@ type Parameter struct {
 	Option      []Option
 	Validation  []Validation
 	Optional    bool
-
-	Order int
+	Order       int
+	Ephemeral   bool
 
 	LegacyVariableName string `mapstructure:"legacy_variable_name"`
 	LegacyVariable     string `mapstructure:"legacy_variable"`
@@ -93,6 +93,7 @@ func parameterDataSource() *schema.Resource {
 				Validation  interface{}
 				Optional    interface{}
 				Order       interface{}
+				Ephemeral   interface{}
 
 				LegacyVariableName interface{}
 				LegacyVariable     interface{}
@@ -126,6 +127,7 @@ func parameterDataSource() *schema.Resource {
 					return val
 				}(),
 				Order:              rd.Get("order"),
+				Ephemeral:          rd.Get("ephemeral"),
 				LegacyVariableName: rd.Get("legacy_variable_name"),
 				LegacyVariable:     rd.Get("legacy_variable"),
 			}, &parameter)
@@ -145,6 +147,10 @@ func parameterDataSource() *schema.Resource {
 				value = envValue
 			}
 			rd.Set("value", value)
+
+			if !parameter.Mutable && parameter.Ephemeral {
+				return diag.Errorf("parameter can't be immutable and ephemeral")
+			}
 
 			if len(parameter.Validation) == 1 {
 				validation := &parameter.Validation[0]
@@ -339,6 +345,12 @@ func parameterDataSource() *schema.Resource {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "The order determines the position of a template parameter in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by name (ascending order).",
+			},
+			"ephemeral": {
+				Type:        schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				Description: "The value of an ephemeral parameter will not be preserved between consecutive workspace builds.",
 			},
 			"legacy_variable_name": {
 				Type:         schema.TypeString,

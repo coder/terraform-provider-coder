@@ -74,8 +74,10 @@ data "coder_parameter" "cat_lives" {
 }
 
 data "coder_parameter" "fairy_tale" {
-  name = "Fairy Tale"
-  type = "string"
+  name      = "Fairy Tale"
+  type      = "string"
+  mutable   = true
+  ephemeral = true
 }
 
 data "coder_parameter" "users" {
