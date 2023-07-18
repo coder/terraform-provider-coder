@@ -6,7 +6,10 @@ on:
   pull_request:
     paths-ignore:
       - "README.md"
+
   push:
+    branches:
+      - "main"
     paths-ignore:
       - "README.md"
 

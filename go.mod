@@ -1,6 +1,6 @@
 module github.com/coder/terraform-provider-coder
 
-go 1.17
+go 1.20
 
 require (
 	github.com/google/uuid v1.3.0
