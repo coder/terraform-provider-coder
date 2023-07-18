@@ -75,6 +75,7 @@ data "coder_parameter" "fairy_tale" {
   name      = "Fairy Tale"
   type      = "string"
   mutable   = true
+  default   = "Hansel and Gretel"
   ephemeral = true
 }
 

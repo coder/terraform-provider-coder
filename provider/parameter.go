@@ -134,6 +134,10 @@ func parameterDataSource() *schema.Resource {
 				return diag.Errorf("parameter can't be immutable and ephemeral")
 			}
 
+			if !parameter.Optional && parameter.Ephemeral {
+				return diag.Errorf("ephemeral parameter requires the default property")
+			}
+
 			if len(parameter.Validation) == 1 {
 				validation := &parameter.Validation[0]
 				err = validation.Valid(parameter.Type, value)

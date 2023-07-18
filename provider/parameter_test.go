@@ -31,6 +31,7 @@ func TestParameter(t *testing.T) {
 					EOT
 				mutable = true
 				icon = "/icon/region.svg"
+				default = "us-east1-a"
 				option {
 					name = "US Central"
 					value = "us-central1-a"
@@ -65,6 +66,7 @@ func TestParameter(t *testing.T) {
 				"option.1.icon":        "/icon/east.svg",
 				"option.1.description": "Select for east!",
 				"order":                "5",
+				"default":              "us-east1-a",
 				"ephemeral":            "true",
 			} {
 				require.Equal(t, value, attrs[key])
@@ -558,11 +560,23 @@ data "coder_parameter" "region" {
 			data "coder_parameter" "region" {
 				name = "Region"
 				type = "string"
+				default = "abc"
 				mutable = false
 				ephemeral = true
 			}
 			`,
 		ExpectError: regexp.MustCompile("parameter can't be immutable and ephemeral"),
+	}, {
+		Name: "RequiredEphemeralError",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				mutable = true
+				ephemeral = true
+			}
+			`,
+		ExpectError: regexp.MustCompile("ephemeral parameter requires the default property"),
 	}} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
