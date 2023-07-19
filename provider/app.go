@@ -151,6 +151,7 @@ func appResource() *schema.Resource {
 			"url": {
 				Type: schema.TypeString,
 				Description: "A URL to be proxied to from inside the workspace. " +
+					"This should be of the form \"http://localhost:PORT[/SUBPATH]\". " +
 					"Either \"command\" or \"url\" may be specified, but not both.",
 				ForceNew:      true,
 				Optional:      true,
