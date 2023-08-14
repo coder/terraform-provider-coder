@@ -198,6 +198,15 @@ func agentResource() *schema.Resource {
 					},
 				},
 			},
+			"default_apps": {
+				Type: schema.TypeList,
+				Description: "The list of built-in apps to display in the UI. Defaults to all apps.",
+				ForceNew: true,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }

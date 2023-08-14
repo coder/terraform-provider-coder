@@ -48,6 +48,7 @@ resource "kubernetes_pod" "dev" {
 
 - `auth` (String) The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".
 - `connection_timeout` (Number) Time in seconds until the agent is marked as timed out when a connection with the server cannot be established. A value of zero never marks the agent as timed out.
+- `default_apps` (List of String) The list of built-in apps to display in the UI. Defaults to all apps.
 - `dir` (String) The starting directory when a user creates a shell session. Defaults to $HOME.
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
 - `login_before_ready` (Boolean, Deprecated) This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.

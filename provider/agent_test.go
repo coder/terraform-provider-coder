@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -242,6 +243,52 @@ func TestAgent_Metadata(t *testing.T) {
 				require.Equal(t, "ps aux | wc -l", attr["metadata.0.script"])
 				require.Equal(t, "5", attr["metadata.0.interval"])
 				require.Equal(t, "1", attr["metadata.0.timeout"])
+				return nil
+			},
+		}},
+	})
+}
+
+func TestAgent_DefaultApps(t *testing.T) {
+	t.Parallel()
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						default_apps = ["web-terminal", "vscode-desktop", "code-server", "port-forward"]
+					}
+					`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+
+				resource := state.Modules[0].Resources["coder_agent.dev"]
+				require.NotNil(t, resource)
+
+				t.Logf("resource: %v", resource.Primary.Attributes)
+
+				numElements, ok := resource.Primary.Attributes["default_apps.#"]
+				require.True(t, ok)
+				require.Equal(t, "4", numElements)
+
+				for i, app := range []string{
+					"web-terminal",
+					"vscode-desktop",
+					"code-server",
+					"port-forward",
+				} {
+					key := fmt.Sprintf("default_apps.%d", i)
+					require.Equal(t, resource.Primary.Attributes[key], app)
+				}
 				return nil
 			},
 		}},
