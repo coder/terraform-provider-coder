@@ -48,8 +48,8 @@ resource "kubernetes_pod" "dev" {
 
 - `auth` (String) The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".
 - `connection_timeout` (Number) Time in seconds until the agent is marked as timed out when a connection with the server cannot be established. A value of zero never marks the agent as timed out.
-- `default_apps` (List of String) The list of built-in apps to display in the UI. Defaults to all apps.
 - `dir` (String) The starting directory when a user creates a shell session. Defaults to $HOME.
+- `display_apps` (Block Set, Max: 1) The list of built-in apps to display in the agent bar. (see [below for nested schema](#nestedblock--display_apps))
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
 - `login_before_ready` (Boolean, Deprecated) This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.
 - `metadata` (Block List) Each "metadata" block defines a single item consisting of a key/value pair. This feature is in alpha and may break in future releases. (see [below for nested schema](#nestedblock--metadata))
@@ -66,6 +66,18 @@ resource "kubernetes_pod" "dev" {
 - `id` (String) The ID of this resource.
 - `init_script` (String) Run this script on startup of an instance to initialize the agent.
 - `token` (String, Sensitive) Set the environment variable "CODER_AGENT_TOKEN" with this token to authenticate an agent.
+
+<a id="nestedblock--display_apps"></a>
+### Nested Schema for `display_apps`
+
+Optional:
+
+- `port_forwarding_helper` (Boolean) Display port-forwarding helper button in the agent bar.
+- `ssh_helper` (Boolean) Display port-forwarding helper button in the agent bar.
+- `vscode` (Boolean) Display the VSCode Desktop app in the agent bar.
+- `vscode_insiders` (Boolean) Display the VSCode Insiders app in the agent bar.
+- `web_terminal` (Boolean) Display the web terminal app in the agent bar.
+
 
 <a id="nestedblock--metadata"></a>
 ### Nested Schema for `metadata`
