@@ -251,46 +251,154 @@ func TestAgent_Metadata(t *testing.T) {
 
 func TestAgent_DefaultApps(t *testing.T) {
 	t.Parallel()
-	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
-		Steps: []resource.TestStep{{
-			Config: `
+	t.Run("OK", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			Providers: map[string]*schema.Provider{
+				"coder": provider.New(),
+			},
+			IsUnitTest: true,
+			Steps: []resource.TestStep{{
+				// Test the fields with non-default values.
+				Config: `
 					provider "coder" {
 						url = "https://example.com"
 					}
 					resource "coder_agent" "dev" {
 						os = "linux"
 						arch = "amd64"
-						default_apps = ["web-terminal", "vscode-desktop", "code-server", "port-forward"]
+						display_apps {
+							vscode = false
+							vscode_insiders = true
+							web_terminal = false
+							port_forwarding_helper = false
+							ssh_helper = false
+						} 
 					}
 					`,
-			Check: func(state *terraform.State) error {
-				require.Len(t, state.Modules, 1)
-				require.Len(t, state.Modules[0].Resources, 1)
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 1)
 
-				resource := state.Modules[0].Resources["coder_agent.dev"]
-				require.NotNil(t, resource)
+					resource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, resource)
 
-				t.Logf("resource: %v", resource.Primary.Attributes)
+					t.Logf("resource: %v", resource.Primary.Attributes)
 
-				numElements, ok := resource.Primary.Attributes["default_apps.#"]
-				require.True(t, ok)
-				require.Equal(t, "4", numElements)
+					for _, app := range []string{
+						"web_terminal",
+						"vscode_insiders",
+						"vscode",
+						"port_forwarding_helper",
+						"ssh_helper",
+					} {
+						key := fmt.Sprintf("display_apps.0.%s", app)
+						if app == "vscode_insiders" {
+							require.Equal(t, "true", resource.Primary.Attributes[key])
+						} else {
+							require.Equal(t, "false", resource.Primary.Attributes[key])
+						}
+					}
+					return nil
+				},
+			}},
+		})
 
-				for i, app := range []string{
-					"web-terminal",
-					"vscode-desktop",
-					"code-server",
-					"port-forward",
-				} {
-					key := fmt.Sprintf("default_apps.%d", i)
-					require.Equal(t, resource.Primary.Attributes[key], app)
-				}
-				return nil
-			},
-		}},
 	})
+
+	// Assert all the defaults are set correctly.
+	t.Run("Omitted", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			Providers: map[string]*schema.Provider{
+				"coder": provider.New(),
+			},
+			IsUnitTest: true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+					}
+					`,
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 1)
+
+					resource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, resource)
+
+					t.Logf("resource: %v", resource.Primary.Attributes)
+
+					for _, app := range []string{
+						"web_terminal",
+						"vscode_insiders",
+						"vscode",
+						"port_forwarding_helper",
+						"ssh_helper",
+					} {
+						key := fmt.Sprintf("display_apps.0.%s", app)
+						if app == "vscode_insiders" {
+							require.Equal(t, "false", resource.Primary.Attributes[key])
+						} else {
+							require.Equal(t, "true", resource.Primary.Attributes[key])
+						}
+					}
+					return nil
+				},
+			}},
+		})
+	})
+
+	t.Run("Empty", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			Providers: map[string]*schema.Provider{
+				"coder": provider.New(),
+			},
+			IsUnitTest: true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						display_apps {
+							vscode = false
+						}
+					}
+					`,
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 1)
+
+					resource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, resource)
+
+					t.Logf("resource: %v", resource.Primary.Attributes)
+
+					for _, app := range []string{
+						"web_terminal",
+						"vscode_insiders",
+						"vscode",
+						"port_forwarding_helper",
+						"ssh_helper",
+					} {
+						key := fmt.Sprintf("display_apps.0.%s", app)
+						if app == "vscode_insiders" {
+							require.Equal(t, "false", resource.Primary.Attributes[key])
+						} else {
+							require.Equal(t, "true", resource.Primary.Attributes[key])
+						}
+					}
+
+					return nil
+				},
+			}},
+		})
+
+	})
+
 }

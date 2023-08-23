@@ -23,6 +23,22 @@ func agentResource() *schema.Resource {
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
+			if _, ok := resourceData.GetOk("display_apps"); !ok {
+				err = resourceData.Set("display_apps", []interface{}{
+					map[string]bool{
+						"vscode":                 true,
+						"vscode_insiders":        false,
+						"web_terminal":           true,
+						"ssh_helper":             true,
+						"port_forwarding_helper": true,
+					},
+				})
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
 			return updateInitScript(resourceData, i)
 		},
 		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
@@ -30,6 +46,21 @@ func agentResource() *schema.Resource {
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			if _, ok := resourceData.GetOk("display_apps"); !ok {
+				err = resourceData.Set("display_apps", []interface{}{
+					map[string]bool{
+						"vscode":                 true,
+						"vscode_insiders":        false,
+						"web_terminal":           true,
+						"ssh_helper":             true,
+						"port_forwarding_helper": true,
+					},
+				})
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			}
+
 			return updateInitScript(resourceData, i)
 		},
 		DeleteContext: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
@@ -198,13 +229,51 @@ func agentResource() *schema.Resource {
 					},
 				},
 			},
-			"default_apps": {
-				Type: schema.TypeList,
-				Description: "The list of built-in apps to display in the UI. Defaults to all apps.",
-				ForceNew: true,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+			"display_apps": {
+				Type:        schema.TypeSet,
+				Description: "The list of built-in apps to display in the agent bar.",
+				ForceNew:    true,
+				Optional:    true,
+				MaxItems:    1,
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"vscode": {
+							Type:        schema.TypeBool,
+							Description: "Display the VSCode Desktop app in the agent bar.",
+							ForceNew:    true,
+							Optional:    true,
+							Default:     true,
+						},
+						"vscode_insiders": {
+							Type:        schema.TypeBool,
+							Description: "Display the VSCode Insiders app in the agent bar.",
+							ForceNew:    true,
+							Optional:    true,
+							Default:     false,
+						},
+						"web_terminal": {
+							Type:        schema.TypeBool,
+							Description: "Display the web terminal app in the agent bar.",
+							ForceNew:    true,
+							Optional:    true,
+							Default:     true,
+						},
+						"port_forwarding_helper": {
+							Type:        schema.TypeBool,
+							Description: "Display port-forwarding helper button in the agent bar.",
+							ForceNew:    true,
+							Optional:    true,
+							Default:     true,
+						},
+						"ssh_helper": {
+							Type:        schema.TypeBool,
+							Description: "Display port-forwarding helper button in the agent bar.",
+							ForceNew:    true,
+							Optional:    true,
+							Default:     true,
+						},
+					},
 				},
 			},
 		},
