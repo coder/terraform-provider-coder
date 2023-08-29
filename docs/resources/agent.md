@@ -20,6 +20,12 @@ resource "coder_agent" "dev" {
   os   = "linux"
   arch = "amd64"
   dir  = "/workspace"
+  display_apps {
+    vscode          = true
+    vscode_insiders = false
+    web_terminal    = true
+    ssh_helper      = false
+  }
 }
 
 resource "kubernetes_pod" "dev" {
@@ -72,8 +78,8 @@ resource "kubernetes_pod" "dev" {
 
 Optional:
 
-- `port_forwarding_helper` (Boolean) Display port-forwarding helper button in the agent bar.
-- `ssh_helper` (Boolean) Display port-forwarding helper button in the agent bar.
+- `port_forwarding_helper` (Boolean) Display the port-forwarding helper button in the agent bar.
+- `ssh_helper` (Boolean) Display the SSH helper button in the agent bar.
 - `vscode` (Boolean) Display the VSCode Desktop app in the agent bar.
 - `vscode_insiders` (Boolean) Display the VSCode Insiders app in the agent bar.
 - `web_terminal` (Boolean) Display the web terminal app in the agent bar.

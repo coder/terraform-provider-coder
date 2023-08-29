@@ -6,10 +6,10 @@ resource "coder_agent" "dev" {
   arch = "amd64"
   dir  = "/workspace"
   display_apps {
-	vscode = true
-	vscode_insiders = false
-	web_terminal = true
-	ssh_helper = false
+    vscode          = true
+    vscode_insiders = false
+    web_terminal    = true
+    ssh_helper      = false
   }
 }
 
