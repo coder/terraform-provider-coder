@@ -260,14 +260,14 @@ func agentResource() *schema.Resource {
 						},
 						"port_forwarding_helper": {
 							Type:        schema.TypeBool,
-							Description: "Display port-forwarding helper button in the agent bar.",
+							Description: "Display the port-forwarding helper button in the agent bar.",
 							ForceNew:    true,
 							Optional:    true,
 							Default:     true,
 						},
 						"ssh_helper": {
 							Type:        schema.TypeBool,
-							Description: "Display port-forwarding helper button in the agent bar.",
+							Description: "Display the SSH helper button in the agent bar.",
 							ForceNew:    true,
 							Optional:    true,
 							Default:     true,
