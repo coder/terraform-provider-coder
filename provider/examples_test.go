@@ -4,14 +4,27 @@ import (
 	"os"
 	"testing"
 
-	"github.com/coder/terraform-provider-coder/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
+
+	"github.com/coder/terraform-provider-coder/provider"
 )
 
 func TestExamples(t *testing.T) {
 	t.Parallel()
+
+	t.Run("coder_agent", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			Providers: map[string]*schema.Provider{
+				"coder": provider.New(),
+			},
+			IsUnitTest: true,
+			Steps: []resource.TestStep{{
+				Config: mustReadFile(t, "../examples/resources/coder_parameter/resource.tf"),
+			}},
+		})
+	})
 
 	t.Run("coder_parameter", func(t *testing.T) {
 		t.Parallel()

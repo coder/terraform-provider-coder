@@ -5,11 +5,12 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/coder/terraform-provider-coder/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
+
+	"github.com/coder/terraform-provider-coder/provider"
 )
 
 func TestAgent(t *testing.T) {
@@ -249,7 +250,7 @@ func TestAgent_Metadata(t *testing.T) {
 	})
 }
 
-func TestAgent_DefaultApps(t *testing.T) {
+func TestAgent_DisplayApps(t *testing.T) {
 	t.Parallel()
 	t.Run("OK", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
@@ -302,7 +303,52 @@ func TestAgent_DefaultApps(t *testing.T) {
 				},
 			}},
 		})
+	})
 
+	t.Run("Subset", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			Providers: map[string]*schema.Provider{
+				"coder": provider.New(),
+			},
+			IsUnitTest: true,
+			Steps: []resource.TestStep{{
+				// Test the fields with non-default values.
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						display_apps {
+							vscode_insiders = true
+							web_terminal = true
+						} 
+					}
+					`,
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 1)
+
+					resource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, resource)
+
+					t.Logf("resource: %v", resource.Primary.Attributes)
+
+					for _, app := range []string{
+						"web_terminal",
+						"vscode_insiders",
+						"vscode",
+						"port_forwarding_helper",
+						"ssh_helper",
+					} {
+						key := fmt.Sprintf("display_apps.0.%s", app)
+						require.Equal(t, "true", resource.Primary.Attributes[key])
+					}
+					return nil
+				},
+			}},
+		})
 	})
 
 	// Assert all the defaults are set correctly.
@@ -350,4 +396,34 @@ func TestAgent_DefaultApps(t *testing.T) {
 			}},
 		})
 	})
+
+	t.Run("InvalidApp", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			Providers: map[string]*schema.Provider{
+				"coder": provider.New(),
+			},
+			IsUnitTest: true,
+			Steps: []resource.TestStep{{
+				// Test the fields with non-default values.
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						display_apps {
+							fake_app = false
+							vscode_insiders = true
+							web_terminal = false
+							port_forwarding_helper = false
+							ssh_helper = false
+						} 
+					}
+					`,
+				ExpectError: regexp.MustCompile(`An argument named "fake_app" is not expected here.`),
+			}},
+		})
+	})
+
 }

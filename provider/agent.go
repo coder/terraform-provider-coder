@@ -38,7 +38,6 @@ func agentResource() *schema.Resource {
 					return diag.FromErr(err)
 				}
 			}
-
 			return updateInitScript(resourceData, i)
 		},
 		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
