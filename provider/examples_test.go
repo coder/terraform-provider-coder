@@ -21,7 +21,7 @@ func TestExamples(t *testing.T) {
 			},
 			IsUnitTest: true,
 			Steps: []resource.TestStep{{
-				Config: mustReadFile(t, "../examples/resources/coder_parameter/resource.tf"),
+				Config: mustReadFile(t, "../examples/resources/coder_agent/resource.tf"),
 			}},
 		})
 	})
