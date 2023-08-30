@@ -137,7 +137,7 @@ func workspaceDataSource() *schema.Resource {
 			"owner_session_token": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "Session token for interfacing with a Coder deployment. It is regenerated everytime a workspace is started.",
+				Description: "Session token for authenticating with a Coder deployment. It is regenerated everytime a workspace is started.",
 			},
 		},
 	}
