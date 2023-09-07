@@ -1,6 +1,4 @@
-provider "coder" {
-  feature_use_managed_variables = true
-}
+provider "coder" {}
 
 data "coder_parameter" "example" {
   name        = "Region"
@@ -45,12 +43,14 @@ data "coder_parameter" "cores" {
   type    = "number"
   icon    = "/icon/cpu.svg"
   default = 3
+  order   = 10
 }
 
 data "coder_parameter" "disk_size" {
   name    = "Disk Size"
   type    = "number"
   default = "5"
+  order   = 8
   validation {
     # This can apply to number.
     min       = 0
@@ -72,12 +72,16 @@ data "coder_parameter" "cat_lives" {
 }
 
 data "coder_parameter" "fairy_tale" {
-  name = "Fairy Tale"
-  type = "string"
+  name      = "Fairy Tale"
+  type      = "string"
+  mutable   = true
+  default   = "Hansel and Gretel"
+  ephemeral = true
 }
 
 data "coder_parameter" "users" {
-  name    = "System users"
-  type    = "list(string)"
-  default = jsonencode(["root", "user1", "user2"])
+  name         = "system_users"
+  display_name = "System users"
+  type         = "list(string)"
+  default      = jsonencode(["root", "user1", "user2"])
 }

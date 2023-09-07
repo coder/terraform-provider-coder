@@ -12,10 +12,12 @@ import (
 	"strconv"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
+	"golang.org/x/xerrors"
 )
 
 type Option struct {
@@ -26,8 +28,11 @@ type Option struct {
 }
 
 type Validation struct {
-	Min       int
-	Max       int
+	Min         int
+	MinDisabled bool `mapstructure:"min_disabled"`
+	Max         int
+	MaxDisabled bool `mapstructure:"max_disabled"`
+
 	Monotonic string
 
 	Regex string
@@ -42,6 +47,7 @@ const (
 type Parameter struct {
 	Value       string
 	Name        string
+	DisplayName string `mapstructure:"display_name"`
 	Description string
 	Type        string
 	Mutable     bool
@@ -50,9 +56,8 @@ type Parameter struct {
 	Option      []Option
 	Validation  []Validation
 	Optional    bool
-
-	LegacyVariableName string `mapstructure:"legacy_variable_name"`
-	LegacyVariable     string `mapstructure:"legacy_variable"`
+	Order       int
+	Ephemeral   bool
 }
 
 func parameterDataSource() *schema.Resource {
@@ -61,10 +66,21 @@ func parameterDataSource() *schema.Resource {
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
+			fixedValidation, err := fixValidationResourceData(rd.GetRawConfig(), rd.Get("validation"))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
+			err = rd.Set("validation", fixedValidation)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+
 			var parameter Parameter
-			err := mapstructure.Decode(struct {
+			err = mapstructure.Decode(struct {
 				Value       interface{}
 				Name        interface{}
+				DisplayName interface{}
 				Description interface{}
 				Type        interface{}
 				Mutable     interface{}
@@ -73,29 +89,19 @@ func parameterDataSource() *schema.Resource {
 				Option      interface{}
 				Validation  interface{}
 				Optional    interface{}
-
-				LegacyVariableName interface{}
-				LegacyVariable     interface{}
+				Order       interface{}
+				Ephemeral   interface{}
 			}{
 				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
+				DisplayName: rd.Get("display_name"),
 				Description: rd.Get("description"),
 				Type:        rd.Get("type"),
 				Mutable:     rd.Get("mutable"),
-				Default: func() interface{} {
-					standardMode := rd.GetRawConfig().AsValueMap()["legacy_variable"].IsNull()
-					if standardMode {
-						return rd.Get("default")
-					}
-
-					// legacy variable is linked
-					legacyVariable := rd.GetRawConfig().AsValueMap()["legacy_variable"].AsString()
-					rd.Set("default", legacyVariable)
-					return legacyVariable
-				}(),
-				Icon:       rd.Get("icon"),
-				Option:     rd.Get("option"),
-				Validation: rd.Get("validation"),
+				Default:     rd.Get("default"),
+				Icon:        rd.Get("icon"),
+				Option:      rd.Get("option"),
+				Validation:  fixedValidation,
 				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
@@ -104,8 +110,8 @@ func parameterDataSource() *schema.Resource {
 					rd.Set("optional", val)
 					return val
 				}(),
-				LegacyVariableName: rd.Get("legacy_variable_name"),
-				LegacyVariable:     rd.Get("legacy_variable"),
+				Order:     rd.Get("order"),
+				Ephemeral: rd.Get("ephemeral"),
 			}, &parameter)
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
@@ -123,6 +129,14 @@ func parameterDataSource() *schema.Resource {
 				value = envValue
 			}
 			rd.Set("value", value)
+
+			if !parameter.Mutable && parameter.Ephemeral {
+				return diag.Errorf("parameter can't be immutable and ephemeral")
+			}
+
+			if !parameter.Optional && parameter.Ephemeral {
+				return diag.Errorf("ephemeral parameter requires the default property")
+			}
 
 			if len(parameter.Validation) == 1 {
 				validation := &parameter.Validation[0]
@@ -170,7 +184,12 @@ func parameterDataSource() *schema.Resource {
 			"name": {
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The name of the parameter as it will appear in the interface. If this is changed, developers will be re-prompted for a new value.",
+				Description: "The name of the parameter. If this is changed, developers will be re-prompted for a new value.",
+			},
+			"display_name": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The displayed name of the parameter as it will appear in the interface.",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -264,17 +283,24 @@ func parameterDataSource() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Default:      0,
-							Description:  "The minimum of a number parameter.",
-							RequiredWith: []string{"validation.0.max"},
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The minimum of a number parameter.",
+						},
+						"min_disabled": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Helper field to check if min is present",
 						},
 						"max": {
-							Type:         schema.TypeInt,
-							Optional:     true,
-							Description:  "The maximum of a number parameter.",
-							RequiredWith: []string{"validation.0.min"},
+							Type:        schema.TypeInt,
+							Optional:    true,
+							Description: "The maximum of a number parameter.",
+						},
+						"max_disabled": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Helper field to check if max is present",
 						},
 						"monotonic": {
 							Type:        schema.TypeString,
@@ -301,20 +327,53 @@ func parameterDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "Whether this value is optional.",
 			},
-			"legacy_variable_name": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				RequiredWith: []string{"legacy_variable"},
-				Description:  "Name of the legacy Terraform variable. Coder will use it to lookup the variable value.",
+			"order": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "The order determines the position of a template parameter in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by name (ascending order).",
 			},
-			"legacy_variable": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				RequiredWith: []string{"legacy_variable_name"},
-				Description:  "Reference to the Terraform variable. Coder will use it to lookup the default value.",
+			"ephemeral": {
+				Type:        schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				Description: "The value of an ephemeral parameter will not be preserved between consecutive workspace builds.",
 			},
 		},
 	}
+}
+
+func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (interface{}, error) {
+	// Read validation from raw config
+	rawValidation, ok := rawConfig.AsValueMap()["validation"]
+	if !ok {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	rawValidationArr := rawValidation.AsValueSlice()
+	if len(rawValidationArr) == 0 {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	rawValidationRule := rawValidationArr[0].AsValueMap()
+
+	// Load validation from resource data
+	vArr, ok := validation.([]interface{})
+	if !ok {
+		return nil, xerrors.New("validation should be an array")
+	}
+
+	if len(vArr) == 0 {
+		return validation, nil // no validation rules, nothing to fix
+	}
+
+	validationRule, ok := vArr[0].(map[string]interface{})
+	if !ok {
+		return nil, xerrors.New("validation rule should be a map")
+	}
+
+	validationRule["min_disabled"] = rawValidationRule["min"].IsNull()
+	validationRule["max_disabled"] = rawValidationRule["max"].IsNull()
+	return vArr, nil
 }
 
 func valueIsType(typ, value string) diag.Diagnostics {
@@ -345,10 +404,10 @@ func valueIsType(typ, value string) diag.Diagnostics {
 
 func (v *Validation) Valid(typ, value string) error {
 	if typ != "number" {
-		if v.Min != 0 {
+		if !v.MinDisabled {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
-		if v.Max != 0 {
+		if !v.MaxDisabled {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
 		}
 	}
@@ -381,10 +440,10 @@ func (v *Validation) Valid(typ, value string) error {
 		if err != nil {
 			return fmt.Errorf("value %q is not a number", value)
 		}
-		if num < v.Min {
+		if !v.MinDisabled && num < v.Min {
 			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
 		}
-		if num > v.Max {
+		if !v.MaxDisabled && num > v.Max {
 			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {

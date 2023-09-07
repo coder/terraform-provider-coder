@@ -20,6 +20,12 @@ resource "coder_agent" "dev" {
   os   = "linux"
   arch = "amd64"
   dir  = "/workspace"
+  display_apps {
+    vscode          = true
+    vscode_insiders = false
+    web_terminal    = true
+    ssh_helper      = false
+  }
 }
 
 resource "kubernetes_pod" "dev" {
@@ -49,12 +55,15 @@ resource "kubernetes_pod" "dev" {
 - `auth` (String) The authentication type the agent will use. Must be one of: "token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity".
 - `connection_timeout` (Number) Time in seconds until the agent is marked as timed out when a connection with the server cannot be established. A value of zero never marks the agent as timed out.
 - `dir` (String) The starting directory when a user creates a shell session. Defaults to $HOME.
+- `display_apps` (Block Set, Max: 1) The list of built-in apps to display in the agent bar. (see [below for nested schema](#nestedblock--display_apps))
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
-- `login_before_ready` (Boolean) This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.
+- `login_before_ready` (Boolean, Deprecated) This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the startup_script is done and has exited. When enabled, users may see an incomplete workspace when logging in.
+- `metadata` (Block List) Each "metadata" block defines a single item consisting of a key/value pair. This feature is in alpha and may break in future releases. (see [below for nested schema](#nestedblock--metadata))
 - `motd_file` (String) The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be /etc/motd.
 - `shutdown_script` (String) A script to run before the agent is stopped. The script should exit when it is done to signal that the workspace can be stopped.
 - `shutdown_script_timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out during shutdown, this happens when the shutdown script has not completed (exited) in the given time.
 - `startup_script` (String) A script to run after the agent starts. The script should exit when it is done to signal that the agent is ready.
+- `startup_script_behavior` (String) This option sets the behavior of the `startup_script`. When set to "blocking", the startup_script must exit before the workspace is ready. When set to "non-blocking", the startup_script may run in the background and the workspace will be ready immediately. Default is "non-blocking", although "blocking" is recommended.
 - `startup_script_timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out during start, this happens when the startup script has not completed (exited) in the given time.
 - `troubleshooting_url` (String) A URL to a document with instructions for troubleshooting problems with the agent.
 
@@ -63,3 +72,29 @@ resource "kubernetes_pod" "dev" {
 - `id` (String) The ID of this resource.
 - `init_script` (String) Run this script on startup of an instance to initialize the agent.
 - `token` (String, Sensitive) Set the environment variable "CODER_AGENT_TOKEN" with this token to authenticate an agent.
+
+<a id="nestedblock--display_apps"></a>
+### Nested Schema for `display_apps`
+
+Optional:
+
+- `port_forwarding_helper` (Boolean) Display the port-forwarding helper button in the agent bar.
+- `ssh_helper` (Boolean) Display the SSH helper button in the agent bar.
+- `vscode` (Boolean) Display the VSCode Desktop app in the agent bar.
+- `vscode_insiders` (Boolean) Display the VSCode Insiders app in the agent bar.
+- `web_terminal` (Boolean) Display the web terminal app in the agent bar.
+
+
+<a id="nestedblock--metadata"></a>
+### Nested Schema for `metadata`
+
+Required:
+
+- `interval` (Number) The interval in seconds at which to refresh this metadata item.
+- `key` (String) The key of this metadata item.
+- `script` (String) The script that retrieves the value of this metadata item.
+
+Optional:
+
+- `display_name` (String) The user-facing name of this value.
+- `timeout` (Number) The maximum time the command is allowed to run in seconds.
