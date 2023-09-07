@@ -90,5 +90,3 @@ Required:
 - `interval` (Number) Duration in seconds to wait between healthcheck requests.
 - `threshold` (Number) Number of consecutive heathcheck failures before returning an unhealthy status.
 - `url` (String) HTTP address used determine the application readiness. A successful health check is a HTTP response code less than 500 returned before healthcheck.interval seconds.
-
-

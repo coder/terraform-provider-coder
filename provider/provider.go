@@ -76,6 +76,7 @@ func New() *schema.Provider {
 			"coder_agent_instance": agentInstanceResource(),
 			"coder_app":            appResource(),
 			"coder_metadata":       metadataResource(),
+			"coder_script":         scriptResource(),
 		},
 	}
 }

@@ -61,5 +61,3 @@ Optional:
 - `min` (Number) The minimum of a number parameter.
 - `monotonic` (String) Number monotonicity, either increasing or decreasing.
 - `regex` (String) A regex for the input parameter to match against.
-
-

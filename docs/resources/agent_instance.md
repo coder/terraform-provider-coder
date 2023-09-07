@@ -40,5 +40,3 @@ resource "coder_agent_instance" "dev" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

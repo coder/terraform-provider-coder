@@ -63,5 +63,3 @@ resource "kubernetes_pod" "dev" {
 - `id` (String) The ID of this resource.
 - `init_script` (String) Run this script on startup of an instance to initialize the agent.
 - `token` (String, Sensitive) Set the environment variable "CODER_AGENT_TOKEN" with this token to authenticate an agent.
-
-
