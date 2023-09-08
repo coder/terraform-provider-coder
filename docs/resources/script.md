@@ -18,14 +18,17 @@ Use this resource to run a script from an agent.
 ### Required
 
 - `agent_id` (String) The "id" property of a "coder_agent" resource to associate with.
+- `display_name` (String) The display name of the script to display logs in the dashboard.
 - `script` (String) The script to run.
 
 ### Optional
 
-- `login_before_ready` (Boolean) This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the script is done and has exited. When enabled, users may see an incomplete workspace when logging in.
+- `cron` (String) The cron schedule to run the script on. This is a cron expression.
+- `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `data.coder_workspace.me.access_url + "/icon/<path>"`.
+- `log_path` (String) The path of a file to write the logs to. If relative, it will be appended to tmp.
 - `run_on_start` (Boolean) This option defines whether or not the script should run when the agent starts.
 - `run_on_stop` (Boolean) This option defines whether or not the script should run when the agent stops.
-- `schedule` (String) The schedule to run the script on. This is a cron expression.
+- `start_blocks_login` (Boolean) This option defines whether or not the user can (by default) login to the workspace before this script completes running on start. When enabled, users may see an incomplete workspace when logging in.
 - `timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out, this happens when the script has not completed (exited) in the given time.
 
 ### Read-Only

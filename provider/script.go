@@ -45,7 +45,7 @@ func scriptResource() *schema.Resource {
 					"icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a " +
 					"built-in icon with `data.coder_workspace.me.access_url + \"/icon/<path>\"`.",
 			},
-			"source": {
+			"script": {
 				ForceNew:    true,
 				Type:        schema.TypeString,
 				Required:    true,
