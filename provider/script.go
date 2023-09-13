@@ -2,12 +2,16 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/robfig/cron/v3"
 )
+
+var ScriptCRONParser = cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
 
 func scriptResource() *schema.Resource {
 	return &schema.Resource{
@@ -56,6 +60,17 @@ func scriptResource() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The cron schedule to run the script on. This is a cron expression.",
+				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+					v, ok := i.(string)
+					if !ok {
+						return []string{}, []error{fmt.Errorf("got type %T instead of string", i)}
+					}
+					_, err := ScriptCRONParser.Parse(v)
+					if err != nil {
+						return []string{}, []error{fmt.Errorf("%s is not a valid cron expression: %w", v, err)}
+					}
+					return nil, nil
+				},
 			},
 			"start_blocks_login": {
 				Type:        schema.TypeBool,
