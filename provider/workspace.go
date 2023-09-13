@@ -60,6 +60,12 @@ func workspaceDataSource() *schema.Resource {
 			}
 			rd.SetId(id)
 
+			templateID := os.Getenv("CODER_WORKSPACE_TEMPLATE_ID")
+			_ = rd.Set("template_id", templateID)
+
+			templateName := os.Getenv("CODER_WORKSPACE_TEMPLATE_NAME")
+			_ = rd.Set("template_name", templateName)
+
 			config, valid := i.(config)
 			if !valid {
 				return diag.Errorf("config was unexpected type %q", reflect.TypeOf(i).String())
@@ -138,6 +144,16 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Session token for authenticating with a Coder deployment. It is regenerated everytime a workspace is started.",
+			},
+			"template_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "ID of the workspace's template.",
+			},
+			"template_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the workspace's template.",
 			},
 		},
 	}
