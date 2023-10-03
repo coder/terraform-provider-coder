@@ -3,12 +3,12 @@
 page_title: "coder_external_auth Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this data source to require users to authenticate with an external provider prior to workspace creation. This can be used to pre-authenticate external services in a workspace.
+  Use this data source to require users to authenticate with an external service prior to workspace creation. This can be used to pre-authenticate external services in a workspace. (e.g. gcloud, gh, docker, etc)
 ---
 
 # coder_external_auth (Data Source)
 
-Use this data source to require users to authenticate with an external provider prior to workspace creation. This can be used to pre-authenticate external services in a workspace.
+Use this data source to require users to authenticate with an external service prior to workspace creation. This can be used to pre-authenticate external services in a workspace. (e.g. gcloud, gh, docker, etc)
 
 
 

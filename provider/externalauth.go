@@ -12,7 +12,7 @@ import (
 // externalAuthDataSource returns a schema for an external authentication data source.
 func externalAuthDataSource() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to require users to authenticate with an external provider prior to workspace creation. This can be used to pre-authenticate external services in a workspace.",
+		Description: "Use this data source to require users to authenticate with an external service prior to workspace creation. This can be used to pre-authenticate external services in a workspace. (e.g. gcloud, gh, docker, etc)",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			id, ok := rd.Get("id").(string)
 			if !ok || id == "" {
