@@ -3,10 +3,11 @@ module github.com/coder/terraform-provider-coder
 go 1.20
 
 require (
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.4.0
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.20.0
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
 )
@@ -46,7 +47,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
