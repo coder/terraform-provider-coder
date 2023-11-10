@@ -17,6 +17,7 @@ func TestWorkspace(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", "abc123")
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "templateID")
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_NAME", "template123")
+	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
 
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
@@ -46,6 +47,7 @@ func TestWorkspace(t *testing.T) {
 				require.Equal(t, "abc123", attribs["owner_session_token"])
 				require.Equal(t, "templateID", attribs["template_id"])
 				require.Equal(t, "template123", attribs["template_name"])
+				require.Equal(t, "v1.2.3", attribs["template_version"])
 				return nil
 			},
 		}},
@@ -77,6 +79,7 @@ func TestWorkspace(t *testing.T) {
 				require.Equal(t, "owner123@example.com", attribs["owner_email"])
 				require.Equal(t, "templateID", attribs["template_id"])
 				require.Equal(t, "template123", attribs["template_name"])
+				require.Equal(t, "v1.2.3", attribs["template_version"])
 				return nil
 			},
 		}},

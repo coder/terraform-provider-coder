@@ -66,6 +66,9 @@ func workspaceDataSource() *schema.Resource {
 			templateName := os.Getenv("CODER_WORKSPACE_TEMPLATE_NAME")
 			_ = rd.Set("template_name", templateName)
 
+			templateVersion := os.Getenv("CODER_WORKSPACE_TEMPLATE_VERSION")
+			_ = rd.Set("template_version", templateVersion)
+
 			config, valid := i.(config)
 			if !valid {
 				return diag.Errorf("config was unexpected type %q", reflect.TypeOf(i).String())
@@ -154,6 +157,11 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Name of the workspace's template.",
+			},
+			"template_version": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Version of the workspace's template.",
 			},
 		},
 	}
