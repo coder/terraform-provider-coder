@@ -47,7 +47,7 @@ func agentResource() *schema.Resource {
 				key := valueAsString(item.GetAttr("key"))
 				_, exists := itemKeys[key]
 				if exists {
-					return errorAsDiagnostics(xerrors.Errorf("duplicate agent metadata key %q", key))
+					return diag.FromErr(xerrors.Errorf("duplicate agent metadata key %q", key))
 				}
 				itemKeys[key] = struct{}{}
 			}
