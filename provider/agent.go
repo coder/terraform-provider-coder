@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"golang.org/x/xerrors"
 )
 
 func agentResource() *schema.Resource {
@@ -38,6 +39,19 @@ func agentResource() *schema.Resource {
 					return diag.FromErr(err)
 				}
 			}
+
+			rawPlan := resourceData.GetRawPlan()
+			items := rawPlan.GetAttr("metadata").AsValueSlice()
+			itemKeys := map[string]struct{}{}
+			for _, item := range items {
+				key := valueAsString(item.GetAttr("key"))
+				_, exists := itemKeys[key]
+				if exists {
+					return diag.FromErr(xerrors.Errorf("duplicate agent metadata key %q", key))
+				}
+				itemKeys[key] = struct{}{}
+			}
+
 			return updateInitScript(resourceData, i)
 		},
 		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {

@@ -250,6 +250,42 @@ func TestAgent_Metadata(t *testing.T) {
 	})
 }
 
+func TestAgent_MetadataDuplicateKeys(t *testing.T) {
+	t.Parallel()
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+				provider "coder" {
+					url = "https://example.com"
+				}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+					metadata {
+						key = "process_count"
+						display_name = "Process Count"
+						script = "ps aux | wc -l"
+						interval = 5
+						timeout = 1
+					}
+					metadata {
+						key = "process_count"
+						display_name = "Process Count"
+						script = "ps aux | wc -l"
+						interval = 5
+						timeout = 1
+					}
+				}
+				`,
+			ExpectError: regexp.MustCompile("duplicate agent metadata key"),
+		}},
+	})
+}
+
 func TestAgent_DisplayApps(t *testing.T) {
 	t.Parallel()
 	t.Run("OK", func(t *testing.T) {
