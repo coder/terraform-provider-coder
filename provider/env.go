@@ -12,7 +12,7 @@ import (
 
 func envResource() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this resource to set an environment variable in a workspace.",
+		Description: `Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the "coder_agent" resource.`,
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
