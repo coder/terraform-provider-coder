@@ -3,12 +3,12 @@
 page_title: "coder_env Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to set an environment variable in a workspace.
+  Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the "coder_agent" resource.
 ---
 
 # coder_env (Resource)
 
-Use this resource to set an environment variable in a workspace.
+Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the "coder_agent" resource.
 
 
 
