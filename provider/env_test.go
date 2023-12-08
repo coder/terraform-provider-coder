@@ -49,6 +49,42 @@ func TestEnv(t *testing.T) {
 	})
 }
 
+func TestEnvEmptyValue(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+			provider "coder" {
+			}
+			resource "coder_env" "example" {
+				agent_id = "king"
+				name = "MESSAGE"
+			}
+			`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				script := state.Modules[0].Resources["coder_env.example"]
+				require.NotNil(t, script)
+				t.Logf("script attributes: %#v", script.Primary.Attributes)
+				for key, expected := range map[string]string{
+					"agent_id": "king",
+					"name":     "MESSAGE",
+					"value":    "",
+				} {
+					require.Equal(t, expected, script.Primary.Attributes[key])
+				}
+				return nil
+			},
+		}},
+	})
+}
+
 func TestEnvBadName(t *testing.T) {
 	t.Parallel()
 
