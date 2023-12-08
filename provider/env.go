@@ -2,10 +2,12 @@ package provider
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func envResource() *schema.Resource {
@@ -30,6 +32,10 @@ func envResource() *schema.Resource {
 				Description: "The name of the environment variable.",
 				ForceNew:    true,
 				Required:    true,
+				ValidateFunc: validation.StringMatch(
+					regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`),
+					"must be a valid environment variable name",
+				),
 			},
 			"value": {
 				Type:        schema.TypeString,

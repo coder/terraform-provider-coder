@@ -49,6 +49,28 @@ func TestEnv(t *testing.T) {
 	})
 }
 
+func TestEnvBadName(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+			provider "coder" {
+			}
+			resource "coder_env" "example" {
+				agent_id = ""
+				name = "bad-name"
+			}
+			`,
+			ExpectError: regexp.MustCompile(`must be a valid environment variable name`),
+		}},
+	})
+}
+
 func TestEnvNoName(t *testing.T) {
 	t.Parallel()
 
