@@ -36,6 +36,9 @@ func workspaceDataSource() *schema.Resource {
 			ownerEmail := os.Getenv("CODER_WORKSPACE_OWNER_EMAIL")
 			_ = rd.Set("owner_email", ownerEmail)
 
+			ownerName := os.Getenv("CODER_WORKSPACE_OWNER_NAME")
+			_ = rd.Set("owner_name", ownerName)
+
 			ownerID := os.Getenv("CODER_WORKSPACE_OWNER_ID")
 			if ownerID == "" {
 				ownerID = uuid.Nil.String()
@@ -125,6 +128,11 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "UUID of the workspace owner.",
+			},
+			"owner_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Name of the workspace owner.",
 			},
 			"owner_oidc_access_token": {
 				Type:     schema.TypeString,
