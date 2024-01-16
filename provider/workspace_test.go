@@ -13,6 +13,7 @@ import (
 
 func TestWorkspace(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
+	t.Setenv("CODER_WORKSPACE_OWNER_NAME", "Mr Owner")
 	t.Setenv("CODER_WORKSPACE_OWNER_EMAIL", "owner123@example.com")
 	t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", "abc123")
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "templateID")
@@ -43,6 +44,7 @@ func TestWorkspace(t *testing.T) {
 				t.Log(value)
 				require.Equal(t, "8080", attribs["access_port"])
 				require.Equal(t, "owner123", attribs["owner"])
+				require.Equal(t, "Mr Owner", attribs["owner_name"])
 				require.Equal(t, "owner123@example.com", attribs["owner_email"])
 				require.Equal(t, "abc123", attribs["owner_session_token"])
 				require.Equal(t, "templateID", attribs["template_id"])
@@ -76,6 +78,7 @@ func TestWorkspace(t *testing.T) {
 				t.Log(value)
 				require.Equal(t, "https://example.com:8080", attribs["access_url"])
 				require.Equal(t, "owner123", attribs["owner"])
+				require.Equal(t, "Mr Owner", attribs["owner_name"])
 				require.Equal(t, "owner123@example.com", attribs["owner_email"])
 				require.Equal(t, "templateID", attribs["template_id"])
 				require.Equal(t, "template123", attribs["template_name"])
