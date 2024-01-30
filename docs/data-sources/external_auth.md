@@ -19,6 +19,10 @@ Use this data source to require users to authenticate with an external service p
 
 - `id` (String) The ID of a configured external auth provider set up in your Coder deployment.
 
+### Optional
+
+- `optional` (Boolean) Connecting to the external auth provider is not required, and can be skipped by users.
+
 ### Read-Only
 
 - `access_token` (String) The access token returned by the external auth provider. This can be used to pre-authenticate command-line tools.
