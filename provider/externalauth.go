@@ -32,8 +32,13 @@ func externalAuthDataSource() *schema.Resource {
 			},
 			"access_token": {
 				Type:        schema.TypeString,
-				Computed:    true,
 				Description: "The access token returned by the external auth provider. This can be used to pre-authenticate command-line tools.",
+				Computed:    true,
+			},
+			"optional": {
+				Type:        schema.TypeBool,
+				Description: "Connecting to the external auth provider is not required, and can be skipped by users.",
+				Optional:    true,
 			},
 		},
 	}
