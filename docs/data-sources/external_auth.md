@@ -21,7 +21,7 @@ Use this data source to require users to authenticate with an external service p
 
 ### Optional
 
-- `optional` (Boolean) Connecting to the external auth provider is not required, and can be skipped by users.
+- `optional` (Boolean) Authenticating with the external auth provider is not required, and can be skipped by users when creating or updating workspaces
 
 ### Read-Only
 

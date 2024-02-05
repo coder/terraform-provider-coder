@@ -37,7 +37,7 @@ func externalAuthDataSource() *schema.Resource {
 			},
 			"optional": {
 				Type:        schema.TypeBool,
-				Description: "Connecting to the external auth provider is not required, and can be skipped by users.",
+				Description: "Authenticating with the external auth provider is not required, and can be skipped by users when creating or updating workspaces",
 				Optional:    true,
 			},
 		},
