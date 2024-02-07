@@ -225,6 +225,7 @@ func TestAgent_Metadata(t *testing.T) {
 						script = "ps aux | wc -l"
 						interval = 5
 						timeout = 1
+						order = 7
 					}
 				}
 				`,
@@ -244,6 +245,7 @@ func TestAgent_Metadata(t *testing.T) {
 				require.Equal(t, "ps aux | wc -l", attr["metadata.0.script"])
 				require.Equal(t, "5", attr["metadata.0.interval"])
 				require.Equal(t, "1", attr["metadata.0.timeout"])
+				require.Equal(t, "7", attr["metadata.0.order"])
 				return nil
 			},
 		}},

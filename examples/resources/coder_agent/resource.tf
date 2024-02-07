@@ -11,6 +11,23 @@ resource "coder_agent" "dev" {
     web_terminal    = true
     ssh_helper      = false
   }
+
+  metadata {
+    display_name = "CPU Usage"
+    key          = "cpu_usage"
+    script       = "coder stat cpu"
+    interval     = 10
+    timeout      = 1
+    order        = 2
+  }
+  metadata {
+    display_name = "RAM Usage"
+    key          = "ram_usage"
+    script       = "coder stat mem"
+    interval     = 10
+    timeout      = 1
+    order        = 1
+  }
 }
 
 resource "kubernetes_pod" "dev" {

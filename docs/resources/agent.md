@@ -26,6 +26,23 @@ resource "coder_agent" "dev" {
     web_terminal    = true
     ssh_helper      = false
   }
+
+  metadata {
+    display_name = "CPU Usage"
+    key          = "cpu_usage"
+    script       = "coder stat cpu"
+    interval     = 10
+    timeout      = 1
+    order        = 2
+  }
+  metadata {
+    display_name = "RAM Usage"
+    key          = "ram_usage"
+    script       = "coder stat mem"
+    interval     = 10
+    timeout      = 1
+    order        = 1
+  }
 }
 
 resource "kubernetes_pod" "dev" {
@@ -97,4 +114,5 @@ Required:
 Optional:
 
 - `display_name` (String) The user-facing name of this value.
+- `order` (Number) The order determines the position of agent metadata in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by key (ascending order).
 - `timeout` (Number) The maximum time the command is allowed to run in seconds.
