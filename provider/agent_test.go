@@ -39,7 +39,6 @@ func TestAgent(t *testing.T) {
 					motd_file = "/etc/motd"
 					shutdown_script = "echo bye bye"
 					shutdown_script_timeout = 120
-					order = 7
 				}
 				`,
 			Check: func(state *terraform.State) error {
@@ -61,7 +60,6 @@ func TestAgent(t *testing.T) {
 					"motd_file",
 					"shutdown_script",
 					"shutdown_script_timeout",
-					"order",
 				} {
 					value := resource.Primary.Attributes[key]
 					t.Logf("%q = %q", key, value)
@@ -227,6 +225,7 @@ func TestAgent_Metadata(t *testing.T) {
 						script = "ps aux | wc -l"
 						interval = 5
 						timeout = 1
+						order = 7
 					}
 				}
 				`,
@@ -246,6 +245,7 @@ func TestAgent_Metadata(t *testing.T) {
 				require.Equal(t, "ps aux | wc -l", attr["metadata.0.script"])
 				require.Equal(t, "5", attr["metadata.0.interval"])
 				require.Equal(t, "1", attr["metadata.0.timeout"])
+				require.Equal(t, "7", attr["metadata.0.order"])
 				return nil
 			},
 		}},
