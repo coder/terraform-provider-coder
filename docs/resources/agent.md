@@ -97,4 +97,5 @@ Required:
 Optional:
 
 - `display_name` (String) The user-facing name of this value.
+- `order` (Number) The order determines the position of agent metadata in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by key (ascending order).
 - `timeout` (Number) The maximum time the command is allowed to run in seconds.
