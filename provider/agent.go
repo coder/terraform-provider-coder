@@ -241,8 +241,9 @@ func agentResource() *schema.Resource {
 						},
 						"order": {
 							Type:        schema.TypeInt,
-							Optional:    true,
 							Description: "The order determines the position of agent metadata in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by key (ascending order).",
+							ForceNew:    true,
+							Optional:    true,
 						},
 					},
 				},
