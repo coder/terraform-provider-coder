@@ -131,6 +131,7 @@ func agentResource() *schema.Resource {
 				ForceNew:     true,
 				Optional:     true,
 				Description:  "Time in seconds until the agent lifecycle status is marked as timed out during start, this happens when the startup script has not completed (exited) in the given time.",
+				Deprecated:   "This feature is deprecated and has no effect. This attribute will be removed in a future version of the provider.",
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"shutdown_script": {
@@ -145,6 +146,7 @@ func agentResource() *schema.Resource {
 				ForceNew:     true,
 				Optional:     true,
 				Description:  "Time in seconds until the agent lifecycle status is marked as timed out during shutdown, this happens when the shutdown script has not completed (exited) in the given time.",
+				Deprecated:   "This feature is deprecated and has no effect. This attribute will be removed in a future version of the provider.",
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"token": {
