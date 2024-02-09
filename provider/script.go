@@ -19,11 +19,15 @@ func scriptResource() *schema.Resource {
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 			runOnStart, _ := rd.Get("run_on_start").(bool)
+			startBlocksLogin, _ := rd.Get("start_blocks_login").(bool)
 			runOnStop, _ := rd.Get("run_on_stop").(bool)
 			cron, _ := rd.Get("cron").(string)
 
 			if !runOnStart && !runOnStop && cron == "" {
 				return diag.Errorf("at least one of run_on_start, run_on_stop, or cron must be set")
+			}
+			if !runOnStart && startBlocksLogin {
+				return diag.Errorf("start_blocks_login can only be set if run_on_start is true")
 			}
 			return nil
 		},
