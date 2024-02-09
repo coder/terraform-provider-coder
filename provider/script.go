@@ -16,7 +16,7 @@ var ScriptCRONParser = cron.NewParser(cron.Second | cron.Minute | cron.Hour | cr
 func scriptResource() *schema.Resource {
 	return &schema.Resource{
 		Description: "Use this resource to run a script from an agent.",
-		CreateContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 			runOnStart, _ := rd.Get("run_on_start").(bool)
 			runOnStop, _ := rd.Get("run_on_stop").(bool)
@@ -60,14 +60,14 @@ func scriptResource() *schema.Resource {
 				ForceNew:    true,
 				Type:        schema.TypeString,
 				Required:    true,
-				Description: "The script to run.",
+				Description: "The content of the script that will be run.",
 			},
 			"cron": {
 				ForceNew:    true,
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "The cron schedule to run the script on. This is a cron expression.",
-				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+				ValidateFunc: func(i interface{}, _ string) ([]string, []error) {
 					v, ok := i.(string)
 					if !ok {
 						return []string{}, []error{fmt.Errorf("got type %T instead of string", i)}
@@ -84,28 +84,28 @@ func scriptResource() *schema.Resource {
 				Default:     false,
 				ForceNew:    true,
 				Optional:    true,
-				Description: "This option defines whether or not the user can (by default) login to the workspace before this script completes running on start. When enabled, users may see an incomplete workspace when logging in.",
+				Description: "This option determines whether users can log in immediately or must wait for the workspace to finish running this script upon startup. If not enabled, users may encounter an incomplete workspace when logging in. This option only sets the default, the user can still manually override the behavior.",
 			},
 			"run_on_start": {
 				Type:        schema.TypeBool,
 				Default:     false,
 				ForceNew:    true,
 				Optional:    true,
-				Description: "This option defines whether or not the script should run when the agent starts.",
+				Description: "This option defines whether or not the script should run when the agent starts. The script should exit when it is done to signal that the agent is ready.",
 			},
 			"run_on_stop": {
 				Type:        schema.TypeBool,
 				Default:     false,
 				ForceNew:    true,
 				Optional:    true,
-				Description: "This option defines whether or not the script should run when the agent stops.",
+				Description: "This option defines whether or not the script should run when the agent stops. The script should exit when it is done to signal that the workspace can be stopped.",
 			},
 			"timeout": {
 				Type:         schema.TypeInt,
 				Default:      0,
 				ForceNew:     true,
 				Optional:     true,
-				Description:  "Time in seconds until the agent lifecycle status is marked as timed out, this happens when the script has not completed (exited) in the given time.",
+				Description:  "Time in seconds that the script is allowed to run. If the script does not complete within this time, the script is terminated and the agent lifecycle status is marked as timed out. A value of zero (default) means no timeout.",
 				ValidateFunc: validation.IntAtLeast(1),
 			},
 		},
