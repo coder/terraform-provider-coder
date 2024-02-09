@@ -19,17 +19,17 @@ Use this resource to run a script from an agent.
 
 - `agent_id` (String) The "id" property of a "coder_agent" resource to associate with.
 - `display_name` (String) The display name of the script to display logs in the dashboard.
-- `script` (String) The script to run.
+- `script` (String) The content of the script that will be run.
 
 ### Optional
 
 - `cron` (String) The cron schedule to run the script on. This is a cron expression.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `data.coder_workspace.me.access_url + "/icon/<path>"`.
 - `log_path` (String) The path of a file to write the logs to. If relative, it will be appended to tmp.
-- `run_on_start` (Boolean) This option defines whether or not the script should run when the agent starts.
-- `run_on_stop` (Boolean) This option defines whether or not the script should run when the agent stops.
-- `start_blocks_login` (Boolean) This option defines whether or not the user can (by default) login to the workspace before this script completes running on start. When enabled, users may see an incomplete workspace when logging in.
-- `timeout` (Number) Time in seconds until the agent lifecycle status is marked as timed out, this happens when the script has not completed (exited) in the given time.
+- `run_on_start` (Boolean) This option defines whether or not the script should run when the agent starts. The script should exit when it is done to signal that the agent is ready.
+- `run_on_stop` (Boolean) This option defines whether or not the script should run when the agent stops. The script should exit when it is done to signal that the workspace can be stopped.
+- `start_blocks_login` (Boolean) This option determines whether users can log in immediately or must wait for the workspace to finish running this script upon startup. If not enabled, users may encounter an incomplete workspace when logging in. This option only sets the default, the user can still manually override the behavior.
+- `timeout` (Number) Time in seconds that the script is allowed to run. If the script does not complete within this time, the script is terminated and the agent lifecycle status is marked as timed out. A value of zero (default) means no timeout.
 
 ### Read-Only
 
