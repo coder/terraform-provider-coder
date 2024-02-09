@@ -28,6 +28,8 @@ resource "coder_agent" "dev" {
     timeout      = 1
     order        = 1
   }
+
+  order = 1
 }
 
 resource "kubernetes_pod" "dev" {

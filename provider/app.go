@@ -196,6 +196,12 @@ func appResource() *schema.Resource {
 					},
 				},
 			},
+			"order": {
+				Type:        schema.TypeInt,
+				Description: "The order determines the position of app in the UI presentation. The lowest order is shown first and apps with equal order are sorted by name (ascending order).",
+				ForceNew:    true,
+				Optional:    true,
+			},
 		},
 	}
 }

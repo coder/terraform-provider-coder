@@ -44,6 +44,7 @@ func TestApp(t *testing.T) {
 						interval = 5
 						threshold = 6
 					}
+					order = 4
 				}
 				`,
 				Check: func(state *terraform.State) error {
@@ -64,6 +65,7 @@ func TestApp(t *testing.T) {
 						"healthcheck.0.url",
 						"healthcheck.0.interval",
 						"healthcheck.0.threshold",
+						"order",
 					} {
 						value := resource.Primary.Attributes[key]
 						t.Logf("%q = %q", key, value)
