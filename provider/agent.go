@@ -297,6 +297,12 @@ func agentResource() *schema.Resource {
 					},
 				},
 			},
+			"order": {
+				Type:        schema.TypeInt,
+				Description: "The order determines the position of agents in the UI presentation. The lowest order is shown first and agents with equal order are sorted by name (ascending order).",
+				ForceNew:    true,
+				Optional:    true,
+			},
 		},
 	}
 }
