@@ -314,10 +314,9 @@ func parameterDataSource() *schema.Resource {
 							Optional:      true,
 						},
 						"error": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							RequiredWith: []string{"validation.0.regex"},
-							Description:  "An error message to display if the value doesn't match the provided regex.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "An error message to display if the value breaks the validation rules.",
 						},
 					},
 				},
@@ -438,16 +437,16 @@ func (v *Validation) Valid(typ, value string) error {
 	case "number":
 		num, err := strconv.Atoi(value)
 		if err != nil {
-			return fmt.Errorf("value %q is not a number", value)
+			return validationError(v.Error, "value %q is not a number", value)
 		}
 		if !v.MinDisabled && num < v.Min {
-			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
+			return validationError(v.Error, "value %d is less than the minimum %d", num, v.Min)
 		}
 		if !v.MaxDisabled && num > v.Max {
-			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
+			return validationError(v.Error, "value %d is more than the maximum %d", num, v.Max)
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
-			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
+			return validationError(v.Error, "number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
 		}
 	case "list(string)":
 		var listOfStrings []string
@@ -465,4 +464,11 @@ func (v *Validation) Valid(typ, value string) error {
 func ParameterEnvironmentVariable(name string) string {
 	sum := sha256.Sum256([]byte(name))
 	return "CODER_PARAMETER_" + hex.EncodeToString(sum[:])
+}
+
+func validationError(customMessage, defaultMessage string, a ...any) error {
+	if customMessage != "" {
+		return fmt.Errorf(customMessage)
+	}
+	return fmt.Errorf(defaultMessage, a...)
 }
