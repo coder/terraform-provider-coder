@@ -77,7 +77,7 @@ resource "coder_app" "intellij" {
 - `relative_path` (Boolean, Deprecated) Specifies whether the URL will be accessed via a relative path or wildcard. Use if wildcard routing is unavailable. Defaults to true.
 - `share` (String) Determines the "level" which the application is shared at. Valid levels are "owner" (default), "authenticated" and "public". Level "owner" disables sharing on the app, so only the workspace owner can access it. Level "authenticated" shares the app with all authenticated users. Level "public" shares it with any user, including unauthenticated users. Permitted application sharing levels can be configured site-wide via a flag on `coder server` (Enterprise only).
 - `subdomain` (Boolean) Determines whether the app will be accessed via it's own subdomain or whether it will be accessed via a path on Coder. If wildcards have not been setup by the administrator then apps with "subdomain" set to true will not be accessible. Defaults to false.
-- `url` (String) A URL to be proxied to from inside the workspace. This should be of the form "http://localhost:PORT[/SUBPATH]". Either "command" or "url" may be specified, but not both.
+- `url` (String) An external url if "external=true" or a URL to be proxied to from inside the workspace. This should be of the form "http://localhost:PORT[/SUBPATH]". Either "command" or "url" may be specified, but not both.
 
 ### Read-Only
 
