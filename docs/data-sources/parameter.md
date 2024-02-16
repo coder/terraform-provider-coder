@@ -57,7 +57,7 @@ Optional:
 
 Optional:
 
-- `error` (String) An error message to display if the value doesn't match the provided regex.
+- `error` (String) An error message to display if the value breaks the validation rules.
 - `max` (Number) The maximum of a number parameter.
 - `min` (Number) The minimum of a number parameter.
 - `monotonic` (String) Number monotonicity, either increasing or decreasing.
