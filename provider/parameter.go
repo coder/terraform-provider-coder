@@ -317,7 +317,7 @@ func parameterDataSource() *schema.Resource {
 						"error": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "An error message to display if the value breaks the validation rules.",
+							Description: "An error message to display if the value breaks the validation rules. The following placeholders are supported: {max}, {min}, and {value}.",
 						},
 					},
 				},
