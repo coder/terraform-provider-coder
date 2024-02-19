@@ -528,6 +528,20 @@ data "coder_parameter" "region" {
 			`,
 		ExpectError: regexp.MustCompile("is more than the maximum"),
 	}, {
+		Name: "NumberValidation_CustomError",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "number"
+				default = 5
+				validation {
+					max = 3
+					error = "foobar"
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("foobar"),
+	}, {
 		Name: "NumberValidation_NotInRange",
 		Config: `
 			data "coder_parameter" "region" {

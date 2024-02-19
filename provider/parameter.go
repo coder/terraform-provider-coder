@@ -10,6 +10,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-cty/cty"
@@ -314,10 +315,9 @@ func parameterDataSource() *schema.Resource {
 							Optional:      true,
 						},
 						"error": {
-							Type:         schema.TypeString,
-							Optional:     true,
-							RequiredWith: []string{"validation.0.regex"},
-							Description:  "An error message to display if the value doesn't match the provided regex.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "An error message to display if the value breaks the validation rules. The following placeholders are supported: {max}, {min}, and {value}.",
 						},
 					},
 				},
@@ -438,13 +438,13 @@ func (v *Validation) Valid(typ, value string) error {
 	case "number":
 		num, err := strconv.Atoi(value)
 		if err != nil {
-			return fmt.Errorf("value %q is not a number", value)
+			return takeFirstError(v.errorRendered(value), fmt.Errorf("value %q is not a number", value))
 		}
 		if !v.MinDisabled && num < v.Min {
-			return fmt.Errorf("value %d is less than the minimum %d", num, v.Min)
+			return takeFirstError(v.errorRendered(value), fmt.Errorf("value %d is less than the minimum %d", num, v.Min))
 		}
 		if !v.MaxDisabled && num > v.Max {
-			return fmt.Errorf("value %d is more than the maximum %d", num, v.Max)
+			return takeFirstError(v.errorRendered(value), fmt.Errorf("value %d is more than the maximum %d", num, v.Max))
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
 			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
@@ -465,4 +465,24 @@ func (v *Validation) Valid(typ, value string) error {
 func ParameterEnvironmentVariable(name string) string {
 	sum := sha256.Sum256([]byte(name))
 	return "CODER_PARAMETER_" + hex.EncodeToString(sum[:])
+}
+
+func takeFirstError(errs ...error) error {
+	for _, err := range errs {
+		if err != nil {
+			return err
+		}
+	}
+	return xerrors.Errorf("developer error: error message is not provided")
+}
+
+func (v *Validation) errorRendered(value string) error {
+	if v.Error == "" {
+		return nil
+	}
+	r := strings.NewReplacer(
+		"{min}", fmt.Sprintf("%d", v.Min),
+		"{max}", fmt.Sprintf("%d", v.Max),
+		"{value}", value)
+	return xerrors.Errorf(r.Replace(v.Error))
 }
