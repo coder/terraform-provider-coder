@@ -446,7 +446,7 @@ func (v *Validation) Valid(typ, value string) error {
 			return validationError(v.Error, "value %d is more than the maximum %d", num, v.Max)
 		}
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
-			return validationError(v.Error, "number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
+			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
 		}
 	case "list(string)":
 		var listOfStrings []string
