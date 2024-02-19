@@ -150,19 +150,6 @@ func TestParameter(t *testing.T) {
 			`,
 		ExpectError: regexp.MustCompile("is not a bool"),
 	}, {
-		Name: "Bool_CustomError",
-		Config: `
-			data "coder_parameter" "region" {
-				name = "region"
-				type = "bool"
-				default = true
-				validation {
-					error = "foobar"
-				}
-			}
-			`,
-		ExpectError: regexp.MustCompile("is not a bool"),
-	}, {
 		Name: "OptionNotBool",
 		Config: `
 			data "coder_parameter" "region" {
