@@ -445,7 +445,7 @@ data "coder_parameter" "region" {
 		Config: `
 			data "coder_parameter" "region" {
 			  name        = "Region"
-              type        = "number"
+			  type        = "number"
 			  description = <<-EOF
 			  Always pick a larger region.
 			  EOF
@@ -467,7 +467,7 @@ data "coder_parameter" "region" {
 			  }
 
 			  validation {
-			    monotonic = "increasing"
+				monotonic = "increasing"
 			  }
 			}
 			`,
