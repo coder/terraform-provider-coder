@@ -85,3 +85,33 @@ data "coder_parameter" "users" {
   type         = "list(string)"
   default      = jsonencode(["root", "user1", "user2"])
 }
+
+data "coder_parameter" "home_volume_size" {
+  name        = "Home Volume Size"
+  description = <<-EOF
+  How large should your home volume be?
+  EOF
+  type        = "number"
+  default     = 30
+  mutable     = true
+  order       = 3
+
+  option {
+    name  = "30GB"
+    value = 30
+  }
+
+  option {
+    name  = "60GB"
+    value = 60
+  }
+
+  option {
+    name  = "100GB"
+    value = 100
+  }
+
+  validation {
+    monotonic = "increasing"
+  }
+}
