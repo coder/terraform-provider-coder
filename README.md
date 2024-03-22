@@ -36,3 +36,4 @@ to setup your local Terraform to use your local version rather than the registry
    2. Run `terraform init` and observe a warning like `Warning: Provider development overrides are in effect`
 4. Run `go build -o terraform-provider-coder` to build the provider binary, which Terraform will try locate and execute
 5. All local Terraform runs will now use your local provider!
+6. _**NOTE**: we vendor in this provider into `github.com/coder/coder`, so if you're testing with a local clone then you should also run `go mod edit -replace github.com/coder/terraform-provider-coder=/path/to/terraform-provider-coder` in your clone._
