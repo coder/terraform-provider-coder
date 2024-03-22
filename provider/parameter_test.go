@@ -73,7 +73,7 @@ func TestParameter(t *testing.T) {
 			}
 		},
 	}, {
-		Name: "ValidationWithOptions",
+		Name: "RegexValidationWithOptions",
 		Config: `
 			data "coder_parameter" "region" {
 				name = "Region"
@@ -88,7 +88,23 @@ func TestParameter(t *testing.T) {
 				}
 			}
 			`,
-		ExpectError: regexp.MustCompile("conflicts with option"),
+		ExpectError: regexp.MustCompile("a regex cannot be specified for a number type"),
+	}, {
+		Name: "MonotonicValidationWithNonNumberType",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				option {
+					name = "1"
+					value = "1"
+				}
+				validation {
+					monotonic = "increasing"
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("monotonic validation can only be specified for number types, not string types"),
 	}, {
 		Name: "ValidationRegexMissingError",
 		Config: `
@@ -420,6 +436,54 @@ data "coder_parameter" "region" {
 				"validation.0.max":          "0",
 				"validation.0.min_disabled": "true",
 				"validation.0.max_disabled": "false",
+			} {
+				require.Equal(t, expected, state.Primary.Attributes[key])
+			}
+		},
+	}, {
+		Name: "NumberValidation_MonotonicWithOptions",
+		Config: `
+			data "coder_parameter" "region" {
+			  name        = "Region"
+              type        = "number"
+			  description = <<-EOF
+			  Always pick a larger region.
+			  EOF
+			  default     = 1
+
+			  option {
+				name  = "Small"
+				value = 1
+			  }
+
+			  option {
+				name  = "Medium"
+				value = 2
+			  }
+
+			  option {
+				name  = "Large"
+				value = 3
+			  }
+
+			  validation {
+			    monotonic = "increasing"
+			  }
+			}
+			`,
+		Check: func(state *terraform.ResourceState) {
+			for key, expected := range map[string]any{
+				"name":                   "Region",
+				"type":                   "number",
+				"validation.#":           "1",
+				"option.0.name":          "Small",
+				"option.0.value":         "1",
+				"option.1.name":          "Medium",
+				"option.1.value":         "2",
+				"option.2.name":          "Large",
+				"option.2.value":         "3",
+				"default":                "1",
+				"validation.0.monotonic": "increasing",
 			} {
 				require.Equal(t, expected, state.Primary.Attributes[key])
 			}

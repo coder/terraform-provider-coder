@@ -231,12 +231,11 @@ func parameterDataSource() *schema.Resource {
 				},
 			},
 			"option": {
-				Type:          schema.TypeList,
-				Description:   "Each \"option\" block defines a value for a user to select from.",
-				ForceNew:      true,
-				Optional:      true,
-				MaxItems:      64,
-				ConflictsWith: []string{"validation"},
+				Type:        schema.TypeList,
+				Description: "Each \"option\" block defines a value for a user to select from.",
+				ForceNew:    true,
+				Optional:    true,
+				MaxItems:    64,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {
@@ -276,11 +275,10 @@ func parameterDataSource() *schema.Resource {
 				},
 			},
 			"validation": {
-				Type:          schema.TypeList,
-				MaxItems:      1,
-				Optional:      true,
-				Description:   "Validate the input of a parameter.",
-				ConflictsWith: []string{"option"},
+				Type:        schema.TypeList,
+				MaxItems:    1,
+				Optional:    true,
+				Description: "Validate the input of a parameter.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min": {
@@ -409,6 +407,9 @@ func (v *Validation) Valid(typ, value string) error {
 		}
 		if !v.MaxDisabled {
 			return fmt.Errorf("a max cannot be specified for a %s type", typ)
+		}
+		if v.Monotonic != "" {
+			return fmt.Errorf("monotonic validation can only be specified for number types, not %s types", typ)
 		}
 	}
 	if typ != "string" && v.Regex != "" {
