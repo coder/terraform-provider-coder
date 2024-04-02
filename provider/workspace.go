@@ -151,8 +151,10 @@ func workspaceDataSource() *schema.Resource {
 					"If a valid token cannot be obtained, this value will be an empty string.",
 			},
 			"owner_groups": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 				Computed:    true,
 				Description: "List of groups the workspace owner belongs to.",
 			},
