@@ -32,7 +32,7 @@ resource "kubernetes_pod" "dev" {
 - `name` (String) Name of the workspace.
 - `owner` (String) Username of the workspace owner.
 - `owner_email` (String) Email address of the workspace owner.
-- `owner_groups` (String) Comma separated list of groups the workspace owner belongs to.
+- `owner_groups` (List of String) List of groups the workspace owner belongs to.
 - `owner_id` (String) UUID of the workspace owner.
 - `owner_name` (String) Name of the workspace owner.
 - `owner_oidc_access_token` (String) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
