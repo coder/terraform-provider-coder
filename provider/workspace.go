@@ -36,6 +36,9 @@ func workspaceDataSource() *schema.Resource {
 			ownerEmail := os.Getenv("CODER_WORKSPACE_OWNER_EMAIL")
 			_ = rd.Set("owner_email", ownerEmail)
 
+			ownerGroups := os.Getenv("CODER_WORKSPACE_OWNER_GROUPS")
+			_ = rd.Set("owner_groups", ownerGroups)
+
 			ownerName := os.Getenv("CODER_WORKSPACE_OWNER_NAME")
 			_ = rd.Set("owner_name", ownerName)
 
@@ -140,6 +143,11 @@ func workspaceDataSource() *schema.Resource {
 				Description: "A valid OpenID Connect access token of the workspace owner. " +
 					"This is only available if the workspace owner authenticated with OpenID Connect. " +
 					"If a valid token cannot be obtained, this value will be an empty string.",
+			},
+			"owner_groups": {
+				Type:        schema.TypeList,
+				Computed:    true,
+				Description: "List of groups the workspace owner belongs to. ",
 			},
 			"id": {
 				Type:        schema.TypeString,
