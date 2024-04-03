@@ -39,9 +39,11 @@ func workspaceDataSource() *schema.Resource {
 
 			ownerGroupsText := os.Getenv("CODER_WORKSPACE_OWNER_GROUPS")
 			var ownerGroups []string
-			err := json.Unmarshal([]byte(ownerGroupsText), &ownerGroups)
-			if err != nil {
-				return diag.Errorf("couldn't parse owner groups %q", ownerGroupsText)
+			if ownerGroupsText != "" {
+				err := json.Unmarshal([]byte(ownerGroupsText), &ownerGroups)
+				if err != nil {
+					return diag.Errorf("couldn't parse owner groups %q", ownerGroupsText)
+				}
 			}
 			_ = rd.Set("owner_groups", ownerGroups)
 
