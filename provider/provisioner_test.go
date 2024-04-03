@@ -12,6 +12,7 @@ import (
 )
 
 func TestProvisioner(t *testing.T) {
+	t.Parallel()
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
 			"coder": provider.New(),
