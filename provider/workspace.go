@@ -36,7 +36,7 @@ func workspaceDataSource() *schema.Resource {
 
 			ownerEmail := os.Getenv("CODER_WORKSPACE_OWNER_EMAIL")
 			if ownerEmail == "" {
-				ownerEmail = "default"
+				ownerEmail = "default@example.com"
 			}
 			_ = rd.Set("owner_email", ownerEmail)
 
