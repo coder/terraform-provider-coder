@@ -31,40 +31,14 @@ func TestProvisioner(t *testing.T) {
 
 				attribs := resource.Primary.Attributes
 				require.Equal(t, runtime.GOOS, attribs["os"])
-				require.Equal(t, runtime.GOARCH, attribs["arch"])
+				if runtime.GOARCH == "arm" {
+					require.Equal(t, "armv7", attribs["arch"])
+				} else {
+					require.Equal(t, runtime.GOARCH, attribs["arch"])
+				}
 				return nil
 			},
 		}},
 	})
 }
 
-func TestProvisioner_ARMv7(t *testing.T) {
-	if runtime.GOARCH != "arm" {
-		t.Skip("This test can only run on 32-bit ARM architecture")
-	}
-	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
-		Steps: []resource.TestStep{{
-			Config: `
-			provider "coder" {
-			}
-			data "coder_provisioner" "me" {
-			}`,
-			Check: func(state *terraform.State) error {
-				require.Len(t, state.Modules, 1)
-				require.Len(t, state.Modules[0].Resources, 1)
-				resource := state.Modules[0].Resources["data.coder_provisioner.me"]
-				require.NotNil(t, resource)
-
-				attribs := resource.Primary.Attributes
-				require.Equal(t, runtime.GOOS, attribs["os"])
-				require.Equal(t, "armv7", attribs["arch"])
-				return nil
-			},
-		}},
-	})
-
-}
