@@ -31,9 +31,14 @@ func TestProvisioner(t *testing.T) {
 
 				attribs := resource.Primary.Attributes
 				require.Equal(t, runtime.GOOS, attribs["os"])
-				require.Equal(t, runtime.GOARCH, attribs["arch"])
+				if runtime.GOARCH == "arm" {
+					require.Equal(t, "armv7", attribs["arch"])
+				} else {
+					require.Equal(t, runtime.GOARCH, attribs["arch"])
+				}
 				return nil
 			},
 		}},
 	})
 }
+
