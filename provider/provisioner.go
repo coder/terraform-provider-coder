@@ -16,6 +16,10 @@ func provisionerDataSource() *schema.Resource {
 			rd.SetId(uuid.NewString())
 			rd.Set("os", runtime.GOOS)
 			rd.Set("arch", runtime.GOARCH)
+			// Fix for #11782: if we're on 32-bit ARM, set arch to armv7.
+			if runtime.GOARCH == "arm" {
+				rd.Set("arch", "armv7")
+			}
 
 			return nil
 		},
