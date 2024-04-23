@@ -35,6 +35,9 @@ func workspaceDataSource() *schema.Resource {
 			_ = rd.Set("owner", owner)
 
 			ownerEmail := os.Getenv("CODER_WORKSPACE_OWNER_EMAIL")
+			if ownerEmail == "" {
+				ownerEmail = "default@example.com"
+			}
 			_ = rd.Set("owner_email", ownerEmail)
 
 			ownerGroupsText := os.Getenv("CODER_WORKSPACE_OWNER_GROUPS")
@@ -48,6 +51,9 @@ func workspaceDataSource() *schema.Resource {
 			_ = rd.Set("owner_groups", ownerGroups)
 
 			ownerName := os.Getenv("CODER_WORKSPACE_OWNER_NAME")
+			if ownerName == "" {
+				ownerName = "default"
+			}
 			_ = rd.Set("owner_name", ownerName)
 
 			ownerID := os.Getenv("CODER_WORKSPACE_OWNER_ID")

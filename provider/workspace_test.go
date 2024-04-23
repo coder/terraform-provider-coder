@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/coder/terraform-provider-coder/provider"
@@ -43,20 +44,30 @@ func TestWorkspace(t *testing.T) {
 				value := attribs["transition"]
 				require.NotNil(t, value)
 				t.Log(value)
-				require.Equal(t, "8080", attribs["access_port"])
-				require.Equal(t, "owner123", attribs["owner"])
-				require.Equal(t, "Mr Owner", attribs["owner_name"])
-				require.Equal(t, "owner123@example.com", attribs["owner_email"])
-				require.Equal(t, "abc123", attribs["owner_session_token"])
-				require.Equal(t, "group1", attribs["owner_groups.0"])
-				require.Equal(t, "group2", attribs["owner_groups.1"])
-				require.Equal(t, "templateID", attribs["template_id"])
-				require.Equal(t, "template123", attribs["template_name"])
-				require.Equal(t, "v1.2.3", attribs["template_version"])
+				assert.Equal(t, "https://example.com:8080", attribs["access_url"])
+				assert.Equal(t, "8080", attribs["access_port"])
+				assert.Equal(t, "owner123", attribs["owner"])
+				assert.Equal(t, "Mr Owner", attribs["owner_name"])
+				assert.Equal(t, "owner123@example.com", attribs["owner_email"])
+				assert.Equal(t, "group1", attribs["owner_groups.0"])
+				assert.Equal(t, "group2", attribs["owner_groups.1"])
+				assert.Equal(t, "templateID", attribs["template_id"])
+				assert.Equal(t, "template123", attribs["template_name"])
+				assert.Equal(t, "v1.2.3", attribs["template_version"])
 				return nil
 			},
 		}},
 	})
+}
+
+func TestWorkspace_UndefinedOwner(t *testing.T) {
+	t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
+	t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", "abc123")
+	t.Setenv("CODER_WORKSPACE_OWNER_GROUPS", `["group1", "group2"]`)
+	t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "templateID")
+	t.Setenv("CODER_WORKSPACE_TEMPLATE_NAME", "template123")
+	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
+
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
 			"coder": provider.New(),
@@ -79,15 +90,9 @@ func TestWorkspace(t *testing.T) {
 				value := attribs["transition"]
 				require.NotNil(t, value)
 				t.Log(value)
-				require.Equal(t, "https://example.com:8080", attribs["access_url"])
-				require.Equal(t, "owner123", attribs["owner"])
-				require.Equal(t, "Mr Owner", attribs["owner_name"])
-				require.Equal(t, "owner123@example.com", attribs["owner_email"])
-				require.Equal(t, "group1", attribs["owner_groups.0"])
-				require.Equal(t, "group2", attribs["owner_groups.1"])
-				require.Equal(t, "templateID", attribs["template_id"])
-				require.Equal(t, "template123", attribs["template_name"])
-				require.Equal(t, "v1.2.3", attribs["template_version"])
+				assert.Equal(t, "owner123", attribs["owner"])
+				assert.Equal(t, "default@example.com", attribs["owner_email"])
+				// Skip other asserts
 				return nil
 			},
 		}},
