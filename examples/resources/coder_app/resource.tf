@@ -32,11 +32,3 @@ resource "coder_app" "vim" {
   icon         = "${data.coder_workspace.me.access_url}/icon/vim.svg"
   command      = "vim"
 }
-
-resource "coder_app" "intellij" {
-  agent_id     = coder_agent.dev.id
-  icon         = "${data.coder_workspace.me.access_url}/icon/intellij.svg"
-  slug         = "intellij"
-  display_name = "JetBrains IntelliJ"
-  command      = "projector run"
-}
