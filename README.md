@@ -4,6 +4,17 @@ Terraform provider for [Coder](https://github.com/coder/coder).
 
 ### Developing
 
+#### Prerequisites
+
+- [Go](https://golang.org/doc/install)
+- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+
+We recommend using [`nix`](https://nixos.org/download.html) to manage your development environment. If you have `nix` installed, you can run `nix develop` to enter a shell with all the necessary dependencies.
+
+Alternatively, you can install the dependencies manually.
+
+#### Building
+
 Follow the instructions outlined in the [Terraform documentation](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers)
 to setup your local Terraform to use your local version rather than the registry version.
 
