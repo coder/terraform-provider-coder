@@ -14,19 +14,25 @@ import (
 func TestExamples(t *testing.T) {
 	t.Parallel()
 
-	t.Run("coder_parameter", func(t *testing.T) {
-		t.Parallel()
+	for _, testDir := range []string{
+		"coder_parameter",
+		"coder_workspace_tags",
+	} {
+		t.Run(testDir, func(t *testing.T) {
+			testDir := testDir
+			t.Parallel()
 
-		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
-			Steps: []resource.TestStep{{
-				Config: mustReadFile(t, "../examples/resources/coder_parameter/resource.tf"),
-			}},
+			resource.Test(t, resource.TestCase{
+				Providers: map[string]*schema.Provider{
+					"coder": provider.New(),
+				},
+				IsUnitTest: true,
+				Steps: []resource.TestStep{{
+					Config: mustReadFile(t, "../examples/resources/"+testDir+"/resource.tf"),
+				}},
+			})
 		})
-	})
+	}
 }
 
 func mustReadFile(t *testing.T, path string) string {
