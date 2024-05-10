@@ -1,9 +1,9 @@
 provider "coder" {}
 
 data "coder_parameter" "os_selector" {
-  name = "os_selector"
+  name         = "os_selector"
   display_name = "Operating System"
-  mutable = false
+  mutable      = false
 
   default = "osx"
 
@@ -27,22 +27,22 @@ data "coder_parameter" "os_selector" {
 data "coder_parameter" "feature_cache_enabled" {
   name         = "feature_cache_enabled"
   display_name = "Enable cache?"
-  type    = "bool"
+  type         = "bool"
 
   default = false
 }
 
 data "coder_workspace_tags" "custom_workspace_tags" {
   tag {
-    name = "cluster"
+    name  = "cluster"
     value = "developers"
   }
   tag {
-    name = "os"
-    value = "${data.coder_parameter.os_selector}"
+    name  = "os"
+    value = data.coder_parameter.os_selector
   }
   tag {
-    name = "cache"
-    value = data.coder_parameter.feature_cache_enabled == "true" ? "nix-with-cache": "no-cache"
+    name  = "cache"
+    value = data.coder_parameter.feature_cache_enabled == "true" ? "nix-with-cache" : "no-cache"
   }
 }
