@@ -32,6 +32,14 @@ data "coder_parameter" "feature_cache_enabled" {
   default = false
 }
 
+data "coder_parameter" "feature_debug_enabled" {
+  name         = "feature_debug_enabled"
+  display_name = "Enable debug?"
+  type         = "bool"
+
+  default = true
+}
+
 data "coder_workspace_tags" "custom_workspace_tags" {
   tag {
     name  = "cluster"
@@ -39,10 +47,14 @@ data "coder_workspace_tags" "custom_workspace_tags" {
   }
   tag {
     name  = "os"
-    value = data.coder_parameter.os_selector
+    value = data.coder_parameter.os_selector.value
+  }
+  tag {
+    name  = "debug"
+    value = data.coder_parameter.feature_debug_enabled.value
   }
   tag {
     name  = "cache"
-    value = data.coder_parameter.feature_cache_enabled == "true" ? "nix-with-cache" : "no-cache"
+    value = data.coder_parameter.feature_cache_enabled.value == "true" ? "nix-with-cache" : "no-cache"
   }
 }
