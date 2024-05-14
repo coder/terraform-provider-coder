@@ -51,7 +51,7 @@ data "coder_workspace_tags" "custom_workspace_tags" {
   }
   tag {
     name  = "debug"
-    value = data.coder_parameter.feature_debug_enabled.value
+    value = "${data.coder_parameter.feature_debug_enabled.value}"
   }
   tag {
     name  = "cache"

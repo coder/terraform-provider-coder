@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -23,12 +22,6 @@ func workspaceTagDataSource() *schema.Resource {
 		Description: "Use this data source to configure workspace tags to select provisioners.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
-			rawConfig := rd.GetRawConfig()
-			rawTags, ok := rawConfig.AsValueMap()["tag"]
-			if !ok {
-				return diag.Errorf("boom")
-			}
-			log.Println(rawTags)
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
