@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+const TerraformWorkDirEnv = "CODER_TF_WORK_DIR"
+
 type WorkspaceTags struct {
 	Tag []Tag
 }
