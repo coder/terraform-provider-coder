@@ -2,7 +2,6 @@ package provider_test
 
 import (
 	"os"
-	"path/filepath"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -12,34 +11,28 @@ import (
 	"github.com/coder/terraform-provider-coder/provider"
 )
 
-func TestExamples_CoderParameter(t *testing.T) {
+func TestExamples(t *testing.T) {
 	t.Parallel()
 
-	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
-		Steps: []resource.TestStep{{
-			Config: mustReadFile(t, "../examples/resources/coder_workspace_tags/resource.tf"),
-		}},
-	})
-}
+	for _, testDir := range []string{
+		"coder_parameter",
+		"coder_workspace_tags",
+	} {
+		t.Run(testDir, func(t *testing.T) {
+			testDir := testDir
+			t.Parallel()
 
-func TestExamples_CoderWorkspaceTags(t *testing.T) {
-	// no parallel as the test calls t.Setenv()
-	workDir := "../examples/resources/coder_workspace_tags"
-	t.Setenv(provider.TerraformWorkDirEnv, workDir)
-
-	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
-		Steps: []resource.TestStep{{
-			Config: mustReadFile(t, filepath.Join(workDir, "/resource.tf")),
-		}},
-	})
+			resource.Test(t, resource.TestCase{
+				Providers: map[string]*schema.Provider{
+					"coder": provider.New(),
+				},
+				IsUnitTest: true,
+				Steps: []resource.TestStep{{
+					Config: mustReadFile(t, "../examples/resources/"+testDir+"/resource.tf"),
+				}},
+			})
+		})
+	}
 }
 
 func mustReadFile(t *testing.T, path string) string {
