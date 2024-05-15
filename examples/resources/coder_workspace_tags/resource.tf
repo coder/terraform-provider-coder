@@ -41,20 +41,10 @@ data "coder_parameter" "feature_debug_enabled" {
 }
 
 data "coder_workspace_tags" "custom_workspace_tags" {
-  tag {
-    name  = "cluster"
-    value = "developers"
-  }
-  tag {
-    name  = "os"
-    value = data.coder_parameter.os_selector.value
-  }
-  tag {
-    name  = "debug"
-    value = "${data.coder_parameter.feature_debug_enabled.value}+12345"
-  }
-  tag {
-    name  = "cache"
-    value = data.coder_parameter.feature_cache_enabled.value == "true" ? "nix-with-cache" : "no-cache"
+  tags = {
+    "cluster" = "developers"
+    "os"      = data.coder_parameter.os_selector.value
+    "debug"   = "${data.coder_parameter.feature_debug_enabled.value}+12345"
+    "cache"   = data.coder_parameter.feature_cache_enabled.value == "true" ? "nix-with-cache" : "no-cache"
   }
 }

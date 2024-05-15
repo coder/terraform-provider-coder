@@ -9,12 +9,7 @@ import (
 )
 
 type WorkspaceTags struct {
-	Tag []Tag
-}
-
-type Tag struct {
-	Name  string
-	Value string
+	Tags map[string]string
 }
 
 func workspaceTagDataSource() *schema.Resource {
@@ -25,28 +20,12 @@ func workspaceTagDataSource() *schema.Resource {
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
-			"tag": {
-				Type:        schema.TypeList,
-				Description: `Each "tag" block defines a workspace tag.`,
+			"tags": {
+				Type:        schema.TypeMap,
+				Description: `Key-value map with workspace tags`,
 				ForceNew:    true,
 				Optional:    true,
-				MaxItems:    64,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"name": {
-							Type:        schema.TypeString,
-							Description: "The name of the tag.",
-							ForceNew:    true,
-							Required:    true,
-						},
-						"value": {
-							Type:        schema.TypeString,
-							Description: "The value of the tag.",
-							ForceNew:    true,
-							Required:    true,
-						},
-					},
-				},
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 		},
 	}
