@@ -27,13 +27,9 @@ func TestWorkspaceTags(t *testing.T) {
 				default = "chris"
 			}
 			data "coder_workspace_tags" "wt" {
-				tag {
-					name = "cat"
-					value = "james"
-				}
-				tag {
-					name = "dog"
-					value = data.coder_parameter.animal.value
+				tags = {
+					"cat" = "james"
+					"dog" = data.coder_parameter.animal.value
 				}
 			}`,
 			Check: func(state *terraform.State) error {
@@ -43,10 +39,8 @@ func TestWorkspaceTags(t *testing.T) {
 				require.NotNil(t, resource)
 
 				attribs := resource.Primary.Attributes
-				require.Equal(t, "cat", attribs["tag.0.name"])
-				require.Equal(t, "james", attribs["tag.0.value"])
-				require.Equal(t, "dog", attribs["tag.1.name"])
-				require.Equal(t, "chris", attribs["tag.1.value"])
+				require.Equal(t, "james", attribs["tags.cat"])
+				require.Equal(t, "chris", attribs["tags.dog"])
 				return nil
 			},
 		}},
