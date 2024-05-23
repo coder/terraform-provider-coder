@@ -1,5 +1,5 @@
 {
-  "name": "envbuilder",
+  "name": "terraform-provider-coder",
   "image": "mcr.microsoft.com/devcontainers/go:1.20",
   "features": {
     "ghcr.io/devcontainers/features/terraform:1": {
