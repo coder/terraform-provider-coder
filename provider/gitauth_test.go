@@ -22,8 +22,6 @@ func TestGitAuth(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			data "coder_git_auth" "github" {
 				id = "github"
 			}

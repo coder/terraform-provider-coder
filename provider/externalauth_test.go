@@ -22,8 +22,6 @@ func TestExternalAuth(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			data "coder_external_auth" "github" {
 				id = "github"
 			}
@@ -54,8 +52,6 @@ func TestOptionalExternalAuth(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			data "coder_external_auth" "github" {
 				id = "github"
 				optional = true

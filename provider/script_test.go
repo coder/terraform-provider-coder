@@ -22,8 +22,6 @@ func TestScript(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			resource "coder_script" "example" {
 				agent_id = "some id"
 				display_name = "Hey"
@@ -61,8 +59,6 @@ func TestScriptNeverRuns(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			resource "coder_script" "example" {
 				agent_id = ""
 				display_name = "Hey"
@@ -84,8 +80,6 @@ func TestScriptStartBlocksLoginRequiresRunOnStart(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			resource "coder_script" "example" {
 				agent_id = ""
 				display_name = "Hey"
@@ -104,8 +98,6 @@ func TestScriptStartBlocksLoginRequiresRunOnStart(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			resource "coder_script" "example" {
 				agent_id = ""
 				display_name = "Hey"

@@ -21,6 +21,7 @@ func TestWorkspace(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "templateID")
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_NAME", "template123")
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
+	t.Setenv("CODER_AGENT_URL", "https://example.com:8080")
 
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
@@ -29,9 +30,6 @@ func TestWorkspace(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-				url = "https://example.com:8080"
-			}
 			data "coder_workspace" "me" {
 			}`,
 			Check: func(state *terraform.State) error {
@@ -67,6 +65,7 @@ func TestWorkspace_UndefinedOwner(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "templateID")
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_NAME", "template123")
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
+	t.Setenv("CODER_AGENT_URL", "https://example.com:8080")
 
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
@@ -75,9 +74,6 @@ func TestWorkspace_UndefinedOwner(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-				url = "https://example.com:8080"
-			}
 			data "coder_workspace" "me" {
 			}`,
 			Check: func(state *terraform.State) error {

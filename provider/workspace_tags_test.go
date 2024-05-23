@@ -19,8 +19,6 @@ func TestWorkspaceTags(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			data "coder_parameter" "animal" {
 				name = "animal"
 				type = "string"

@@ -20,8 +20,6 @@ func TestProvisioner(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			data "coder_provisioner" "me" {
 			}`,
 			Check: func(state *terraform.State) error {

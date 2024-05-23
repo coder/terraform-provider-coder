@@ -1,5 +1,3 @@
-provider "coder" {}
-
 data "coder_parameter" "os_selector" {
   name         = "os_selector"
   display_name = "Operating System"

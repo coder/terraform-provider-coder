@@ -22,8 +22,6 @@ func TestEnv(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			resource "coder_env" "example" {
 				agent_id = "king"
 				name = "MESSAGE"
@@ -59,8 +57,6 @@ func TestEnvEmptyValue(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			resource "coder_env" "example" {
 				agent_id = "king"
 				name = "MESSAGE"
@@ -95,8 +91,6 @@ func TestEnvBadName(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			resource "coder_env" "example" {
 				agent_id = ""
 				name = "bad-name"
@@ -117,8 +111,6 @@ func TestEnvNoName(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {
-			}
 			resource "coder_env" "example" {
 				agent_id = ""
 			}

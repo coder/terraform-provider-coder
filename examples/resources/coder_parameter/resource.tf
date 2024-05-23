@@ -1,5 +1,3 @@
-provider "coder" {}
-
 data "coder_parameter" "example" {
   name        = "Region"
   description = "Specify a region to place your workspace."

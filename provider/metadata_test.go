@@ -21,8 +21,6 @@ func TestMetadata(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-				provider "coder" {
-				}
 				resource "coder_agent" "dev" {
 					os = "linux"
 					arch = "amd64"
@@ -103,8 +101,6 @@ func TestMetadataDuplicateKeys(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-				provider "coder" {
-				}
 				resource "coder_agent" "dev" {
 					os = "linux"
 					arch = "amd64"

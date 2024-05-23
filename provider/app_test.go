@@ -26,8 +26,6 @@ func TestApp(t *testing.T) {
 			IsUnitTest: true,
 			Steps: []resource.TestStep{{
 				Config: `
-				provider "coder" {
-				}
 				resource "coder_agent" "dev" {
 					os = "linux"
 					arch = "amd64"
@@ -89,7 +87,6 @@ func TestApp(t *testing.T) {
 		}{{
 			name: "Valid",
 			config: `
-			provider "coder" {}
 			resource "coder_agent" "dev" {
 				os = "linux"
 				arch = "amd64"
@@ -106,7 +103,6 @@ func TestApp(t *testing.T) {
 		}, {
 			name: "ConflictsWithSubdomain",
 			config: `
-			provider "coder" {}
 			resource "coder_agent" "dev" {
 				os = "linux"
 				arch = "amd64"
@@ -195,8 +191,6 @@ func TestApp(t *testing.T) {
 					sharingLine = fmt.Sprintf("share = %q", c.value)
 				}
 				config := fmt.Sprintf(`
-				provider "coder" {
-				}
 				resource "coder_agent" "dev" {
 					os = "linux"
 					arch = "amd64"

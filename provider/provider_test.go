@@ -30,7 +30,6 @@ func TestProviderEmpty(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-			provider "coder" {}
 			data "coder_provisioner" "me" {}
 			data "coder_workspace" "me" {}
 			data "coder_external_auth" "git" {

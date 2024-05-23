@@ -22,9 +22,6 @@ func TestAgent(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-				provider "coder" {
-					url = "https://example.com"
-				}
 				resource "coder_agent" "new" {
 					os = "linux"
 					arch = "amd64"
@@ -174,9 +171,6 @@ func TestAgent_Instance(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-				provider "coder" {
-					url = "https://example.com"
-				}
 				resource "coder_agent" "dev" {
 					os = "linux"
 					arch = "amd64"
@@ -215,9 +209,6 @@ func TestAgent_Metadata(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-				provider "coder" {
-					url = "https://example.com"
-				}
 				resource "coder_agent" "dev" {
 					os = "linux"
 					arch = "amd64"
@@ -263,9 +254,6 @@ func TestAgent_MetadataDuplicateKeys(t *testing.T) {
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
 			Config: `
-				provider "coder" {
-					url = "https://example.com"
-				}
 				resource "coder_agent" "dev" {
 					os = "linux"
 					arch = "amd64"
@@ -301,9 +289,6 @@ func TestAgent_DisplayApps(t *testing.T) {
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
-					provider "coder" {
-						url = "https://example.com"
-					}
 					resource "coder_agent" "dev" {
 						os = "linux"
 						arch = "amd64"
@@ -354,9 +339,6 @@ func TestAgent_DisplayApps(t *testing.T) {
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
-					provider "coder" {
-						url = "https://example.com"
-					}
 					resource "coder_agent" "dev" {
 						os = "linux"
 						arch = "amd64"
@@ -400,9 +382,6 @@ func TestAgent_DisplayApps(t *testing.T) {
 			IsUnitTest: true,
 			Steps: []resource.TestStep{{
 				Config: `
-					provider "coder" {
-						url = "https://example.com"
-					}
 					resource "coder_agent" "dev" {
 						os = "linux"
 						arch = "amd64"
@@ -446,9 +425,6 @@ func TestAgent_DisplayApps(t *testing.T) {
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
-					provider "coder" {
-						url = "https://example.com"
-					}
 					resource "coder_agent" "dev" {
 						os = "linux"
 						arch = "amd64"
