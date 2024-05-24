@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/coder/terraform-provider-coder/provider"
@@ -23,16 +24,17 @@ const (
 	-----END OPENSSH PRIVATE KEY-----`
 )
 
-func TestUserDatasource(t *testing.T) {
+func TestWorkspaceOwnerDatasource(t *testing.T) {
 	t.Run("OK", func(t *testing.T) {
-		t.Setenv("CODER_USER_ID", "11111111-1111-1111-1111-111111111111")
-		t.Setenv("CODER_USER_NAME", "owner123")
-		t.Setenv("CODER_USER_FULL_NAME", "Mr Owner")
-		t.Setenv("CODER_USER_EMAIL", "owner123@example.com")
-		t.Setenv("CODER_USER_SSH_PUBLIC_KEY", testSSHEd25519PublicKey)
-		t.Setenv("CODER_USER_SSH_PRIVATE_KEY", testSSHEd25519PrivateKey)
-		t.Setenv("CODER_USER_GROUPS", `["group1", "group2"]`)
-		t.Setenv("CODER_USER_SESSION_TOKEN", `supersecret`)
+		t.Setenv("CODER_WORKSPACE_OWNER_ID", "11111111-1111-1111-1111-111111111111")
+		t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
+		t.Setenv("CODER_WORKSPACE_OWNER_NAME", "Mr Owner")
+		t.Setenv("CODER_WORKSPACE_OWNER_EMAIL", "owner123@example.com")
+		t.Setenv("CODER_WORKSPACE_OWNER_SSH_PUBLIC_KEY", testSSHEd25519PublicKey)
+		t.Setenv("CODER_WORKSPACE_OWNER_SSH_PRIVATE_KEY", testSSHEd25519PrivateKey)
+		t.Setenv("CODER_WORKSPACE_OWNER_GROUPS", `["group1", "group2"]`)
+		t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", `supersecret`)
+		t.Setenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN", `alsosupersecret`)
 
 		resource.Test(t, resource.TestCase{
 			Providers: map[string]*schema.Provider{
@@ -60,18 +62,28 @@ func TestUserDatasource(t *testing.T) {
 					assert.Equal(t, `group1`, attrs["groups.0"])
 					assert.Equal(t, `group2`, attrs["groups.1"])
 					assert.Equal(t, `supersecret`, attrs["session_token"])
+					assert.Equal(t, `alsosupersecret`, attrs["oidc_access_token"])
 					return nil
 				},
 			}},
 		})
 	})
 
-	t.Run("Compat", func(t *testing.T) {
-		t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
-		t.Setenv("CODER_WORKSPACE_OWNER_NAME", "Mr Owner")
-		t.Setenv("CODER_WORKSPACE_OWNER_EMAIL", "owner123@example.com")
-		t.Setenv("CODER_WORKSPACE_OWNER_GROUPS", `["group1", "group2"]`)
-		t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", `supersecret`)
+	t.Run("Defaults", func(t *testing.T) {
+		for _, v := range []string{
+			"CODER_WORKSPACE_OWNER",
+			"CODER_WORKSPACE_OWNER_ID",
+			"CODER_WORKSPACE_OWNER_EMAIL",
+			"CODER_WORKSPACE_OWNER_NAME",
+			"CODER_WORKSPACE_OWNER_SESSION_TOKEN",
+			"CODER_WORKSPACE_OWNER_GROUPS",
+			"CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN",
+			"CODER_WORKSPACE_OWNER_SSH_PUBLIC_KEY",
+			"CODER_WORKSPACE_OWNER_SSH_PRIVATE_KEY",
+		} { // https://github.com/golang/go/issues/52817
+			t.Setenv(v, "")
+			os.Unsetenv(v)
+		}
 
 		resource.Test(t, resource.TestCase{
 			Providers: map[string]*schema.Provider{
@@ -91,13 +103,14 @@ func TestUserDatasource(t *testing.T) {
 
 					attrs := resource.Primary.Attributes
 					assert.NotEmpty(t, attrs["id"])
-					assert.Equal(t, "owner123", attrs["name"])
-					assert.Equal(t, "Mr Owner", attrs["full_name"])
-					assert.Equal(t, "owner123@example.com", attrs["email"])
-					assert.Equal(t, "missing", attrs["ssh_public_key"])
-					assert.Equal(t, "missing", attrs["ssh_private_key"])
-					assert.Equal(t, `group1`, attrs["groups.0"])
-					assert.Equal(t, `group2`, attrs["groups.1"])
+					assert.Equal(t, "default", attrs["name"])
+					assert.Equal(t, "default", attrs["full_name"])
+					assert.Equal(t, "default@example.com", attrs["email"])
+					assert.Empty(t, attrs["ssh_public_key"])
+					assert.Empty(t, attrs["ssh_private_key"])
+					assert.Empty(t, attrs["groups.0"])
+					assert.Empty(t, attrs["session_token"])
+					assert.Empty(t, attrs["oidc_access_token"])
 					return nil
 				},
 			}},

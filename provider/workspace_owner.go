@@ -16,75 +16,56 @@ type Role struct {
 	DisplayName string `json:"display-name"`
 }
 
-func userDataSource() *schema.Resource {
+func workspaceOwnerDataSource() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to fetch information about a user.",
+		Description: "Use this data source to fetch information about the workspace owner.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
-			if idStr, ok := os.LookupEnv("CODER_USER_ID"); !ok {
-				rd.SetId(uuid.NewString())
-			} else {
+			if idStr, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_ID"); ok {
 				rd.SetId(idStr)
+			} else {
+				rd.SetId(uuid.NewString())
 			}
 
-			if username, ok := os.LookupEnv("CODER_USER_NAME"); ok {
+			if username, ok := os.LookupEnv("CODER_WORKSPACE_OWNER"); ok {
 				_ = rd.Set("name", username)
-			} else if altUsername, ok := os.LookupEnv("CODER_WORKSPACE_OWNER"); ok {
-				_ = rd.Set("name", altUsername)
 			} else {
-				return diag.Errorf("missing user name")
+				_ = rd.Set("name", "default")
 			}
 
-			if fullname, ok := os.LookupEnv("CODER_USER_FULL_NAME"); ok {
+			if fullname, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_NAME"); ok {
 				_ = rd.Set("full_name", fullname)
-			} else if altFullname, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_NAME"); ok {
-				// Compatibility: read from CODER_WORKSPACE_OWNER_NAME
-				_ = rd.Set("full_name", altFullname)
-			} else { // fallback
-				return diag.Errorf("missing user full_name")
+			} else { // compat: field can be blank, fill in default
+				_ = rd.Set("full_name", "default")
 			}
 
-			if email, ok := os.LookupEnv("CODER_USER_EMAIL"); ok {
+			if email, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_EMAIL"); ok {
 				_ = rd.Set("email", email)
-			} else if altEmail, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_EMAIL"); ok {
-				_ = rd.Set("email", altEmail)
 			} else {
-				return diag.Errorf("missing user email")
+				_ = rd.Set("email", "default@example.com")
 			}
 
-			if sshPubKey, ok := os.LookupEnv("CODER_USER_SSH_PUBLIC_KEY"); ok {
+			if sshPubKey, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_SSH_PUBLIC_KEY"); ok {
 				_ = rd.Set("ssh_public_key", sshPubKey)
-			} else {
-				// Compat: do not error
-				_ = rd.Set("ssh_public_key", "missing")
 			}
 
-			if sshPrivKey, ok := os.LookupEnv("CODER_USER_SSH_PRIVATE_KEY"); ok {
+			if sshPrivKey, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_SSH_PRIVATE_KEY"); ok {
 				_ = rd.Set("ssh_private_key", sshPrivKey)
-			} else {
-				// Compat: do not error
-				_ = rd.Set("ssh_private_key", "missing")
 			}
 
 			var groups []string
-			if groupsRaw, ok := os.LookupEnv("CODER_USER_GROUPS"); ok {
+			if groupsRaw, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_GROUPS"); ok {
 				if err := json.NewDecoder(strings.NewReader(groupsRaw)).Decode(&groups); err != nil {
 					return diag.Errorf("invalid user groups: %s", err.Error())
 				}
-			} else if altGroupsRaw, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_GROUPS"); ok {
-				if err := json.NewDecoder(strings.NewReader(altGroupsRaw)).Decode(&groups); err != nil {
-					return diag.Errorf("invalid workspace owner groups: %s", err.Error())
-				}
-			} else {
-				return diag.Errorf("missing user groups")
+				_ = rd.Set("groups", groups)
 			}
-			_ = rd.Set("groups", groups)
 
-			if tok, ok := os.LookupEnv("CODER_USER_SESSION_TOKEN"); ok {
+			if tok, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_SESSION_TOKEN"); ok {
 				_ = rd.Set("session_token", tok)
-			} else if altTok, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_SESSION_TOKEN"); ok {
-				_ = rd.Set("session_token", altTok)
-			} else {
-				return diag.Errorf("missing user session_token")
+			}
+
+			if tok, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN"); ok {
+				_ = rd.Set("oidc_access_token", tok)
 			}
 
 			return nil
@@ -93,7 +74,7 @@ func userDataSource() *schema.Resource {
 			"id": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The UUID of the user.",
+				Description: "The UUID of the workspace owner.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -133,6 +114,13 @@ func userDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Session token for authenticating with a Coder deployment. It is regenerated every time a workspace is started.",
+			},
+			"oidc_access_token": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Description: "A valid OpenID Connect access token of the workspace owner. " +
+					"This is only available if the workspace owner authenticated with OpenID Connect. " +
+					"If a valid token cannot be obtained, this value will be an empty string.",
 			},
 		},
 	}

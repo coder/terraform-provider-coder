@@ -74,7 +74,7 @@ func New() *schema.Provider {
 			"coder_parameter":      parameterDataSource(),
 			"coder_git_auth":       gitAuthDataSource(),
 			"coder_external_auth":  externalAuthDataSource(),
-			"coder_user":           userDataSource(),
+			"coder_user":           workspaceOwnerDataSource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"coder_agent":          agentResource(),

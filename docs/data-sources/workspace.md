@@ -30,13 +30,13 @@ resource "kubernetes_pod" "dev" {
 - `access_url` (String) The access URL of the Coder deployment provisioning this workspace.
 - `id` (String) UUID of the workspace.
 - `name` (String) Name of the workspace.
-- `owner` (String) Username of the workspace owner.
-- `owner_email` (String) Email address of the workspace owner.
-- `owner_groups` (List of String) List of groups the workspace owner belongs to.
-- `owner_id` (String) UUID of the workspace owner.
-- `owner_name` (String) Name of the workspace owner.
-- `owner_oidc_access_token` (String) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
-- `owner_session_token` (String) Session token for authenticating with a Coder deployment. It is regenerated everytime a workspace is started.
+- `owner` (String, Deprecated) Username of the workspace owner.
+- `owner_email` (String, Deprecated) Email address of the workspace owner.
+- `owner_groups` (List of String, Deprecated) List of groups the workspace owner belongs to.
+- `owner_id` (String, Deprecated) UUID of the workspace owner.
+- `owner_name` (String, Deprecated) Name of the workspace owner.
+- `owner_oidc_access_token` (String, Deprecated) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
+- `owner_session_token` (String, Deprecated) Session token for authenticating with a Coder deployment. It is regenerated everytime a workspace is started.
 - `start_count` (Number) A computed count based on "transition" state. If "start", count will equal 1.
 - `template_id` (String) ID of the workspace's template.
 - `template_name` (String) Name of the workspace's template.
