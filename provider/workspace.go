@@ -135,21 +135,25 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Username of the workspace owner.",
+				Deprecated:  "Use `coder_workspace_owner.name` instead.",
 			},
 			"owner_email": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Email address of the workspace owner.",
+				Deprecated:  "Use `coder_workspace_owner.email` instead.",
 			},
 			"owner_id": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "UUID of the workspace owner.",
+				Deprecated:  "Use `coder_workspace_owner.id` instead.",
 			},
 			"owner_name": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Name of the workspace owner.",
+				Deprecated:  "Use `coder_workspace_owner.full_name` instead.",
 			},
 			"owner_oidc_access_token": {
 				Type:     schema.TypeString,
@@ -157,6 +161,7 @@ func workspaceDataSource() *schema.Resource {
 				Description: "A valid OpenID Connect access token of the workspace owner. " +
 					"This is only available if the workspace owner authenticated with OpenID Connect. " +
 					"If a valid token cannot be obtained, this value will be an empty string.",
+				Deprecated: "Use `coder_workspace_owner.oidc_access_token` instead.",
 			},
 			"owner_groups": {
 				Type: schema.TypeList,
@@ -165,6 +170,7 @@ func workspaceDataSource() *schema.Resource {
 				},
 				Computed:    true,
 				Description: "List of groups the workspace owner belongs to.",
+				Deprecated:  "Use `coder_workspace_owner.groups` instead.",
 			},
 			"id": {
 				Type:        schema.TypeString,
@@ -180,6 +186,7 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Session token for authenticating with a Coder deployment. It is regenerated everytime a workspace is started.",
+				Deprecated:  "Use `coder_workspace_owner.session_token` instead.",
 			},
 			"template_id": {
 				Type:        schema.TypeString,
