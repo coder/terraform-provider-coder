@@ -22,5 +22,6 @@ Use this data source to fetch information about a user.
 - `groups` (List of String) The groups of which the user is a member.
 - `id` (String) The UUID of the user.
 - `name` (String) The username of the user.
+- `session_token` (String) Session token for authenticating with a Coder deployment. It is regenerated every time a workspace is started.
 - `ssh_private_key` (String, Sensitive) The user's generated SSH private key.
 - `ssh_public_key` (String) The user's generated SSH public key.

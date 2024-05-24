@@ -24,42 +24,83 @@ const (
 )
 
 func TestUserDatasource(t *testing.T) {
-	t.Setenv("CODER_USER_ID", "11111111-1111-1111-1111-111111111111")
-	t.Setenv("CODER_USER_NAME", "owner123")
-	t.Setenv("CODER_USER_AVATAR_URL", "https://example.com/avatar.png")
-	t.Setenv("CODER_USER_FULL_NAME", "Mr Owner")
-	t.Setenv("CODER_USER_EMAIL", "owner123@example.com")
-	t.Setenv("CODER_USER_SSH_PUBLIC_KEY", testSSHEd25519PublicKey)
-	t.Setenv("CODER_USER_SSH_PRIVATE_KEY", testSSHEd25519PrivateKey)
-	t.Setenv("CODER_USER_GROUPS", `["group1", "group2"]`)
+	t.Run("OK", func(t *testing.T) {
+		t.Setenv("CODER_USER_ID", "11111111-1111-1111-1111-111111111111")
+		t.Setenv("CODER_USER_NAME", "owner123")
+		t.Setenv("CODER_USER_FULL_NAME", "Mr Owner")
+		t.Setenv("CODER_USER_EMAIL", "owner123@example.com")
+		t.Setenv("CODER_USER_SSH_PUBLIC_KEY", testSSHEd25519PublicKey)
+		t.Setenv("CODER_USER_SSH_PRIVATE_KEY", testSSHEd25519PrivateKey)
+		t.Setenv("CODER_USER_GROUPS", `["group1", "group2"]`)
+		t.Setenv("CODER_USER_SESSION_TOKEN", `supersecret`)
 
-	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
-		Steps: []resource.TestStep{{
-			Config: `
+		resource.Test(t, resource.TestCase{
+			Providers: map[string]*schema.Provider{
+				"coder": provider.New(),
+			},
+			IsUnitTest: true,
+			Steps: []resource.TestStep{{
+				Config: `
 			provider "coder" {}
 			data "coder_user" "me" {}
 			`,
-			Check: func(s *terraform.State) error {
-				require.Len(t, s.Modules, 1)
-				require.Len(t, s.Modules[0].Resources, 1)
-				resource := s.Modules[0].Resources["data.coder_user.me"]
-				require.NotNil(t, resource)
+				Check: func(s *terraform.State) error {
+					require.Len(t, s.Modules, 1)
+					require.Len(t, s.Modules[0].Resources, 1)
+					resource := s.Modules[0].Resources["data.coder_user.me"]
+					require.NotNil(t, resource)
 
-				attrs := resource.Primary.Attributes
-				assert.Equal(t, "11111111-1111-1111-1111-111111111111", attrs["id"])
-				assert.Equal(t, "owner123", attrs["name"])
-				assert.Equal(t, "Mr Owner", attrs["full_name"])
-				assert.Equal(t, "owner123@example.com", attrs["email"])
-				assert.Equal(t, testSSHEd25519PublicKey, attrs["ssh_public_key"])
-				assert.Equal(t, testSSHEd25519PrivateKey, attrs["ssh_private_key"])
-				assert.Equal(t, `group1`, attrs["groups.0"])
-				assert.Equal(t, `group2`, attrs["groups.1"])
-				return nil
+					attrs := resource.Primary.Attributes
+					assert.Equal(t, "11111111-1111-1111-1111-111111111111", attrs["id"])
+					assert.Equal(t, "owner123", attrs["name"])
+					assert.Equal(t, "Mr Owner", attrs["full_name"])
+					assert.Equal(t, "owner123@example.com", attrs["email"])
+					assert.Equal(t, testSSHEd25519PublicKey, attrs["ssh_public_key"])
+					assert.Equal(t, testSSHEd25519PrivateKey, attrs["ssh_private_key"])
+					assert.Equal(t, `group1`, attrs["groups.0"])
+					assert.Equal(t, `group2`, attrs["groups.1"])
+					assert.Equal(t, `supersecret`, attrs["session_token"])
+					return nil
+				},
+			}},
+		})
+	})
+
+	t.Run("Compat", func(t *testing.T) {
+		t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
+		t.Setenv("CODER_WORKSPACE_OWNER_NAME", "Mr Owner")
+		t.Setenv("CODER_WORKSPACE_OWNER_EMAIL", "owner123@example.com")
+		t.Setenv("CODER_WORKSPACE_OWNER_GROUPS", `["group1", "group2"]`)
+		t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", `supersecret`)
+
+		resource.Test(t, resource.TestCase{
+			Providers: map[string]*schema.Provider{
+				"coder": provider.New(),
 			},
-		}},
+			IsUnitTest: true,
+			Steps: []resource.TestStep{{
+				Config: `
+			provider "coder" {}
+			data "coder_user" "me" {}
+			`,
+				Check: func(s *terraform.State) error {
+					require.Len(t, s.Modules, 1)
+					require.Len(t, s.Modules[0].Resources, 1)
+					resource := s.Modules[0].Resources["data.coder_user.me"]
+					require.NotNil(t, resource)
+
+					attrs := resource.Primary.Attributes
+					assert.NotEmpty(t, attrs["id"])
+					assert.Equal(t, "owner123", attrs["name"])
+					assert.Equal(t, "Mr Owner", attrs["full_name"])
+					assert.Equal(t, "owner123@example.com", attrs["email"])
+					assert.Equal(t, "missing", attrs["ssh_public_key"])
+					assert.Equal(t, "missing", attrs["ssh_private_key"])
+					assert.Equal(t, `group1`, attrs["groups.0"])
+					assert.Equal(t, `group2`, attrs["groups.1"])
+					return nil
+				},
+			}},
+		})
 	})
 }

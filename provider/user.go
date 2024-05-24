@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -20,50 +21,70 @@ func userDataSource() *schema.Resource {
 		Description: "Use this data source to fetch information about a user.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			if idStr, ok := os.LookupEnv("CODER_USER_ID"); !ok {
-				return diag.Errorf("missing user id")
+				rd.SetId(uuid.NewString())
 			} else {
 				rd.SetId(idStr)
 			}
 
-			if username, ok := os.LookupEnv("CODER_USER_NAME"); !ok {
-				return diag.Errorf("missing user username")
-			} else {
+			if username, ok := os.LookupEnv("CODER_USER_NAME"); ok {
 				_ = rd.Set("name", username)
+			} else if altUsername, ok := os.LookupEnv("CODER_WORKSPACE_OWNER"); ok {
+				_ = rd.Set("name", altUsername)
+			} else {
+				return diag.Errorf("missing user name")
 			}
 
-			if fullname, ok := os.LookupEnv("CODER_USER_FULL_NAME"); !ok {
-				_ = rd.Set("name", "default") // compat
-			} else {
+			if fullname, ok := os.LookupEnv("CODER_USER_FULL_NAME"); ok {
 				_ = rd.Set("full_name", fullname)
+			} else if altFullname, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_NAME"); ok {
+				// Compatibility: read from CODER_WORKSPACE_OWNER_NAME
+				_ = rd.Set("full_name", altFullname)
+			} else { // fallback
+				return diag.Errorf("missing user full_name")
 			}
 
-			if email, ok := os.LookupEnv("CODER_USER_EMAIL"); !ok {
-				return diag.Errorf("missing user email")
-			} else {
+			if email, ok := os.LookupEnv("CODER_USER_EMAIL"); ok {
 				_ = rd.Set("email", email)
+			} else if altEmail, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_EMAIL"); ok {
+				_ = rd.Set("email", altEmail)
+			} else {
+				return diag.Errorf("missing user email")
 			}
 
-			if sshPubKey, ok := os.LookupEnv("CODER_USER_SSH_PUBLIC_KEY"); !ok {
-				return diag.Errorf("missing user ssh_public_key")
-			} else {
+			if sshPubKey, ok := os.LookupEnv("CODER_USER_SSH_PUBLIC_KEY"); ok {
 				_ = rd.Set("ssh_public_key", sshPubKey)
-			}
-
-			if sshPrivKey, ok := os.LookupEnv("CODER_USER_SSH_PRIVATE_KEY"); !ok {
-				return diag.Errorf("missing user ssh_private_key")
 			} else {
-				_ = rd.Set("ssh_private_key", sshPrivKey)
+				// Compat: do not error
+				_ = rd.Set("ssh_public_key", "missing")
 			}
 
-			groupsRaw, ok := os.LookupEnv("CODER_USER_GROUPS")
-			if !ok {
+			if sshPrivKey, ok := os.LookupEnv("CODER_USER_SSH_PRIVATE_KEY"); ok {
+				_ = rd.Set("ssh_private_key", sshPrivKey)
+			} else {
+				// Compat: do not error
+				_ = rd.Set("ssh_private_key", "missing")
+			}
+
+			var groups []string
+			if groupsRaw, ok := os.LookupEnv("CODER_USER_GROUPS"); ok {
+				if err := json.NewDecoder(strings.NewReader(groupsRaw)).Decode(&groups); err != nil {
+					return diag.Errorf("invalid user groups: %s", err.Error())
+				}
+			} else if altGroupsRaw, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_GROUPS"); ok {
+				if err := json.NewDecoder(strings.NewReader(altGroupsRaw)).Decode(&groups); err != nil {
+					return diag.Errorf("invalid workspace owner groups: %s", err.Error())
+				}
+			} else {
 				return diag.Errorf("missing user groups")
 			}
-			var groups []string
-			if err := json.NewDecoder(strings.NewReader(groupsRaw)).Decode(&groups); err != nil {
-				return diag.Errorf("invalid user groups: %s", err.Error())
+			_ = rd.Set("groups", groups)
+
+			if tok, ok := os.LookupEnv("CODER_USER_SESSION_TOKEN"); ok {
+				_ = rd.Set("session_token", tok)
+			} else if altTok, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_SESSION_TOKEN"); ok {
+				_ = rd.Set("session_token", altTok)
 			} else {
-				_ = rd.Set("groups", groups)
+				return diag.Errorf("missing user session_token")
 			}
 
 			return nil
@@ -107,6 +128,11 @@ func userDataSource() *schema.Resource {
 				},
 				Computed:    true,
 				Description: "The groups of which the user is a member.",
+			},
+			"session_token": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Session token for authenticating with a Coder deployment. It is regenerated every time a workspace is started.",
 			},
 		},
 	}
