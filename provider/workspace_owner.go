@@ -11,11 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type Role struct {
-	Name        string `json:"name"`
-	DisplayName string `json:"display-name"`
-}
-
 func workspaceOwnerDataSource() *schema.Resource {
 	return &schema.Resource{
 		Description: "Use this data source to fetch information about the workspace owner.",
