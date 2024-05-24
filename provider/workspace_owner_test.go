@@ -44,12 +44,12 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 			Steps: []resource.TestStep{{
 				Config: `
 			provider "coder" {}
-			data "coder_user" "me" {}
+			data "coder_workspace_owner" "me" {}
 			`,
 				Check: func(s *terraform.State) error {
 					require.Len(t, s.Modules, 1)
 					require.Len(t, s.Modules[0].Resources, 1)
-					resource := s.Modules[0].Resources["data.coder_user.me"]
+					resource := s.Modules[0].Resources["data.coder_workspace_owner.me"]
 					require.NotNil(t, resource)
 
 					attrs := resource.Primary.Attributes
@@ -93,12 +93,12 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 			Steps: []resource.TestStep{{
 				Config: `
 			provider "coder" {}
-			data "coder_user" "me" {}
+			data "coder_workspace_owner" "me" {}
 			`,
 				Check: func(s *terraform.State) error {
 					require.Len(t, s.Modules, 1)
 					require.Len(t, s.Modules[0].Resources, 1)
-					resource := s.Modules[0].Resources["data.coder_user.me"]
+					resource := s.Modules[0].Resources["data.coder_workspace_owner.me"]
 					require.NotNil(t, resource)
 
 					attrs := resource.Primary.Attributes
