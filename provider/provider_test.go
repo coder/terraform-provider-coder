@@ -33,6 +33,7 @@ func TestProviderEmpty(t *testing.T) {
 			provider "coder" {}
 			data "coder_provisioner" "me" {}
 			data "coder_workspace" "me" {}
+			data "coder_workspace_owner" "me" {}
 			data "coder_external_auth" "git" {
 				id = "git"
 			}
