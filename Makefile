@@ -8,6 +8,8 @@ gen:
 
 build: terraform-provider-coder
 
+# Builds the provider. Note that as coder/coder is based on
+# alpine, we need to disable cgo.
 terraform-provider-coder: provider/*.go main.go
 	CGO_ENABLED=0 go build .
 
