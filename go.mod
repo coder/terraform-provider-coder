@@ -1,6 +1,8 @@
 module github.com/coder/terraform-provider-coder
 
-go 1.20
+go 1.22
+
+toolchain go1.22.3
 
 require (
 	github.com/google/uuid v1.6.0
