@@ -187,20 +187,15 @@ func setup(ctx context.Context, t *testing.T) string {
 	)
 
 	// Wait for container to come up
-waitLoop:
-	for {
-		select {
-		case <-ctx.Done():
-			t.Fatalf("coder failed to become ready in time")
-		default:
-			_, rc := execContainer(ctx, t, ctr.ID, fmt.Sprintf(`curl -s --fail %s/api/v2/buildinfo`, localURL))
-			if rc == 0 {
-				break waitLoop
-			}
-			t.Logf("not ready yet...")
-			<-time.After(time.Second)
+	require.Eventually(t, func() bool {
+		_, rc := execContainer(ctx, t, ctr.ID, fmt.Sprintf(`curl -s --fail %s/api/v2/buildinfo`, localURL))
+		if rc == 0 {
+			return true
 		}
-	}
+		t.Logf("not ready yet...")
+		return false
+	}, 10*time.Second, time.Second, "coder failed to become ready in time")
+
 	// Perform first time setup
 	_, rc := execContainer(ctx, t, ctr.ID, fmt.Sprintf(`coder login %s --first-user-email=%q --first-user-password=%q --first-user-trial=false --first-user-username=%q`, localURL, testEmail, testPassword, testUsername))
 	require.Equal(t, 0, rc, "failed to perform first-time setup")
