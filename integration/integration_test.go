@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/stretchr/testify/assert"
@@ -82,8 +84,8 @@ func TestIntegration(t *testing.T) {
 				"workspace_owner.name":              `testing`,
 				"workspace_owner.oidc_access_token": `^$`, // TODO: test OIDC integration
 				"workspace_owner.session_token":     `.+`,
-				"workspace_owner.ssh_private_key":   `^$`, // Depends on coder/coder#13366
-				"workspace_owner.ssh_public_key":    `^$`, // Depends on coder/coder#13366
+				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
+				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
 			},
 		},
 	} {
@@ -148,9 +150,17 @@ func setup(ctx context.Context, t *testing.T) string {
 	require.NoError(t, err, "get abs path of parent")
 	t.Logf("src path is %s\n", srcPath)
 
+	// Ensure the image is available locally.
+	refStr := coderImg + ":" + coderVersion
+	t.Logf("ensuring image %q", refStr)
+	resp, err := cli.ImagePull(ctx, refStr, image.PullOptions{})
+	require.NoError(t, err)
+	_, err = io.ReadAll(resp)
+	require.NoError(t, err)
+
 	// Stand up a temporary Coder instance
 	ctr, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: coderImg + ":" + coderVersion,
+		Image: refStr,
 		Env: []string{
 			"CODER_ACCESS_URL=" + localURL,             // Set explicitly to avoid creating try.coder.app URLs.
 			"CODER_IN_MEMORY=true",                     // We don't necessarily care about real persistence here.
