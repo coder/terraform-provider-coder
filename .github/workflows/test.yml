@@ -36,6 +36,14 @@ jobs:
         run: |
           go build -v .
 
+      - name: Run integration test
+        timeout-minutes: 10
+        env:
+          CODER_IMAGE: "ghcr.io/coder/coder"
+          CODER_VERSION: "latest"
+        run: |
+          go test -v ./integration
+
   # run acceptance tests in a matrix with Terraform core versions
   test:
     name: Matrix Test
@@ -80,14 +88,6 @@ jobs:
           TF_ACC: "1"
         run: |
           go test -v -cover ./provider/
-
-      - name: Run integration test
-        timeout-minutes: 10
-        env:
-          CODER_IMAGE: "ghcr.io/coder/coder"
-          CODER_VERSION: "latest"
-        run: |
-          go test -v ./integration
 
   lint:
     name: Lint
