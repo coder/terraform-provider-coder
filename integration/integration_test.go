@@ -46,17 +46,14 @@ func TestIntegration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutMins)*time.Minute)
 	t.Cleanup(cancel)
 
-	// Given: we have an existing Coder deployment running locally
-	ctrID := setup(ctx, t)
-
 	for _, tt := range []struct {
 		// Name of the folder under `integration/` containing a test template
-		templateName string
+		name string
 		// map of string to regex to be passed to assertOutput()
 		expectedOutput map[string]string
 	}{
 		{
-			templateName: "test-data-source",
+			name: "test-data-source",
 			expectedOutput: map[string]string{
 				"provisioner.arch":                  runtime.GOARCH,
 				"provisioner.id":                    `[a-zA-Z0-9-]+`,
@@ -89,15 +86,17 @@ func TestIntegration(t *testing.T) {
 			},
 		},
 	} {
-		t.Run(tt.templateName, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
+			// Given: we have an existing Coder deployment running locally
+			ctrID := setup(ctx, t, tt.name)
 			// Import named template
-			_, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`coder templates push %s --directory /src/integration/%s --var output_path=/tmp/%s.json --yes`, tt.templateName, tt.templateName, tt.templateName))
+			_, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`coder templates push %s --directory /src/integration/%s --var output_path=/tmp/%s.json --yes`, tt.name, tt.name, tt.name))
 			require.Equal(t, 0, rc)
 			// Create a workspace
-			_, rc = execContainer(ctx, t, ctrID, fmt.Sprintf(`coder create %s -t %s --yes`, tt.templateName, tt.templateName))
+			_, rc = execContainer(ctx, t, ctrID, fmt.Sprintf(`coder create %s -t %s --yes`, tt.name, tt.name))
 			require.Equal(t, 0, rc)
 			// Fetch the output created by the template
-			out, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`cat /tmp/%s.json`, tt.templateName))
+			out, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`cat /tmp/%s.json`, tt.name))
 			require.Equal(t, 0, rc)
 			actual := make(map[string]string)
 			require.NoError(t, json.NewDecoder(strings.NewReader(out)).Decode(&actual))
@@ -106,7 +105,7 @@ func TestIntegration(t *testing.T) {
 	}
 }
 
-func setup(ctx context.Context, t *testing.T) string {
+func setup(ctx context.Context, t *testing.T, name string) string {
 	var (
 		// For this test to work, we pass in a custom terraformrc to use
 		// the locally built version of the provider.
@@ -173,7 +172,7 @@ func setup(ctx context.Context, t *testing.T) string {
 			tfrcPath + ":/tmp/integration.tfrc", // Custom tfrc from above.
 			srcPath + ":/src",                   // Bind-mount in the repo with the built binary and templates.
 		},
-	}, nil, nil, "")
+	}, nil, nil, "terraform-provider-coder-integration-"+name)
 	require.NoError(t, err, "create test deployment")
 
 	t.Logf("created container %s\n", ctr.ID)
