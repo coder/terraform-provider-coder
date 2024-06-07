@@ -33,6 +33,8 @@ jobs:
           go mod download
 
       - name: Build
+        env:
+          CGO_ENABLED: "0"
         run: |
           go build -v .
 
