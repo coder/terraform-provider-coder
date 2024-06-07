@@ -81,6 +81,14 @@ jobs:
         run: |
           go test -v -cover ./provider/
 
+      - name: Run integration test
+        timeout-minutes: 10
+        env:
+          CODER_IMAGE: "ghcr.io/coder/coder"
+          CODER_VERSION: "latest"
+        run: |
+          go test -v ./integration
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
