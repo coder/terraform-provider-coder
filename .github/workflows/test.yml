@@ -33,8 +33,18 @@ jobs:
           go mod download
 
       - name: Build
+        env:
+          CGO_ENABLED: "0"
         run: |
           go build -v .
+
+      - name: Run integration test
+        timeout-minutes: 10
+        env:
+          CODER_IMAGE: "ghcr.io/coder/coder"
+          CODER_VERSION: "latest"
+        run: |
+          go test -v ./integration
 
   # run acceptance tests in a matrix with Terraform core versions
   test:
