@@ -14,6 +14,7 @@ import (
 func TestExamples(t *testing.T) {
 	t.Parallel()
 
+	// Resource examples
 	for _, testDir := range []string{
 		"coder_workspace_tags",
 	} {
@@ -28,6 +29,26 @@ func TestExamples(t *testing.T) {
 				IsUnitTest: true,
 				Steps: []resource.TestStep{{
 					Config: mustReadFile(t, "../examples/resources/"+testDir+"/resource.tf"),
+				}},
+			})
+		})
+	}
+
+	// Data source examples
+	for _, testDir := range []string{
+		"coder_parameter",
+	} {
+		t.Run(testDir, func(t *testing.T) {
+			testDir := testDir
+			t.Parallel()
+
+			resource.Test(t, resource.TestCase{
+				Providers: map[string]*schema.Provider{
+					"coder": provider.New(),
+				},
+				IsUnitTest: true,
+				Steps: []resource.TestStep{{
+					Config: mustReadFile(t, "../examples/data-sources/"+testDir+"/data-source.tf"),
 				}},
 			})
 		})
