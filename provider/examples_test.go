@@ -15,7 +15,7 @@ func TestExamples(t *testing.T) {
 	t.Parallel()
 
 	for _, testDir := range []string{
-		"coder_parameter",
+		"coder_agent",
 		"coder_workspace_tags",
 	} {
 		t.Run(testDir, func(t *testing.T) {
