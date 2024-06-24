@@ -1,5 +1,4 @@
-provider "coder" {
-}
+provider "coder" {}
 
 data "coder_git_auth" "github" {
   # Matches the ID of the git auth provider in Coder.

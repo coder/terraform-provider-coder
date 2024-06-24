@@ -37,6 +37,7 @@ func TestExamples(t *testing.T) {
 	// Data source examples
 	for _, testDir := range []string{
 		"coder_parameter",
+		"coder_git_auth"
 	} {
 		t.Run(testDir, func(t *testing.T) {
 			testDir := testDir
