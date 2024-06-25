@@ -15,6 +15,8 @@ var ScriptCRONParser = cron.NewParser(cron.Second | cron.Minute | cron.Hour | cr
 
 func scriptResource() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		Description: "Use this resource to run a script from an agent.",
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())

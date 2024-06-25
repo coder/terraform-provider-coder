@@ -3,15 +3,18 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/coder/terraform-provider-coder/provider/helpers"
 )
 
 // gitAuthDataSource returns a schema for a Git authentication data source.
 func gitAuthDataSource() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		DeprecationMessage: "Use the `coder_external_auth` data source instead.",
 		Description:        "Use this data source to require users to authenticate with a Git provider prior to workspace creation. This can be used to perform an authenticated `git clone` in startup scripts.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
@@ -25,7 +28,7 @@ func gitAuthDataSource() *schema.Resource {
 			}
 			rd.SetId(id)
 
-			accessToken := os.Getenv(GitAuthAccessTokenEnvironmentVariable(id))
+			accessToken := helpers.OptionalEnv(GitAuthAccessTokenEnvironmentVariable(id))
 			rd.Set("access_token", accessToken)
 
 			return nil

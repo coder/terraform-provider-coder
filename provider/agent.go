@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 
@@ -12,10 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"golang.org/x/xerrors"
+
+	"github.com/coder/terraform-provider-coder/provider/helpers"
 )
 
 func agentResource() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		Description: "Use this resource to associate an agent.",
 		CreateContext: func(_ context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			// This should be a real authentication token!
@@ -363,7 +366,7 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 	if err != nil {
 		return diag.Errorf("parse access url: %s", err)
 	}
-	script := os.Getenv(fmt.Sprintf("CODER_AGENT_SCRIPT_%s_%s", operatingSystem, arch))
+	script := helpers.OptionalEnv(fmt.Sprintf("CODER_AGENT_SCRIPT_%s_%s", operatingSystem, arch))
 	if script != "" {
 		script = strings.ReplaceAll(script, "${ACCESS_URL}", accessURL.String())
 		script = strings.ReplaceAll(script, "${AUTH_TYPE}", auth)
