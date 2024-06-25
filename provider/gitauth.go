@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coder/terraform-provider-coder/provider/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/coder/terraform-provider-coder/provider/helpers"
 )
 
 // gitAuthDataSource returns a schema for a Git authentication data source.

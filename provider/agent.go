@@ -6,12 +6,13 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coder/terraform-provider-coder/provider/helpers"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"golang.org/x/xerrors"
+
+	"github.com/coder/terraform-provider-coder/provider/helpers"
 )
 
 func agentResource() *schema.Resource {
