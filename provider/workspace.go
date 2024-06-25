@@ -65,10 +65,7 @@ func workspaceDataSource() *schema.Resource {
 			templateID := helpers.OptionalEnv("CODER_WORKSPACE_TEMPLATE_ID")
 			_ = rd.Set("template_id", templateID)
 
-			templateName, err := helpers.RequireEnv("CODER_WORKSPACE_TEMPLATE_NAME")
-			if err != nil {
-				return diag.Errorf("undefined env: %v", err)
-			}
+			templateName := helpers.OptionalEnv("CODER_WORKSPACE_TEMPLATE_NAME")
 			_ = rd.Set("template_name", templateName)
 
 			templateVersion, err := helpers.RequireEnv("CODER_WORKSPACE_TEMPLATE_VERSION")
