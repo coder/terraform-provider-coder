@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/coder/terraform-provider-coder/provider/helpers"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -28,19 +29,13 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("start_count", count)
 
-			owner := os.Getenv("CODER_WORKSPACE_OWNER")
-			if owner == "" {
-				owner = "default"
-			}
+			owner := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER", "default")
 			_ = rd.Set("owner", owner)
 
-			ownerEmail := os.Getenv("CODER_WORKSPACE_OWNER_EMAIL")
-			if ownerEmail == "" {
-				ownerEmail = "default@example.com"
-			}
+			ownerEmail := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_EMAIL", "default@example.com")
 			_ = rd.Set("owner_email", ownerEmail)
 
-			ownerGroupsText := os.Getenv("CODER_WORKSPACE_OWNER_GROUPS")
+			ownerGroupsText := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_GROUPS")
 			var ownerGroups []string
 			if ownerGroupsText != "" {
 				err := json.Unmarshal([]byte(ownerGroupsText), &ownerGroups)
@@ -50,43 +45,40 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("owner_groups", ownerGroups)
 
-			ownerName := os.Getenv("CODER_WORKSPACE_OWNER_NAME")
-			if ownerName == "" {
-				ownerName = "default"
-			}
+			ownerName := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_NAME", "default")
 			_ = rd.Set("owner_name", ownerName)
 
-			ownerID := os.Getenv("CODER_WORKSPACE_OWNER_ID")
-			if ownerID == "" {
-				ownerID = uuid.Nil.String()
-			}
+			ownerID := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_ID", uuid.Nil.String())
 			_ = rd.Set("owner_id", ownerID)
 
-			ownerOIDCAccessToken := os.Getenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN")
+			ownerOIDCAccessToken := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN")
 			_ = rd.Set("owner_oidc_access_token", ownerOIDCAccessToken)
 
-			name := os.Getenv("CODER_WORKSPACE_NAME")
-			if name == "" {
-				name = "default"
-			}
+			name := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_NAME", "default")
 			rd.Set("name", name)
 
-			sessionToken := os.Getenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN")
+			sessionToken := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_SESSION_TOKEN")
 			_ = rd.Set("owner_session_token", sessionToken)
 
-			id := os.Getenv("CODER_WORKSPACE_ID")
-			if id == "" {
-				id = uuid.NewString()
-			}
+			id := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_ID", uuid.NewString())
 			rd.SetId(id)
 
-			templateID := os.Getenv("CODER_WORKSPACE_TEMPLATE_ID")
+			templateID, err := helpers.RequireEnv("CODER_WORKSPACE_TEMPLATE_ID")
+			if err != nil {
+				return diag.Errorf("undefined env: %v", err)
+			}
 			_ = rd.Set("template_id", templateID)
 
-			templateName := os.Getenv("CODER_WORKSPACE_TEMPLATE_NAME")
+			templateName, err := helpers.RequireEnv("CODER_WORKSPACE_TEMPLATE_NAME")
+			if err != nil {
+				return diag.Errorf("undefined env: %v", err)
+			}
 			_ = rd.Set("template_name", templateName)
 
-			templateVersion := os.Getenv("CODER_WORKSPACE_TEMPLATE_VERSION")
+			templateVersion, err := helpers.RequireEnv("CODER_WORKSPACE_TEMPLATE_VERSION")
+			if err != nil {
+				return diag.Errorf("undefined env: %v", err)
+			}
 			_ = rd.Set("template_version", templateVersion)
 
 			config, valid := i.(config)
