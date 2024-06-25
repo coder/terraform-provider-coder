@@ -12,30 +12,36 @@ import (
 	"github.com/coder/terraform-provider-coder/provider"
 )
 
+type ResourceTestData struct {
+	Name         string
+	ResourceType string
+}
+
 func TestExamples(t *testing.T) {
 	t.Parallel()
 
-	for _, testDir := range []string{
-		"coder_parameter",
-		"coder_workspace_tags",
+	for _, resourceTestData := range []ResourceTestData{
+		{"coder_parameter", "data-source"},
+		{"coder_workspace_tags", "data-source"},
+		{"coder_app", "resource"}
 	} {
-		t.Run(testDir, func(t *testing.T) {
-			testDir := testDir
+		t.Run(resourceTestData.Name, func(t *testing.T) {
+			resourceTestData := resourceTestData
 			t.Parallel()
 
-			resourceTest(t, testDir)
+			resourceTest(t, resourceTestData)
 		})
 	}
 }
 
-func resourceTest(t *testing.T, testDir string) {
+func resourceTest(t *testing.T, testData ResourceTestData) {
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
 			"coder": provider.New(),
 		},
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
-			Config: mustReadFile(t, fmt.Sprintf("../examples/data-sources/%s/data-source.tf", testDir)),
+			Config: mustReadFile(t, fmt.Sprintf("../examples/%ss/%s/%s.tf", testData.ResourceType, testData.Name, testData.ResourceType)),
 		}},
 	})
 }
