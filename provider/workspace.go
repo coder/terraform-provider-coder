@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"reflect"
 	"strconv"
 
@@ -17,12 +16,9 @@ func workspaceDataSource() *schema.Resource {
 	return &schema.Resource{
 		Description: "Use this data source to get information for the active workspace build.",
 		ReadContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
-			transition := os.Getenv("CODER_WORKSPACE_TRANSITION")
-			if transition == "" {
-				// Default to start!
-				transition = "start"
-			}
+			transition := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_TRANSITION", "start") // Default to start!
 			_ = rd.Set("transition", transition)
+
 			count := 0
 			if transition == "start" {
 				count = 1

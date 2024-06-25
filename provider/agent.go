@@ -3,10 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 	"reflect"
 	"strings"
 
+	"github.com/coder/terraform-provider-coder/provider/helpers"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -363,7 +363,7 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 	if err != nil {
 		return diag.Errorf("parse access url: %s", err)
 	}
-	script := os.Getenv(fmt.Sprintf("CODER_AGENT_SCRIPT_%s_%s", operatingSystem, arch))
+	script := helpers.OptionalEnv(fmt.Sprintf("CODER_AGENT_SCRIPT_%s_%s", operatingSystem, arch))
 	if script != "" {
 		script = strings.ReplaceAll(script, "${ACCESS_URL}", accessURL.String())
 		script = strings.ReplaceAll(script, "${AUTH_TYPE}", auth)

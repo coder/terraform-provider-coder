@@ -3,8 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
-	"os"
 
+	"github.com/coder/terraform-provider-coder/provider/helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -25,7 +25,7 @@ func gitAuthDataSource() *schema.Resource {
 			}
 			rd.SetId(id)
 
-			accessToken := os.Getenv(GitAuthAccessTokenEnvironmentVariable(id))
+			accessToken := helpers.OptionalEnv(GitAuthAccessTokenEnvironmentVariable(id))
 			rd.Set("access_token", accessToken)
 
 			return nil
