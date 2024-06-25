@@ -13,8 +13,7 @@ Use this data source to require users to authenticate with a Git provider prior 
 ## Example Usage
 
 ```terraform
-provider "coder" {
-}
+provider "coder" {}
 
 data "coder_git_auth" "github" {
   # Matches the ID of the git auth provider in Coder.

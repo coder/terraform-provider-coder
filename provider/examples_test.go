@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -14,45 +15,29 @@ import (
 func TestExamples(t *testing.T) {
 	t.Parallel()
 
-	// Resource examples
 	for _, testDir := range []string{
+		"coder_parameter",
 		"coder_workspace_tags",
 	} {
 		t.Run(testDir, func(t *testing.T) {
 			testDir := testDir
 			t.Parallel()
 
-			resource.Test(t, resource.TestCase{
-				Providers: map[string]*schema.Provider{
-					"coder": provider.New(),
-				},
-				IsUnitTest: true,
-				Steps: []resource.TestStep{{
-					Config: mustReadFile(t, "../examples/resources/"+testDir+"/resource.tf"),
-				}},
-			})
+			resourceTest(t, testDir)
 		})
 	}
+}
 
-	// Data source examples
-	for _, testDir := range []string{
-		"coder_parameter",
-	} {
-		t.Run(testDir, func(t *testing.T) {
-			testDir := testDir
-			t.Parallel()
-
-			resource.Test(t, resource.TestCase{
-				Providers: map[string]*schema.Provider{
-					"coder": provider.New(),
-				},
-				IsUnitTest: true,
-				Steps: []resource.TestStep{{
-					Config: mustReadFile(t, "../examples/data-sources/"+testDir+"/data-source.tf"),
-				}},
-			})
-		})
-	}
+func resourceTest(t *testing.T, testDir string) {
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: mustReadFile(t, fmt.Sprintf("../examples/data-sources/%s/data-source.tf", testDir)),
+		}},
+	})
 }
 
 func mustReadFile(t *testing.T, path string) string {
