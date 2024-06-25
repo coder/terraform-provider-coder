@@ -63,6 +63,8 @@ type Parameter struct {
 
 func parameterDataSource() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		Description: "Use this data source to configure editable options for workspaces.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
