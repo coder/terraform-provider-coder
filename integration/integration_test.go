@@ -91,8 +91,6 @@ func TestIntegration(t *testing.T) {
 			ctrID := setup(ctx, t, tt.name)
 			// Import named template
 			_, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`coder templates push %s --directory /src/integration/%s --var output_path=/tmp/%s.json --yes`, tt.name, tt.name, tt.name))
-			time.Sleep(10 * time.Minute)
-
 			require.Equal(t, 0, rc)
 			// Create a workspace
 			_, rc = execContainer(ctx, t, ctrID, fmt.Sprintf(`coder create %s -t %s --yes`, tt.name, tt.name))
@@ -166,9 +164,9 @@ func setup(ctx context.Context, t *testing.T, name string) string {
 			"CODER_ACCESS_URL=" + localURL,             // Set explicitly to avoid creating try.coder.app URLs.
 			"CODER_IN_MEMORY=true",                     // We don't necessarily care about real persistence here.
 			"CODER_TELEMETRY_ENABLE=false",             // Avoid creating noise.
+			"CODER_VERBOSE=TRUE",                       // Debug logging.
 			"TF_CLI_CONFIG_FILE=/tmp/integration.tfrc", // Our custom tfrc from above.
-			"TF_LOG=DEBUG",
-			"CODER_VERBOSE=TRUE",
+			"TF_LOG=DEBUG",                             // Debug logging in Terraform provider
 		},
 		Labels: map[string]string{},
 	}, &container.HostConfig{
