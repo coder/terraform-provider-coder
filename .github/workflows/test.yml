@@ -22,7 +22,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.20"
+          go-version: "1.22"
         id: go
 
       - name: Check out code into the Go module directory
@@ -33,8 +33,18 @@ jobs:
           go mod download
 
       - name: Build
+        env:
+          CGO_ENABLED: "0"
         run: |
           go build -v .
+
+      - name: Run integration test
+        timeout-minutes: 10
+        env:
+          CODER_IMAGE: "ghcr.io/coder/coder"
+          CODER_VERSION: "latest"
+        run: |
+          go test -v ./integration
 
   # run acceptance tests in a matrix with Terraform core versions
   test:
@@ -54,11 +64,12 @@ jobs:
           - "1.5.*"
           - "1.6.*"
           - "1.7.*"
+          - "1.8.*"
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.20"
+          go-version: "1.22"
         id: go
 
       - uses: hashicorp/setup-terraform@v3
@@ -88,7 +99,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.20"
+          go-version: "1.22"
         id: go
 
       - uses: hashicorp/setup-terraform@v3

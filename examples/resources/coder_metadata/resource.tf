@@ -3,6 +3,13 @@ data "coder_workspace" "me" {
 
 resource "kubernetes_pod" "dev" {
   count = data.coder_workspace.me.start_count
+  metadata {
+    name      = "k8s_example"
+    namespace = "example"
+  }
+  spec {
+    # Draw the rest of the pod!
+  }
 }
 
 resource "tls_private_key" "example_key_pair" {
