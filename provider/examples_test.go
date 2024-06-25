@@ -8,40 +8,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
-
 	"github.com/coder/terraform-provider-coder/provider"
 )
-
-type ResourceTestData struct {
-	Name         string
-	ResourceType string
-}
 
 func TestExamples(t *testing.T) {
 	t.Parallel()
 
-	for _, resourceTestData := range []ResourceTestData{
-		{"coder_parameter", "data-source"},
-		{"coder_workspace_tags", "data-source"},
-		{"coder_app", "resource"}
+	for _, testDir := range []string{
+		"coder_parameter",
+		"coder_workspace_tags",
 	} {
-		t.Run(resourceTestData.Name, func(t *testing.T) {
-			resourceTestData := resourceTestData
+		t.Run(testDir, func(t *testing.T) {
+			testDir := testDir
 			t.Parallel()
 
-			resourceTest(t, resourceTestData)
+			resourceTest(t, testDir)
 		})
 	}
 }
 
-func resourceTest(t *testing.T, testData ResourceTestData) {
+func resourceTest(t *testing.T, testDir string) {
 	resource.Test(t, resource.TestCase{
 		Providers: map[string]*schema.Provider{
 			"coder": provider.New(),
 		},
 		IsUnitTest: true,
 		Steps: []resource.TestStep{{
-			Config: mustReadFile(t, fmt.Sprintf("../examples/%ss/%s/%s.tf", testData.ResourceType, testData.Name, testData.ResourceType)),
+			Config: mustReadFile(t, fmt.Sprintf("../examples/data-sources/%s/data-source.tf", testDir)),
 		}},
 	})
 }

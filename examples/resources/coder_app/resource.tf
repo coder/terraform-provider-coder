@@ -1,5 +1,3 @@
-provider "coder" {}
-
 data "coder_workspace" "me" {}
 
 resource "coder_agent" "dev" {
