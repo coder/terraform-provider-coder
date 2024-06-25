@@ -15,6 +15,8 @@ import (
 
 func workspaceDataSource() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		Description: "Use this data source to get information for the active workspace build.",
 		ReadContext: func(c context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			transition := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_TRANSITION", "start") // Default to start!

@@ -14,6 +14,8 @@ type WorkspaceTags struct {
 
 func workspaceTagDataSource() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		Description: "Use this data source to configure workspace tags to select provisioners.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())

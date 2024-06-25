@@ -17,6 +17,8 @@ import (
 
 func agentResource() *schema.Resource {
 	return &schema.Resource{
+		SchemaVersion: 1,
+
 		Description: "Use this resource to associate an agent.",
 		CreateContext: func(_ context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			// This should be a real authentication token!
