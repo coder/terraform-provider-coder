@@ -5,6 +5,7 @@ fmt:
 
 gen:
 	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
+	go run ./scripts/docsgen/...
 
 build: terraform-provider-coder
 
