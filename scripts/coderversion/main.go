@@ -1,69 +1,100 @@
 package main
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 
-	"github.com/google/go-github/github"
 	"github.com/masterminds/semver"
 )
 
 func main() {
-	client := github.NewClient(nil)
-	// We consider the latest release as 'mainline'
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	latest, _, err := client.Repositories.GetLatestRelease(ctx, "coder", "coder")
-	if err != nil {
-		fatal("get mainline release: %w\n", err)
-	}
+	releases := fetchReleases()
 
-	if latest.TagName == nil {
-		fatal("latest release is not tagged", err)
-	}
-
-	mainlineVer, err := semver.NewVersion(*latest.TagName)
-	if err != nil {
-		fatal("invalid mainline tag name: %w\n", err)
-	}
-	mainline := fmt.Sprintf("v%d.%d.%d", mainlineVer.Major(), mainlineVer.Minor(), mainlineVer.Patch())
-
-	expectedStableMinor := mainlineVer.Minor() - 1
-	if expectedStableMinor < 0 {
-		fatal("unexpected minor version 0")
-	}
-
-	previousReleases, _, err := client.Repositories.ListReleases(ctx, "coder", "coder", &github.ListOptions{
-		Page:    0,
-		PerPage: 100,
-	})
-	if err != nil {
-		fatal("list previous releases: %w\n", err)
-	}
-
-	var stable string
-	for _, rel := range previousReleases {
-		if rel.TagName == nil {
-			debug("ignoring untagged version %s\n", rel.String())
+	mainlineVer := semver.MustParse("v0.0.0")
+	for _, rel := range releases {
+		if rel == "" {
+			debug("ignoring untagged version %s\n", rel)
 			continue
 		}
 
-		ver, err := semver.NewVersion(*rel.TagName)
+		ver, err := semver.NewVersion(rel)
 		if err != nil {
-			debug("skipping invalid version %s\n", *rel.TagName)
+			debug("skipping invalid version %s\n", rel)
 		}
 
-		// Assuming that the first one we find with minor-1 is what we want
-		if ver.Minor() == expectedStableMinor {
-			debug("found stable version %s\n", *rel.TagName)
-			stable = fmt.Sprintf("v%d.%d.%d", ver.Major(), ver.Minor(), ver.Patch())
-			break
+		if ver.Compare(mainlineVer) > 0 {
+			mainlineVer = ver
+			continue
 		}
-
 	}
+
+	mainline := fmt.Sprintf("v%d.%d.%d", mainlineVer.Major(), mainlineVer.Minor(), mainlineVer.Patch())
 	_, _ = fmt.Fprintf(os.Stdout, "CODER_MAINLINE_VERSION=%q\n", mainline)
+
+	expectedStableMinor := mainlineVer.Minor() - 1
+	if expectedStableMinor < 0 {
+		expectedStableMinor = 0
+	}
+	debug("expected stable minor: %d\n", expectedStableMinor)
+	stableVer := semver.MustParse("v0.0.0")
+	for _, rel := range releases {
+		debug("check version %s\n", rel)
+		if rel == "" {
+			debug("ignoring untagged version %s\n", rel)
+			continue
+		}
+
+		ver, err := semver.NewVersion(rel)
+		if err != nil {
+			debug("skipping invalid version %s\n", rel)
+		}
+
+		if ver.Minor() != expectedStableMinor {
+			debug("skipping version %s\n", rel)
+			continue
+		}
+
+		if ver.Compare(stableVer) > 0 {
+			stableVer = ver
+			continue
+		}
+	}
+
+	stable := fmt.Sprintf("v%d.%d.%d", stableVer.Major(), stableVer.Minor(), stableVer.Patch())
 	_, _ = fmt.Fprintf(os.Stdout, "CODER_STABLE_VERSION=%q\n", stable)
+}
+
+type release struct {
+	TagName string `json:"tag_name"`
+}
+
+const releasesURL = "https://api.github.com/repos/coder/coder/releases"
+
+// fetchReleases fetches the releases of coder/coder
+// this is done directly via JSON API to avoid pulling in the entire
+// github client
+func fetchReleases() []string {
+	resp, err := http.Get(releasesURL)
+	if err != nil {
+		fatal("get releases: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var releases []release
+	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
+		fatal("parse releases: %w", err)
+	}
+
+	var ss []string
+	for _, rel := range releases {
+		if rel.TagName != "" {
+			ss = append(ss, rel.TagName)
+
+		}
+	}
+	return ss
 }
 
 func debug(format string, args ...any) {
