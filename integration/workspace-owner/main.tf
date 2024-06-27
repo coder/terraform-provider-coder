@@ -38,6 +38,15 @@ locals {
     "workspace.template_name" : data.coder_workspace.me.template_name,
     "workspace.template_version" : data.coder_workspace.me.template_version,
     "workspace.transition" : data.coder_workspace.me.transition,
+    "workspace_owner.email" : data.coder_workspace_owner.me.email,
+    "workspace_owner.full_name" : data.coder_workspace_owner.me.full_name,
+    "workspace_owner.groups" : jsonencode(data.coder_workspace_owner.me.groups),
+    "workspace_owner.id" : data.coder_workspace_owner.me.id,
+    "workspace_owner.name" : data.coder_workspace_owner.me.name,
+    "workspace_owner.oidc_access_token" : data.coder_workspace_owner.me.oidc_access_token,
+    "workspace_owner.session_token" : data.coder_workspace_owner.me.session_token,
+    "workspace_owner.ssh_private_key" : data.coder_workspace_owner.me.ssh_private_key,
+    "workspace_owner.ssh_public_key" : data.coder_workspace_owner.me.ssh_public_key,
   }
 }
 
