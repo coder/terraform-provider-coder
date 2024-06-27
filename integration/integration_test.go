@@ -131,7 +131,7 @@ func TestIntegration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if coderVersion != "latest" && semver.Compare(coderVersion, tt.minVersion) < 0 {
-				t.Skipf("skipping due to minVersion %q < %q", tt.minVersion, coderVersion)
+				t.Skipf("skipping due to CODER_VERSION %q < minVersion %q", coderVersion, tt.minVersion)
 			}
 			// Given: we have an existing Coder deployment running locally
 			// Import named template
