@@ -225,21 +225,17 @@ func ensureImage(ctx context.Context, t *testing.T, cli *client.Client, ref stri
 	t.Logf("ensuring image %q", ref)
 	images, err := cli.ImageList(ctx, image.ListOptions{})
 	require.NoError(t, err, "list images")
-	var found bool
 	for _, img := range images {
 		if slices.Contains(img.RepoTags, ref) {
 			t.Logf("image %q found locally, not pulling", ref)
-			found = true
-			break
+			return
 		}
 	}
-	if !found {
-		t.Logf("image %s not found locally, attempting to pull", ref)
-		resp, err := cli.ImagePull(ctx, ref, image.PullOptions{})
-		require.NoError(t, err)
-		_, err = io.ReadAll(resp)
-		require.NoError(t, err)
-	}
+	t.Logf("image %s not found locally, attempting to pull", ref)
+	resp, err := cli.ImagePull(ctx, ref, image.PullOptions{})
+	require.NoError(t, err)
+	_, err = io.ReadAll(resp)
+	require.NoError(t, err)
 }
 
 // execContainer executes the given command in the given container and returns
