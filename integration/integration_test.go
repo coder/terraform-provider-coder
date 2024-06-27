@@ -57,15 +57,19 @@ func TestIntegration(t *testing.T) {
 	require.NoError(t, err, "invalid value specified for timeout")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutMins)*time.Minute)
 	t.Cleanup(cancel)
+	ctrID := setup(ctx, t, t.Name(), coderImg, coderVersion)
 
 	for _, tt := range []struct {
 		// Name of the folder under `integration/` containing a test template
 		name string
+		// Minimum coder version for which to run this test
+		minVersion string
 		// map of string to regex to be passed to assertOutput()
 		expectedOutput map[string]string
 	}{
 		{
-			name: "test-data-source",
+			name:       "test-data-source",
+			minVersion: "v0.0.0",
 			expectedOutput: map[string]string{
 				"provisioner.arch":                  runtime.GOARCH,
 				"provisioner.id":                    `[a-zA-Z0-9-]+`,
@@ -86,6 +90,31 @@ func TestIntegration(t *testing.T) {
 				"workspace.template_name":           `test-data-source`,
 				"workspace.template_version":        `.+`,
 				"workspace.transition":              `start`,
+			},
+		},
+		{
+			name:       "workspace-owner",
+			minVersion: "v2.12.0",
+			expectedOutput: map[string]string{
+				"provisioner.arch":                  runtime.GOARCH,
+				"provisioner.id":                    `[a-zA-Z0-9-]+`,
+				"provisioner.os":                    runtime.GOOS,
+				"workspace.access_port":             `\d+`,
+				"workspace.access_url":              `https?://\D+:\d+`,
+				"workspace.id":                      `[a-zA-z0-9-]+`,
+				"workspace.name":                    ``,
+				"workspace.owner":                   `testing`,
+				"workspace.owner_email":             `testing@coder\.com`,
+				"workspace.owner_groups":            `\[\]`,
+				"workspace.owner_id":                `[a-zA-Z0-9]+`,
+				"workspace.owner_name":              `default`,
+				"workspace.owner_oidc_access_token": `^$`, // TODO: need a test OIDC integration
+				"workspace.owner_session_token":     `[a-zA-Z0-9-]+`,
+				"workspace.start_count":             `1`,
+				"workspace.template_id":             `[a-zA-Z0-9-]+`,
+				"workspace.template_name":           `workspace-owner`,
+				"workspace.template_version":        `.+`,
+				"workspace.transition":              `start`,
 				"workspace_owner.email":             `testing@coder\.com`,
 				"workspace_owner.full_name":         `default`,
 				"workspace_owner.groups":            `\[\]`,
@@ -98,9 +127,13 @@ func TestIntegration(t *testing.T) {
 			},
 		},
 	} {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if coderVersion != "latest" && semver.Compare(coderVersion, tt.minVersion) < 0 {
+				t.Skipf("skipping due to CODER_VERSION %q < minVersion %q", coderVersion, tt.minVersion)
+			}
 			// Given: we have an existing Coder deployment running locally
-			ctrID := setup(ctx, t, tt.name, coderImg, coderVersion)
 			// Import named template
 
 			// NOTE: Template create command was deprecated after this version
