@@ -62,13 +62,22 @@ func workspaceDataSource() *schema.Resource {
 			id := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_ID", uuid.NewString())
 			rd.SetId(id)
 
-			templateID := helpers.OptionalEnv("CODER_WORKSPACE_TEMPLATE_ID") // FIXME switch to `helpers.RequireEnv(...)`
+			templateID, err := helpers.RequireEnv("CODER_WORKSPACE_TEMPLATE_ID")
+			if err != nil {
+				return diag.Errorf("template ID is missing: %s", err.Error())
+			}
 			_ = rd.Set("template_id", templateID)
 
-			templateName := helpers.OptionalEnv("CODER_WORKSPACE_TEMPLATE_NAME") // FIXME switch to `helpers.RequireEnv(...)`
+			templateName, err := helpers.RequireEnv("CODER_WORKSPACE_TEMPLATE_NAME")
+			if err != nil {
+				return diag.Errorf("template name is missing: %s", err.Error())
+			}
 			_ = rd.Set("template_name", templateName)
 
-			templateVersion := helpers.OptionalEnv("CODER_WORKSPACE_TEMPLATE_VERSION") // FIXME switch to `helpers.RequireEnv(...)`
+			templateVersion, err := helpers.RequireEnv("CODER_WORKSPACE_TEMPLATE_VERSION")
+			if err != nil {
+				return diag.Errorf("template version is missing: %s", err.Error())
+			}
 			_ = rd.Set("template_version", templateVersion)
 
 			config, valid := i.(config)

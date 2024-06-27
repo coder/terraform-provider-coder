@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -99,6 +100,37 @@ func TestWorkspace_UndefinedOwner(t *testing.T) {
 				// Skip other asserts
 				return nil
 			},
+		}},
+	})
+}
+
+func TestWorkspace_MissingTemplateName(t *testing.T) {
+	t.Setenv("CODER_WORKSPACE_BUILD_ID", "1") // Let's pretend this is a workspace build
+
+	t.Setenv("CODER_WORKSPACE_OWNER", "owner123")
+	t.Setenv("CODER_WORKSPACE_OWNER_ID", "11111111-1111-1111-1111-111111111111")
+	t.Setenv("CODER_WORKSPACE_OWNER_NAME", "Mr Owner")
+	t.Setenv("CODER_WORKSPACE_OWNER_EMAIL", "owner123@example.com")
+	t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", "abc123")
+	t.Setenv("CODER_WORKSPACE_OWNER_GROUPS", `["group1", "group2"]`)
+	t.Setenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN", "supersecret")
+	t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "templateID")
+	// CODER_WORKSPACE_TEMPLATE_NAME is missing
+	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
+
+	resource.Test(t, resource.TestCase{
+		Providers: map[string]*schema.Provider{
+			"coder": provider.New(),
+		},
+		IsUnitTest: true,
+		Steps: []resource.TestStep{{
+			Config: `
+			provider "coder" {
+				url = "https://example.com:8080"
+			}
+			data "coder_workspace" "me" {
+			}`,
+			ExpectError: regexp.MustCompile("CODER_WORKSPACE_TEMPLATE_NAME is required"),
 		}},
 	})
 }
