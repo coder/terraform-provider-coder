@@ -21,6 +21,8 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/exp/slices"
+	"golang.org/x/mod/semver"
 )
 
 // TestIntegration performs an integration test against an ephemeral Coder deployment.
@@ -35,6 +37,16 @@ import (
 func TestIntegration(t *testing.T) {
 	if os.Getenv("TF_ACC") == "1" {
 		t.Skip("Skipping integration tests during tf acceptance tests")
+	}
+
+	coderImg := os.Getenv("CODER_IMAGE")
+	if coderImg == "" {
+		coderImg = "ghcr.io/coder/coder"
+	}
+
+	coderVersion := os.Getenv("CODER_VERSION")
+	if coderVersion == "" {
+		coderVersion = "latest"
 	}
 
 	timeoutStr := os.Getenv("TIMEOUT_MINS")
@@ -88,9 +100,17 @@ func TestIntegration(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			// Given: we have an existing Coder deployment running locally
-			ctrID := setup(ctx, t, tt.name)
+			ctrID := setup(ctx, t, tt.name, coderImg, coderVersion)
 			// Import named template
-			_, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`coder templates push %s --directory /src/integration/%s --var output_path=/tmp/%s.json --yes`, tt.name, tt.name, tt.name))
+
+			// NOTE: Template create command was deprecated after this version
+			// ref: https://github.com/coder/coder/pull/11390
+			templateCreateCmd := "push"
+			if semver.Compare(coderVersion, "v2.7.0") < 1 {
+				t.Logf("using now-deprecated templates create command for older coder version")
+				templateCreateCmd = "create"
+			}
+			_, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`coder templates %s %s --directory /src/integration/%s --var output_path=/tmp/%s.json --yes`, templateCreateCmd, tt.name, tt.name, tt.name))
 			require.Equal(t, 0, rc)
 			// Create a workspace
 			_, rc = execContainer(ctx, t, ctrID, fmt.Sprintf(`coder create %s -t %s --yes`, tt.name, tt.name))
@@ -105,7 +125,7 @@ func TestIntegration(t *testing.T) {
 	}
 }
 
-func setup(ctx context.Context, t *testing.T, name string) string {
+func setup(ctx context.Context, t *testing.T, name, coderImg, coderVersion string) string {
 	var (
 		// For this test to work, we pass in a custom terraformrc to use
 		// the locally built version of the provider.
@@ -117,16 +137,6 @@ func setup(ctx context.Context, t *testing.T, name string) string {
 	  }`
 		localURL = "http://localhost:3000"
 	)
-
-	coderImg := os.Getenv("CODER_IMAGE")
-	if coderImg == "" {
-		coderImg = "ghcr.io/coder/coder"
-	}
-
-	coderVersion := os.Getenv("CODER_VERSION")
-	if coderVersion == "" {
-		coderVersion = "latest"
-	}
 
 	t.Logf("using coder image %s:%s", coderImg, coderVersion)
 
@@ -151,11 +161,7 @@ func setup(ctx context.Context, t *testing.T, name string) string {
 
 	// Ensure the image is available locally.
 	refStr := coderImg + ":" + coderVersion
-	t.Logf("ensuring image %q", refStr)
-	resp, err := cli.ImagePull(ctx, refStr, image.PullOptions{})
-	require.NoError(t, err)
-	_, err = io.ReadAll(resp)
-	require.NoError(t, err)
+	ensureImage(ctx, t, cli, refStr)
 
 	// Stand up a temporary Coder instance
 	ctr, err := cli.ContainerCreate(ctx, &container.Config{
@@ -213,6 +219,25 @@ func setup(ctx context.Context, t *testing.T, name string) string {
 	return ctr.ID
 }
 
+func ensureImage(ctx context.Context, t *testing.T, cli *client.Client, ref string) {
+	t.Helper()
+
+	t.Logf("ensuring image %q", ref)
+	images, err := cli.ImageList(ctx, image.ListOptions{})
+	require.NoError(t, err, "list images")
+	for _, img := range images {
+		if slices.Contains(img.RepoTags, ref) {
+			t.Logf("image %q found locally, not pulling", ref)
+			return
+		}
+	}
+	t.Logf("image %s not found locally, attempting to pull", ref)
+	resp, err := cli.ImagePull(ctx, ref, image.PullOptions{})
+	require.NoError(t, err)
+	_, err = io.ReadAll(resp)
+	require.NoError(t, err)
+}
+
 // execContainer executes the given command in the given container and returns
 // the output and the exit code of the command.
 func execContainer(ctx context.Context, t *testing.T, containerID, command string) (string, int) {
@@ -249,7 +274,7 @@ func assertOutput(t *testing.T, expected, actual map[string]string) {
 
 	for expectedKey, expectedValExpr := range expected {
 		actualVal := actual[expectedKey]
-		assert.Regexp(t, expectedValExpr, actualVal)
+		assert.Regexp(t, expectedValExpr, actualVal, "output key %q does not have expected value", expectedKey)
 	}
 	for actualKey := range actual {
 		_, ok := expected[actualKey]
