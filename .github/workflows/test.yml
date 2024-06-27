@@ -38,13 +38,21 @@ jobs:
         run: |
           go build -v .
 
-      - name: Run integration test
+      - name: Run integration test (mainline)
         timeout-minutes: 10
         env:
           CODER_IMAGE: "ghcr.io/coder/coder"
-          CODER_VERSION: "latest"
         run: |
-          go test -v ./integration
+          source <(go run ./scripts/coderversion)
+          CODER_VERSION="${CODER_MAINLINE_VERSION}" go test -v ./integration
+
+      - name: Run integration test (stable)
+        timeout-minutes: 10
+        env:
+          CODER_IMAGE: "ghcr.io/coder/coder"
+        run: |
+          source <(go run ./scripts/coderversion)
+          CODER_VERSION="${CODER_STABLE_VERSION}" go test -v ./integration
 
   # run acceptance tests in a matrix with Terraform core versions
   test:
