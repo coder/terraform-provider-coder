@@ -6,7 +6,13 @@ import (
 )
 
 // RequireEnv requires environment variable to be present.
+// The constraint can be verified only during execution of the workspace build
+// (determined with env `CODER_WORKSPACE_BUILD_ID`).
 func RequireEnv(name string) (string, error) {
+	if os.Getenv("CODER_WORKSPACE_BUILD_ID") == "" {
+		return os.Getenv(name), nil
+	}
+
 	val := os.Getenv(name)
 	if val == "" {
 		return "", fmt.Errorf("%s is required", name)
