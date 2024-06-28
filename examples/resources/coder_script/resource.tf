@@ -33,7 +33,7 @@ resource "coder_script" "nightly_sleep_reminder" {
   display_name = "Nightly update"
   icon         = "/icon/database.svg"
   cron         = "0 22 * * *"
-  script = <<EOF
+  script       = <<EOF
     #!/bin/sh
     echo "Running nightly update"
     sudo apt-get install
@@ -41,11 +41,11 @@ resource "coder_script" "nightly_sleep_reminder" {
 }
 
 resource "coder_script" "shutdown" {
-  agent_id      = coder_agent.dev.id
-  display_name  = "Stop daemon server"
-  run_on_stop   = true
-  icon          = "/icons/memory.svg"
-  script        = <<EOF
+  agent_id     = coder_agent.dev.id
+  display_name = "Stop daemon server"
+  run_on_stop  = true
+  icon         = "/icons/memory.svg"
+  script       = <<EOF
     #!/bin/sh 
     kill $(lsof -i :3002 -t) >/tmp/pid.log 2>&1 &
   EOF

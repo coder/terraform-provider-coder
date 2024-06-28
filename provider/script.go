@@ -17,7 +17,7 @@ func scriptResource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this resource to run a script from an agent.",
+		Description: "Use this resource to run a script from an agent. When multiple scripts are assigned to the same agent, they are executed in parallel.",
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 			runOnStart, _ := rd.Get("run_on_start").(bool)
