@@ -37,6 +37,6 @@ resource "coder_agent" "main" {
 
 ### Read-Only
 
-- `arch` (String) The architecture of the host. This exposes `runtime.GOARCH` (see https://pkg.go.dev/runtime#pkg-constants).
+- `arch` (String) The architecture of the host. This exposes `runtime.GOARCH` (see [Go constants](https://pkg.go.dev/runtime#pkg-constants)).
 - `id` (String) The ID of this resource.
-- `os` (String) The operating system of the host. This exposes `runtime.GOOS` (see https://pkg.go.dev/runtime#pkg-constants).
+- `os` (String) The operating system of the host. This exposes `runtime.GOOS` (see [Go constants](https://pkg.go.dev/runtime#pkg-constants)).

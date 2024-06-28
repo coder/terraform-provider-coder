@@ -29,12 +29,12 @@ func provisionerDataSource() *schema.Resource {
 			"os": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The operating system of the host. This exposes `runtime.GOOS` (see https://pkg.go.dev/runtime#pkg-constants).",
+				Description: "The operating system of the host. This exposes `runtime.GOOS` (see [Go constants](https://pkg.go.dev/runtime#pkg-constants)).",
 			},
 			"arch": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The architecture of the host. This exposes `runtime.GOARCH` (see https://pkg.go.dev/runtime#pkg-constants).",
+				Description: "The architecture of the host. This exposes `runtime.GOARCH` (see [Go constants](https://pkg.go.dev/runtime#pkg-constants)).",
 			},
 		},
 	}
