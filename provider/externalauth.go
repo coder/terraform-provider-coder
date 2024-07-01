@@ -15,7 +15,7 @@ func externalAuthDataSource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this data source to require users to authenticate with an external service prior to workspace creation. This can be used to pre-authenticate external services in a workspace. (e.g. gcloud, gh, docker, etc)",
+		Description: "Use this data source to require users to authenticate with an external service prior to workspace creation. This can be used to [pre-authenticate external services](https://coder.com/docs/admin/external-auth) in a workspace. (e.g. Google Cloud, Github, Docker, etc.)",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			id, ok := rd.Get("id").(string)
 			if !ok || id == "" {
