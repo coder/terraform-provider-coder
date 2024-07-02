@@ -41,7 +41,7 @@ func appResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"agent_id": {
 				Type:        schema.TypeString,
-				Description: `The "id" property of a "coder_agent" resource to associate with.`,
+				Description: "The `id` property of a `coder_agent` resource to associate with.",
 				ForceNew:    true,
 				Required:    true,
 			},
@@ -49,7 +49,7 @@ func appResource() *schema.Resource {
 				Type: schema.TypeString,
 				Description: "A command to run in a terminal opening this app. In the web, " +
 					"this will open in a new tab. In the CLI, this will SSH and execute the command. " +
-					"Either \"command\" or \"url\" may be specified, but not both.",
+					"Either `command` or `url` may be specified, but not both.",
 				ConflictsWith: []string{"url"},
 				Optional:      true,
 				ForceNew:      true,
@@ -84,7 +84,7 @@ func appResource() *schema.Resource {
 					}
 
 					if !appSlugRegex.MatchString(valStr) {
-						return diag.Errorf("invalid coder_app slug, must be a valid hostname (%q, cannot contain two consecutive hyphens or start/end with a hyphen): %q", appSlugRegex.String(), valStr)
+						return diag.Errorf("invalid `coder_app` slug, must be a valid hostname (%q, cannot contain two consecutive hyphens or start/end with a hyphen): %q", appSlugRegex.String(), valStr)
 					}
 
 					return nil
@@ -109,7 +109,7 @@ func appResource() *schema.Resource {
 				Description: "Determines whether the app will be accessed via it's own " +
 					"subdomain or whether it will be accessed via a path on Coder. If " +
 					"wildcards have not been setup by the administrator then apps with " +
-					"\"subdomain\" set to true will not be accessible. Defaults to false.",
+					"`subdomain` set to true will not be accessible. Defaults to false.",
 				ForceNew: true,
 				Optional: true,
 			},
@@ -117,19 +117,19 @@ func appResource() *schema.Resource {
 				Type:       schema.TypeBool,
 				Deprecated: "`relative_path` on apps is deprecated, use `subdomain` instead.",
 				Description: "Specifies whether the URL will be accessed via a relative " +
-					"path or wildcard. Use if wildcard routing is unavailable. Defaults to true.",
+					"path or wildcard. Use if wildcard routing is unavailable. Defaults to `true`.",
 				ForceNew:      true,
 				Optional:      true,
 				ConflictsWith: []string{"subdomain"},
 			},
 			"share": {
 				Type: schema.TypeString,
-				Description: `Determines the "level" which the application ` +
-					`is shared at. Valid levels are "owner" (default), ` +
-					`"authenticated" and "public". Level "owner" disables ` +
+				Description: "Determines the level which the application " +
+					"is shared at. Valid levels are `owner` (default), " +
+					"`authenticated` and `public`. Level `owner` disables " +
 					"sharing on the app, so only the workspace owner can " +
-					`access it. Level "authenticated" shares the app with ` +
-					`all authenticated users. Level "public" shares it with ` +
+					"access it. Level `authenticated` shares the app with " +
+					"all authenticated users. Level `public` shares it with " +
 					"any user, including unauthenticated users. Permitted " +
 					"application sharing levels can be configured site-wide " +
 					"via a flag on `coder server` (Enterprise only).",
@@ -147,21 +147,21 @@ func appResource() *schema.Resource {
 						return nil
 					}
 
-					return diag.Errorf(`invalid app share %q, must be one of "owner", "authenticated", "public"`, valStr)
+					return diag.Errorf("invalid app share %q, must be one of `owner`, `authenticated`, `public`", valStr)
 				},
 			},
 			"url": {
 				Type: schema.TypeString,
-				Description: "An external url if \"external=true\" or a URL to be proxied to from inside the workspace. " +
-					"This should be of the form \"http://localhost:PORT[/SUBPATH]\". " +
-					"Either \"command\" or \"url\" may be specified, but not both.",
+				Description: "An external url if `external=true` or a URL to be proxied to from inside the workspace. " +
+					"This should be of the form `http://localhost:PORT[/SUBPATH]`. " +
+					"Either `command` or `url` may be specified, but not both.",
 				ForceNew:      true,
 				Optional:      true,
 				ConflictsWith: []string{"command"},
 			},
 			"external": {
 				Type: schema.TypeBool,
-				Description: "Specifies whether \"url\" is opened on the client machine " +
+				Description: "Specifies whether `url` is opened on the client machine " +
 					"instead of proxied through the workspace.",
 				Default:       false,
 				ForceNew:      true,
@@ -179,7 +179,7 @@ func appResource() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"url": {
 							Type:        schema.TypeString,
-							Description: "HTTP address used determine the application readiness. A successful health check is a HTTP response code less than 500 returned before healthcheck.interval seconds.",
+							Description: "HTTP address used determine the application readiness. A successful health check is a HTTP response code less than 500 returned before `healthcheck.interval` seconds.",
 							ForceNew:    true,
 							Required:    true,
 						},

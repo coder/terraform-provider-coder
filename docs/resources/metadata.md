@@ -59,14 +59,14 @@ resource "coder_metadata" "pod_info" {
 
 ### Required
 
-- `resource_id` (String) The "id" property of another resource that metadata should be attached to.
+- `resource_id` (String) The `id` property of another resource that metadata should be attached to.
 
 ### Optional
 
 - `daily_cost` (Number) (Enterprise) The cost of this resource every 24 hours. Use the smallest denomination of your preferred currency. For example, if you work in USD, use cents.
 - `hide` (Boolean) Hide the resource from the UI.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `data.coder_workspace.me.access_url + "/icon/<path>"`.
-- `item` (Block List) Each "item" block defines a single metadata item consisting of a key/value pair. (see [below for nested schema](#nestedblock--item))
+- `item` (Block List) Each `item` block defines a single metadata item consisting of a key/value pair. (see [below for nested schema](#nestedblock--item))
 
 ### Read-Only
 
@@ -81,7 +81,7 @@ Required:
 
 Optional:
 
-- `sensitive` (Boolean) Set to "true" to for items such as API keys whose values should be hidden from view by default. Note that this does not prevent metadata from being retrieved using the API, so it is not suitable for secrets that should not be exposed to workspace users.
+- `sensitive` (Boolean) Set to `true` to for items such as API keys whose values should be hidden from view by default. Note that this does not prevent metadata from being retrieved using the API, so it is not suitable for secrets that should not be exposed to workspace users.
 - `value` (String) The value of this metadata item.
 
 Read-Only:

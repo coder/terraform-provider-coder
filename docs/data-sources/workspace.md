@@ -37,8 +37,8 @@ resource "kubernetes_pod" "dev" {
 - `owner_name` (String, Deprecated: Use `coder_workspace_owner.full_name` instead.) Name of the workspace owner.
 - `owner_oidc_access_token` (String, Deprecated: Use `coder_workspace_owner.oidc_access_token` instead.) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
 - `owner_session_token` (String, Deprecated: Use `coder_workspace_owner.session_token` instead.) Session token for authenticating with a Coder deployment. It is regenerated everytime a workspace is started.
-- `start_count` (Number) A computed count based on "transition" state. If "start", count will equal 1.
+- `start_count` (Number) A computed count based on `transition` state. If `start`, count will equal 1.
 - `template_id` (String) ID of the workspace's template.
 - `template_name` (String) Name of the workspace's template.
 - `template_version` (String) Version of the workspace's template.
-- `transition` (String) Either "start" or "stop". Use this to start/stop resources with "count".
+- `transition` (String) Either `start` or `stop`. Use this to start/stop resources with `count`.

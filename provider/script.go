@@ -26,10 +26,10 @@ func scriptResource() *schema.Resource {
 			cron, _ := rd.Get("cron").(string)
 
 			if !runOnStart && !runOnStop && cron == "" {
-				return diag.Errorf("at least one of run_on_start, run_on_stop, or cron must be set")
+				return diag.Errorf("at least one of `run_on_start`, `run_on_stop`, or `cron` must be set")
 			}
 			if !runOnStart && startBlocksLogin {
-				return diag.Errorf("start_blocks_login can only be set if run_on_start is true")
+				return diag.Errorf("start_blocks_login can only be set if `run_on_start` is true")
 			}
 			return nil
 		},
@@ -38,7 +38,7 @@ func scriptResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"agent_id": {
 				Type:        schema.TypeString,
-				Description: `The "id" property of a "coder_agent" resource to associate with.`,
+				Description: "The `id` property of a `coder_agent` resource to associate with.",
 				ForceNew:    true,
 				Required:    true,
 			},
