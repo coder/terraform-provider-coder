@@ -84,7 +84,7 @@ func appResource() *schema.Resource {
 					}
 
 					if !appSlugRegex.MatchString(valStr) {
-						return diag.Errorf("invalid `coder_app` slug, must be a valid hostname (%q, cannot contain two consecutive hyphens or start/end with a hyphen): %q", appSlugRegex.String(), valStr)
+						return diag.Errorf("invalid \"coder_app\" slug, must be a valid hostname (%q, cannot contain two consecutive hyphens or start/end with a hyphen): %q", appSlugRegex.String(), valStr)
 					}
 
 					return nil
@@ -147,7 +147,7 @@ func appResource() *schema.Resource {
 						return nil
 					}
 
-					return diag.Errorf("invalid app share %q, must be one of `owner`, `authenticated`, `public`", valStr)
+					return diag.Errorf("invalid app share %q, must be one of \"owner\", \"authenticated\", \"public\"", valStr)
 				},
 			},
 			"url": {
