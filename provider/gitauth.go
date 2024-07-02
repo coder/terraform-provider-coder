@@ -16,7 +16,7 @@ func gitAuthDataSource() *schema.Resource {
 		SchemaVersion: 1,
 
 		DeprecationMessage: "Use the `coder_external_auth` data source instead.",
-		Description:        "(**Deprecated**: use the `coder_external_auth` data source instead). Use this data source to require users to authenticate with a Git provider prior to workspace creation. This can be used to perform an authenticated `git clone` in startup scripts.",
+		Description:        "~> **Deprecated**\nUse the `coder_external_auth` data source instead.\n\nUse this data source to require users to authenticate with a Git provider prior to workspace creation. This can be used to perform an authenticated `git clone` in startup scripts.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rawID, ok := rd.GetOk("id")
 			if !ok {
