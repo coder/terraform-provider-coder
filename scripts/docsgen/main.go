@@ -84,6 +84,6 @@ func writeDeprecationMessage(doc []byte, schemas map[string]*schema.Schema) []by
 			log.Printf("warn: same property name `%s` but description does not match, most likely a different property", propertyName)
 			return m
 		}
-		return bytes.Replace(m, []byte("Deprecated"), []byte(fmt.Sprintf("Deprecated: %s", sch.Deprecated)), 1)
+		return bytes.Replace(m, []byte("Deprecated"), []byte(fmt.Sprintf("**Deprecated**: %s", sch.Deprecated)), 1)
 	})
 }

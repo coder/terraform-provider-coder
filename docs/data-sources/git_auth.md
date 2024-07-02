@@ -3,10 +3,15 @@
 page_title: "coder_git_auth Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
+  ~> Deprecated
+  Use the coder_external_auth data source instead.
   Use this data source to require users to authenticate with a Git provider prior to workspace creation. This can be used to perform an authenticated git clone in startup scripts.
 ---
 
 # coder_git_auth (Data Source)
+
+~> **Deprecated**
+Use the `coder_external_auth` data source instead.
 
 Use this data source to require users to authenticate with a Git provider prior to workspace creation. This can be used to perform an authenticated `git clone` in startup scripts.
 

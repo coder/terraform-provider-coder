@@ -204,7 +204,7 @@ func parameterDataSource() *schema.Resource {
 				Default:      "string",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"number", "string", "bool", "list(string)"}, false),
-				Description:  `The type of this parameter. Must be one of: "number", "string", "bool", or "list(string)".`,
+				Description:  "The type of this parameter. Must be one of: `\"number\"`, `\"string\"`, `\"bool\"`, or `\"list(string)\"`.",
 			},
 			"mutable": {
 				Type:        schema.TypeBool,
@@ -221,7 +221,7 @@ func parameterDataSource() *schema.Resource {
 				Type: schema.TypeString,
 				Description: "A URL to an icon that will display in the dashboard. View built-in " +
 					"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
-					"built-in icon with `data.coder_workspace.me.access_url + \"/icon/<path>\"`.",
+					"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
 				ForceNew: true,
 				Optional: true,
 				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
@@ -234,7 +234,7 @@ func parameterDataSource() *schema.Resource {
 			},
 			"option": {
 				Type:        schema.TypeList,
-				Description: "Each \"option\" block defines a value for a user to select from.",
+				Description: "Each `option` block defines a value for a user to select from.",
 				ForceNew:    true,
 				Optional:    true,
 				MaxItems:    64,
@@ -261,8 +261,8 @@ func parameterDataSource() *schema.Resource {
 						"icon": {
 							Type: schema.TypeString,
 							Description: "A URL to an icon that will display in the dashboard. View built-in " +
-								"icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a " +
-								"built-in icon with `data.coder_workspace.me.access_url + \"/icon/<path>\"`.",
+								"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
+								"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
 							ForceNew: true,
 							Optional: true,
 							ValidateFunc: func(i interface{}, s string) ([]string, []error) {

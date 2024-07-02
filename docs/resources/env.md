@@ -3,12 +3,12 @@
 page_title: "coder_env Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the "coder_agent" resource.
+  Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the coder_agent resource.
 ---
 
 # coder_env (Resource)
 
-Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the "coder_agent" resource.
+Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the `coder_agent` resource.
 
 ## Example Usage
 
@@ -39,7 +39,7 @@ resource "coder_env" "internal_api_url" {
 
 ### Required
 
-- `agent_id` (String) The "id" property of a "coder_agent" resource to associate with.
+- `agent_id` (String) The `id` property of a `coder_agent` resource to associate with.
 - `name` (String) The name of the environment variable.
 
 ### Optional

@@ -115,12 +115,12 @@ func workspaceDataSource() *schema.Resource {
 			"start_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: `A computed count based on "transition" state. If "start", count will equal 1.`,
+				Description: "A computed count based on `transition` state. If `start`, count will equal 1.",
 			},
 			"transition": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: `Either "start" or "stop". Use this to start/stop resources with "count".`,
+				Description: "Either `start` or `stop`. Use this to start/stop resources with `count`.",
 			},
 			"owner": {
 				Type:        schema.TypeString,
