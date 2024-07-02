@@ -72,7 +72,7 @@ resource "coder_script" "shutdown" {
 
 ### Required
 
-- `agent_id` (String) The "id" property of a "coder_agent" resource to associate with.
+- `agent_id` (String) The `id` property of a `coder_agent` resource to associate with.
 - `display_name` (String) The display name of the script to display logs in the dashboard.
 - `script` (String) The content of the script that will be run.
 
