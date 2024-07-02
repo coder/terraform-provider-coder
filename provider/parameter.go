@@ -204,7 +204,7 @@ func parameterDataSource() *schema.Resource {
 				Default:      "string",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"number", "string", "bool", "list(string)"}, false),
-				Description:  "The type of this parameter. Must be one of: `number`, `string`, `bool`, or `list(string)`.",
+				Description:  "The type of this parameter. Must be one of: `\"number\"`, `\"string\"`, `\"bool\"`, or `\"list(string)\"`.",
 			},
 			"mutable": {
 				Type:        schema.TypeBool,

@@ -79,7 +79,7 @@ resource "coder_script" "shutdown" {
 ### Optional
 
 - `cron` (String) The cron schedule to run the script on. This is a cron expression.
-- `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `data.coder_workspace.me.access_url + "/icon/<path>"`.
+- `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
 - `log_path` (String) The path of a file to write the logs to. If relative, it will be appended to tmp.
 - `run_on_start` (Boolean) This option defines whether or not the script should run when the agent starts. The script should exit when it is done to signal that the agent is ready.
 - `run_on_stop` (Boolean) This option defines whether or not the script should run when the agent stops. The script should exit when it is done to signal that the workspace can be stopped.
