@@ -92,7 +92,7 @@ func agentResource() *schema.Resource {
 				Type:         schema.TypeString,
 				ForceNew:     true,
 				Required:     true,
-				Description:  "The architecture the agent will run on. Must be one of: `amd64`, `armv7`, `arm64`.",
+				Description:  "The architecture the agent will run on. Must be one of: `\"amd64\"`, `\"armv7\"`, `\"arm64\"`.",
 				ValidateFunc: validation.StringInSlice([]string{"amd64", "armv7", "arm64"}, false),
 			},
 			"auth": {
@@ -100,14 +100,14 @@ func agentResource() *schema.Resource {
 				Default:      "token",
 				ForceNew:     true,
 				Optional:     true,
-				Description:  "The authentication type the agent will use. Must be one of: `token`, `google-instance-identity`, `aws-instance-identity`, `azure-instance-identity`.",
+				Description:  "The authentication type the agent will use. Must be one of: `\"token\"`, `\"google-instance-identity\"`, `\"aws-instance-identity\"`, `\"azure-instance-identity\"`.",
 				ValidateFunc: validation.StringInSlice([]string{"token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity"}, false),
 			},
 			"dir": {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
-				Description: "The starting directory when a user creates a shell session. Defaults to `$HOME`.",
+				Description: "The starting directory when a user creates a shell session. Defaults to `\"$HOME\"`.",
 			},
 			"env": {
 				ForceNew:    true,
@@ -119,7 +119,7 @@ func agentResource() *schema.Resource {
 				Type:         schema.TypeString,
 				ForceNew:     true,
 				Required:     true,
-				Description:  "The operating system the agent will run on. Must be one of: `linux`, `darwin`, or `windows`.",
+				Description:  "The operating system the agent will run on. Must be one of: `\"linux\"`, `\"darwin\"`, or `\"windows\"`.",
 				ValidateFunc: validation.StringInSlice([]string{"linux", "darwin", "windows"}, false),
 			},
 			"startup_script": {
@@ -177,7 +177,7 @@ func agentResource() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
-				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be `/etc/motd`.",
+				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be `\"/etc/motd\"`.",
 			},
 			"login_before_ready": {
 				// Note: When this is removed, "startup_script_behavior" should
@@ -187,7 +187,7 @@ func agentResource() *schema.Resource {
 				ForceNew:      true,
 				Optional:      true,
 				Description:   "This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the `startup_script` is done and has exited. When enabled, users may see an incomplete workspace when logging in.",
-				Deprecated:    "Configure startup_script_behavior instead. This attribute will be removed in a future version of the provider.",
+				Deprecated:    "Configure `startup_script_behavior` instead. This attribute will be removed in a future version of the provider.",
 				ConflictsWith: []string{"startup_script_behavior"},
 			},
 			"startup_script_behavior": {
@@ -200,7 +200,7 @@ func agentResource() *schema.Resource {
 				Type:          schema.TypeString,
 				ForceNew:      true,
 				Optional:      true,
-				Description:   "This option sets the behavior of the `startup_script`. When set to `blocking`, the `startup_script` must exit before the workspace is ready. When set to `non-blocking`, the `startup_script` may run in the background and the workspace will be ready immediately. Default is `non-blocking`, although `blocking` is recommended. This option is an alias for defining a `coder_script` resource with `start_blocks_login` set to rue (blocking).",
+				Description:   "This option sets the behavior of the `startup_script`. When set to `\"blocking\"`, the `startup_script` must exit before the workspace is ready. When set to `\"non-blocking\"`, the `startup_script` may run in the background and the workspace will be ready immediately. Default is `\"non-blocking\"`, although `\"blocking\"` is recommended. This option is an alias for defining a `coder_script` resource with `start_blocks_login` set to `true` (blocking).",
 				ValidateFunc:  validation.StringInSlice([]string{"blocking", "non-blocking"}, false),
 				ConflictsWith: []string{"login_before_ready"},
 			},
@@ -313,9 +313,9 @@ func agentResource() *schema.Resource {
 func agentInstanceResource() *schema.Resource {
 	return &schema.Resource{
 		Description: "Use this resource to associate an instance ID with an agent for zero-trust " +
-			"authentication. This association is done automatically for `google_compute_instance`, " +
-			"`aws_instance`, `azurerm_linux_virtual_machine`, and " +
-			"`azurerm_windows_virtual_machine` resources.",
+			"authentication. This association is done automatically for `\"google_compute_instance\"`, " +
+			"`\"aws_instance\"`, `\"azurerm_linux_virtual_machine\"`, and " +
+			"`\"azurerm_windows_virtual_machine\"` resources.",
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
 			return nil
