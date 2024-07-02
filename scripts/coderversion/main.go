@@ -78,13 +78,13 @@ const releasesURL = "https://api.github.com/repos/coder/coder/releases"
 func fetchReleases() []string {
 	resp, err := http.Get(releasesURL)
 	if err != nil {
-		fatal("get releases: %w", err)
+		fatal("get releases: %s", err.Error())
 	}
 	defer resp.Body.Close()
 
 	var releases []release
 	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
-		fatal("parse releases: %w", err)
+		fatal("parse releases: %s", err.Error())
 	}
 
 	var ss []string
