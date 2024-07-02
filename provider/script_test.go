@@ -69,7 +69,7 @@ func TestScriptNeverRuns(t *testing.T) {
 				script = "Wow"
 			}
 			`,
-			ExpectError: regexp.MustCompile(`at least one of run_on_start, run_on_stop, or cron must be set`),
+			ExpectError: regexp.MustCompile("at least one of \"run_on_start\", \"run_on_stop\", or \"cron\" must be set"),
 		}},
 	})
 }
@@ -94,7 +94,7 @@ func TestScriptStartBlocksLoginRequiresRunOnStart(t *testing.T) {
 				start_blocks_login = true
 			}
 			`,
-			ExpectError: regexp.MustCompile(`start_blocks_login can only be set if run_on_start is true`),
+			ExpectError: regexp.MustCompile("\"start_blocks_login\" can only be set if \"run_on_start\" is \"true\""),
 		}},
 	})
 	resource.Test(t, resource.TestCase{

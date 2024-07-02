@@ -29,7 +29,7 @@ func scriptResource() *schema.Resource {
 				return diag.Errorf("at least one of \"run_on_start\", \"run_on_stop\", or \"cron\" must be set")
 			}
 			if !runOnStart && startBlocksLogin {
-				return diag.Errorf("\"start_blocks_login\" can only be set if \"run_on_start\" is true")
+				return diag.Errorf("\"start_blocks_login\" can only be set if \"run_on_start\" is \"true\"")
 			}
 			return nil
 		},
