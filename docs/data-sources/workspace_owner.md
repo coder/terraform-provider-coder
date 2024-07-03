@@ -22,7 +22,7 @@ data "coder_workspace_owner" "me" {}
 resource "coder_agent" "dev" {
   arch = "amd64"
   os   = "linux"
-  dir  = local.repo_dir
+  dir  = "/workspace"
   env = {
     OIDC_TOKEN : data.coder_workspace_owner.me.oidc_access_token,
   }
@@ -36,7 +36,7 @@ resource "coder_env" "git_author_name" {
 }
 
 resource "coder_env" "git_author_email" {
-  agent_id = var.agent_id
+  agent_id = coder_agent.dev.id
   name     = "GIT_AUTHOR_EMAIL"
   value    = data.coder_workspace_owner.me.email
   count    = data.coder_workspace_owner.me.email != "" ? 1 : 0
