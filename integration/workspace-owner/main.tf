@@ -9,9 +9,8 @@ terraform {
   }
 }
 
-// TODO: test coder_external_auth and coder_git_auth
+// TODO: test coder_external_auth
 // data coder_external_auth "me" {}
-// data coder_git_auth "me" {}
 data "coder_provisioner" "me" {}
 data "coder_workspace" "me" {}
 data "coder_workspace_owner" "me" {}
