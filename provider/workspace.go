@@ -30,9 +30,6 @@ func workspaceDataSource() *schema.Resource {
 			name := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_NAME", "default")
 			rd.Set("name", name)
 
-			sessionToken := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_SESSION_TOKEN")
-			_ = rd.Set("owner_session_token", sessionToken)
-
 			id := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_ID", uuid.NewString())
 			rd.SetId(id)
 
