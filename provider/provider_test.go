@@ -37,9 +37,6 @@ func TestProviderEmpty(t *testing.T) {
 			data "coder_external_auth" "git" {
 				id = "git"
 			}
-			data "coder_git_auth" "git" {
-				id = "git"
-			}
 			data "coder_parameter" "param" {
 				name = "hey"
 			}`,
