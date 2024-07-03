@@ -15,8 +15,6 @@ Use this data source to fetch information about the workspace owner.
 ```terraform
 provider "coder" {}
 
-data "coder_workspace" "me" {}
-
 data "coder_workspace_owner" "me" {}
 
 resource "coder_agent" "dev" {
