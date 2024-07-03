@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"reflect"
 	"strconv"
 
@@ -27,31 +26,6 @@ func workspaceDataSource() *schema.Resource {
 				count = 1
 			}
 			_ = rd.Set("start_count", count)
-
-			owner := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER", "default")
-			_ = rd.Set("owner", owner)
-
-			ownerEmail := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_EMAIL", "default@example.com")
-			_ = rd.Set("owner_email", ownerEmail)
-
-			ownerGroupsText := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_GROUPS")
-			var ownerGroups []string
-			if ownerGroupsText != "" {
-				err := json.Unmarshal([]byte(ownerGroupsText), &ownerGroups)
-				if err != nil {
-					return diag.Errorf("couldn't parse owner groups %q", ownerGroupsText)
-				}
-			}
-			_ = rd.Set("owner_groups", ownerGroups)
-
-			ownerName := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_NAME", "default")
-			_ = rd.Set("owner_name", ownerName)
-
-			ownerID := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_ID", uuid.Nil.String())
-			_ = rd.Set("owner_id", ownerID)
-
-			ownerOIDCAccessToken := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN")
-			_ = rd.Set("owner_oidc_access_token", ownerOIDCAccessToken)
 
 			name := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_NAME", "default")
 			rd.Set("name", name)
