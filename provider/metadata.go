@@ -38,7 +38,7 @@ func metadataResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"resource_id": {
 				Type:        schema.TypeString,
-				Description: "The \"id\" property of another resource that metadata should be attached to.",
+				Description: "The `id` property of another resource that metadata should be attached to.",
 				ForceNew:    true,
 				Required:    true,
 			},
@@ -51,8 +51,8 @@ func metadataResource() *schema.Resource {
 			"icon": {
 				Type: schema.TypeString,
 				Description: "A URL to an icon that will display in the dashboard. View built-in " +
-					"icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a " +
-					"built-in icon with `data.coder_workspace.me.access_url + \"/icon/<path>\"`.",
+					"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
+					"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
 				ForceNew: true,
 				Optional: true,
 				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
@@ -73,7 +73,7 @@ func metadataResource() *schema.Resource {
 			},
 			"item": {
 				Type:        schema.TypeList,
-				Description: "Each \"item\" block defines a single metadata item consisting of a key/value pair.",
+				Description: "Each `item` block defines a single metadata item consisting of a key/value pair.",
 				ForceNew:    true,
 				Optional:    true,
 				Elem: &schema.Resource{
@@ -92,7 +92,7 @@ func metadataResource() *schema.Resource {
 						},
 						"sensitive": {
 							Type: schema.TypeBool,
-							Description: "Set to \"true\" to for items such as API keys whose values should be " +
+							Description: "Set to `true` to for items such as API keys whose values should be " +
 								"hidden from view by default. Note that this does not prevent metadata from " +
 								"being retrieved using the API, so it is not suitable for secrets that should " +
 								"not be exposed to workspace users.",
