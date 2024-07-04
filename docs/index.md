@@ -3,6 +3,7 @@
 page_title: "Coder Provider"
 subcategory: "Infrastructure"
 description: |-
+    Terraform provider for Coder. Coder is a self-hosted cloud development environment that allows enterprises to create consistent, secure, and scalable development environments for their teams.
   
 ---
 
@@ -12,7 +13,7 @@ The Coder provider is used to help create [Coder](https://coder.com) templates. 
 
 -> Requires Coder v2.13.0 or later.
 
-!> `coder_git_auth` and owner related fields of `coder_workspace` data source have been removed. Follow the [v0 to v1migration guide](https://registry.terraform.io/providers/codercom/coder/latest/docs/guides/v0-to-v1-migration) to update your code.
+!> `coder_git_auth` and owner related fields of `coder_workspace` data source have been removed. Follow the [v0 to v1migration guide](https://registry.terraform.io/providers/codercom/coder/latest/docs/guides/v1-to-v2-migration) to update your code.
 
 ## Example
 
