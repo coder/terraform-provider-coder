@@ -162,18 +162,12 @@ func agentResource() *schema.Resource {
 				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be `\"/etc/motd\"`.",
 			},
 			"startup_script_behavior": {
-				// Note: Our default value is "non-blocking" but we do not set
-				// it here because we want to be able to differentiate between
-				// the user setting this or "login_before_ready". For all
-				// intents and purposes, until deprecation, setting
-				// "login_before_ready = false" is equivalent to setting
-				// "startup_script_behavior = blocking".
-				Type:          schema.TypeString,
-				ForceNew:      true,
-				Optional:      true,
-				Description:   "This option sets the behavior of the `startup_script`. When set to `\"blocking\"`, the `startup_script` must exit before the workspace is ready. When set to `\"non-blocking\"`, the `startup_script` may run in the background and the workspace will be ready immediately. Default is `\"non-blocking\"`, although `\"blocking\"` is recommended. This option is an alias for defining a `coder_script` resource with `start_blocks_login` set to `true` (blocking).",
-				ValidateFunc:  validation.StringInSlice([]string{"blocking", "non-blocking"}, false),
-				ConflictsWith: []string{"login_before_ready"},
+				Type:         schema.TypeString,
+				Default:      "non-blocking",
+				ForceNew:     true,
+				Optional:     true,
+				Description:  "This option sets the behavior of the `startup_script`. When set to `\"blocking\"`, the `startup_script` must exit before the workspace is ready. When set to `\"non-blocking\"`, the `startup_script` may run in the background and the workspace will be ready immediately. Default is `\"non-blocking\"`, although `\"blocking\"` is recommended. This option is an alias for defining a `coder_script` resource with `start_blocks_login` set to `true` (blocking).",
+				ValidateFunc: validation.StringInSlice([]string{"blocking", "non-blocking"}, false),
 			},
 			"metadata": {
 				Type:        schema.TypeList,
