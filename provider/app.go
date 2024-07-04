@@ -96,14 +96,6 @@ func appResource() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 			},
-			"name": {
-				Type:          schema.TypeString,
-				Description:   "A display name to identify the app.",
-				Deprecated:    "`name` on apps is deprecated, use `display_name` instead",
-				ForceNew:      true,
-				Optional:      true,
-				ConflictsWith: []string{"display_name"},
-			},
 			"subdomain": {
 				Type: schema.TypeBool,
 				Description: "Determines whether the app will be accessed via it's own " +
@@ -112,15 +104,6 @@ func appResource() *schema.Resource {
 					"`subdomain` set to `true` will not be accessible. Defaults to `false`.",
 				ForceNew: true,
 				Optional: true,
-			},
-			"relative_path": {
-				Type:       schema.TypeBool,
-				Deprecated: "`relative_path` on apps is deprecated, use `subdomain` instead.",
-				Description: "Specifies whether the URL will be accessed via a relative " +
-					"path or wildcard. Use if wildcard routing is unavailable. Defaults to `true`.",
-				ForceNew:      true,
-				Optional:      true,
-				ConflictsWith: []string{"subdomain"},
 			},
 			"share": {
 				Type: schema.TypeString,
