@@ -14,9 +14,9 @@ Use this data source to get information for the active workspace build.
 
 ```terraform
 provider "coder" {}
-  
+
 provider "docker" {}
-  
+
 data "coder_workspace" "me" {}
 
 data "coder_workspace_owner" "me" {}
