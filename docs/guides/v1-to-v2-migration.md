@@ -1,0 +1,47 @@
+---
+page_title: "Migrate from v1 to v2"
+---
+
+# Migrate from v1 to v2
+
+Version 2.0.0 of the Coder provider for Terraform is a major release that removes the following deprecated data sources and their properties:
+
+- `coder_git_auth` data source
+- All owner properties from the [`coder_workspace`](../docs/data-sources/workspace.md) data source
+
+## Migrating `coder_git_auth` data source
+
+If you are using this data source, you must replace it with the [`coder_external_auth`](../docs/data-sources/external-auth.md) data source. The `coder_external_auth` data source is a more generic data source that can be used to create any external authentication provider.
+
+### v1.0.0
+```terraform
+
+data "coder_git_auth" "example" {
+  id = "example"
+}
+```
+### v2.0.0
+```terraform
+data "coder_external_auth" "example" {
+  id = "example"
+}
+```
+
+
+## Migrating `coder_workspace` data source
+
+If you are using the `owner` properties of the `coder_workspace` data source, you must remove them and use the `coder_workspace_owner` data source instead. The `coder_workspace_owner` data source is a more generic data source that provide additional properties of the workspace owner.
+
+| `v1.0.0` | `v2.0.0` |
+|-----------|----------|
+| `data.coder_workspace.me.owner_id` | `data.coder_workspace_owner.me.id` |
+| `data.coder_workspace.me.owner` | `data.coder_workspace_owner.me.name` |
+| `data.coder_workspace.me.owner_name` | `data.coder_workspace_owner.me.full_name` |
+| `data.coder_workspace.me.owner_email` | `data.coder_workspace_owner.me.email` |
+| `data.coder_workspace.me.owner_groups` | `data.coder_workspace_owner.me.groups` |
+| `data.coder_workspace.me.owner_oidc_access_token` | `data.coder_workspace_owner.me.oidc_access_token` |
+| `data.coder_workspace.me.owner_session_token` | `data.coder_workspace_owner.me.session_token` |
+
+```terraform
+
+->While we do not anticipate these changes to affect existing resources, we strongly advice reviewing the plan produced by Terraform to ensure no resources are accidentally removed or altered in an undesired way. If you encounter any unexpected behavior, please report it by opening a GitHub [issue](https://github.com/coder/terraform-provider-coder/issues).
