@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"encoding/json"
 	"reflect"
 	"strconv"
 
@@ -28,36 +27,8 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("start_count", count)
 
-			owner := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER", "default")
-			_ = rd.Set("owner", owner)
-
-			ownerEmail := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_EMAIL", "default@example.com")
-			_ = rd.Set("owner_email", ownerEmail)
-
-			ownerGroupsText := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_GROUPS")
-			var ownerGroups []string
-			if ownerGroupsText != "" {
-				err := json.Unmarshal([]byte(ownerGroupsText), &ownerGroups)
-				if err != nil {
-					return diag.Errorf("couldn't parse owner groups %q", ownerGroupsText)
-				}
-			}
-			_ = rd.Set("owner_groups", ownerGroups)
-
-			ownerName := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_NAME", "default")
-			_ = rd.Set("owner_name", ownerName)
-
-			ownerID := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_OWNER_ID", uuid.Nil.String())
-			_ = rd.Set("owner_id", ownerID)
-
-			ownerOIDCAccessToken := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN")
-			_ = rd.Set("owner_oidc_access_token", ownerOIDCAccessToken)
-
 			name := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_NAME", "default")
 			rd.Set("name", name)
-
-			sessionToken := helpers.OptionalEnv("CODER_WORKSPACE_OWNER_SESSION_TOKEN")
-			_ = rd.Set("owner_session_token", sessionToken)
 
 			id := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_ID", uuid.NewString())
 			rd.SetId(id)
@@ -122,47 +93,6 @@ func workspaceDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "Either `start` or `stop`. Use this to start/stop resources with `count`.",
 			},
-			"owner": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Username of the workspace owner.",
-				Deprecated:  "Use `coder_workspace_owner.name` instead.",
-			},
-			"owner_email": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Email address of the workspace owner.",
-				Deprecated:  "Use `coder_workspace_owner.email` instead.",
-			},
-			"owner_id": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "UUID of the workspace owner.",
-				Deprecated:  "Use `coder_workspace_owner.id` instead.",
-			},
-			"owner_name": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Name of the workspace owner.",
-				Deprecated:  "Use `coder_workspace_owner.full_name` instead.",
-			},
-			"owner_oidc_access_token": {
-				Type:     schema.TypeString,
-				Computed: true,
-				Description: "A valid OpenID Connect access token of the workspace owner. " +
-					"This is only available if the workspace owner authenticated with OpenID Connect. " +
-					"If a valid token cannot be obtained, this value will be an empty string.",
-				Deprecated: "Use `coder_workspace_owner.oidc_access_token` instead.",
-			},
-			"owner_groups": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-				Computed:    true,
-				Description: "List of groups the workspace owner belongs to.",
-				Deprecated:  "Use `coder_workspace_owner.groups` instead.",
-			},
 			"id": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -172,12 +102,6 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Name of the workspace.",
-			},
-			"owner_session_token": {
-				Type:        schema.TypeString,
-				Computed:    true,
-				Description: "Session token for authenticating with a Coder deployment. It is regenerated everytime a workspace is started.",
-				Deprecated:  "Use `coder_workspace_owner.session_token` instead.",
 			},
 			"template_id": {
 				Type:        schema.TypeString,
