@@ -62,5 +62,4 @@ resource "google_compute_instance" "dev" {
 
 ### Optional
 
-- `feature_use_managed_variables` (Boolean, **Deprecated**: Terraform variables are now exclusively utilized for template-wide variables after the removal of support for legacy parameters.) Feature: use managed Terraform variables. The feature flag is not used anymore as Terraform variables are now exclusively utilized for template-wide variables.
 - `url` (String) The URL to access Coder.
