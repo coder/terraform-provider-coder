@@ -34,11 +34,9 @@ func TestAgent(t *testing.T) {
 						hi = "test"
 					}
 					startup_script = "echo test"
-					startup_script_timeout = 120
 					troubleshooting_url = "https://example.com/troubleshoot"
 					motd_file = "/etc/motd"
 					shutdown_script = "echo bye bye"
-					shutdown_script_timeout = 120
 					order = 4
 				}
 				`,
@@ -55,12 +53,10 @@ func TestAgent(t *testing.T) {
 					"dir",
 					"env.hi",
 					"startup_script",
-					"startup_script_timeout",
 					"connection_timeout",
 					"troubleshooting_url",
 					"motd_file",
 					"shutdown_script",
-					"shutdown_script_timeout",
 					"order",
 				} {
 					value := resource.Primary.Attributes[key]
@@ -108,34 +104,6 @@ func TestAgent_StartupScriptBehavior(t *testing.T) {
 			Check: func(state *terraform.ResourceState) {
 				require.Equal(t, "non-blocking", state.Primary.Attributes["startup_script_behavior"])
 			},
-		},
-		{
-			Name: "login_before_ready (deprecated)",
-			Config: `
-				resource "coder_agent" "new" {
-					os = "linux"
-					arch = "amd64"
-					login_before_ready = false
-				}
-			`,
-			Check: func(state *terraform.ResourceState) {
-				require.Equal(t, "false", state.Primary.Attributes["login_before_ready"])
-				// startup_script_behavior must be empty, this indicates that
-				// login_before_ready should be used instead.
-				require.Equal(t, "", state.Primary.Attributes["startup_script_behavior"])
-			},
-		},
-		{
-			Name: "no login_before_ready with startup_script_behavior",
-			Config: `
-				resource "coder_agent" "new" {
-					os = "linux"
-					arch = "amd64"
-					login_before_ready = false
-					startup_script_behavior = "blocking"
-				}
-			`,
-			ExpectError: regexp.MustCompile("conflicts with"),
 		},
 	} {
 		tc := tc

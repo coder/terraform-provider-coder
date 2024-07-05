@@ -128,29 +128,11 @@ func agentResource() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"startup_script_timeout": {
-				Type:         schema.TypeInt,
-				Default:      300,
-				ForceNew:     true,
-				Optional:     true,
-				Description:  "Time in seconds until the agent lifecycle status is marked as timed out during start, this happens when the startup script has not completed (exited) in the given time.",
-				Deprecated:   "This feature is deprecated and has no effect. This attribute will be removed in a future version of the provider.",
-				ValidateFunc: validation.IntAtLeast(1),
-			},
 			"shutdown_script": {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
 				Description: "A script to run before the agent is stopped. The script should exit when it is done to signal that the workspace can be stopped. This option is an alias for defining a `coder_script` resource with `run_on_stop` set to `true`.",
-			},
-			"shutdown_script_timeout": {
-				Type:         schema.TypeInt,
-				Default:      300,
-				ForceNew:     true,
-				Optional:     true,
-				Description:  "Time in seconds until the agent lifecycle status is marked as timed out during shutdown, this happens when the shutdown script has not completed (exited) in the given time.",
-				Deprecated:   "This feature is deprecated and has no effect. This attribute will be removed in a future version of the provider.",
-				ValidateFunc: validation.IntAtLeast(1),
 			},
 			"token": {
 				ForceNew:    true,
@@ -179,30 +161,13 @@ func agentResource() *schema.Resource {
 				Optional:    true,
 				Description: "The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be `\"/etc/motd\"`.",
 			},
-			"login_before_ready": {
-				// Note: When this is removed, "startup_script_behavior" should
-				// be set to "non-blocking" by default (instead of empty string).
-				Type:          schema.TypeBool,
-				Default:       true,
-				ForceNew:      true,
-				Optional:      true,
-				Description:   "This option defines whether or not the user can (by default) login to the workspace before it is ready. Ready means that e.g. the `startup_script` is done and has exited. When enabled, users may see an incomplete workspace when logging in.",
-				Deprecated:    "Configure `startup_script_behavior` instead. This attribute will be removed in a future version of the provider.",
-				ConflictsWith: []string{"startup_script_behavior"},
-			},
 			"startup_script_behavior": {
-				// Note: Our default value is "non-blocking" but we do not set
-				// it here because we want to be able to differentiate between
-				// the user setting this or "login_before_ready". For all
-				// intents and purposes, until deprecation, setting
-				// "login_before_ready = false" is equivalent to setting
-				// "startup_script_behavior = blocking".
-				Type:          schema.TypeString,
-				ForceNew:      true,
-				Optional:      true,
-				Description:   "This option sets the behavior of the `startup_script`. When set to `\"blocking\"`, the `startup_script` must exit before the workspace is ready. When set to `\"non-blocking\"`, the `startup_script` may run in the background and the workspace will be ready immediately. Default is `\"non-blocking\"`, although `\"blocking\"` is recommended. This option is an alias for defining a `coder_script` resource with `start_blocks_login` set to `true` (blocking).",
-				ValidateFunc:  validation.StringInSlice([]string{"blocking", "non-blocking"}, false),
-				ConflictsWith: []string{"login_before_ready"},
+				Type:         schema.TypeString,
+				Default:      "non-blocking",
+				ForceNew:     true,
+				Optional:     true,
+				Description:  "This option sets the behavior of the `startup_script`. When set to `\"blocking\"`, the `startup_script` must exit before the workspace is ready. When set to `\"non-blocking\"`, the `startup_script` may run in the background and the workspace will be ready immediately. Default is `\"non-blocking\"`, although `\"blocking\"` is recommended. This option is an alias for defining a `coder_script` resource with `start_blocks_login` set to `true` (blocking).",
+				ValidateFunc: validation.StringInSlice([]string{"blocking", "non-blocking"}, false),
 			},
 			"metadata": {
 				Type:        schema.TypeList,
