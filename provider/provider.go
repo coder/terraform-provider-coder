@@ -72,7 +72,6 @@ func New() *schema.Provider {
 			"coder_workspace_tags":  workspaceTagDataSource(),
 			"coder_provisioner":     provisionerDataSource(),
 			"coder_parameter":       parameterDataSource(),
-			"coder_git_auth":        gitAuthDataSource(),
 			"coder_external_auth":   externalAuthDataSource(),
 			"coder_workspace_owner": workspaceOwnerDataSource(),
 		},
