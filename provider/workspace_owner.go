@@ -52,6 +52,7 @@ func workspaceOwnerDataSource() *schema.Resource {
 
 			_ = rd.Set("session_token", os.Getenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN"))
 			_ = rd.Set("oidc_access_token", os.Getenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN"))
+			_ = rd.Set("oidc_refresh_token", os.Getenv("CODER_WORKSPACE_OWNER_OIDC_REFRESH_TOKEN"))
 
 			return nil
 		},
@@ -106,6 +107,13 @@ func workspaceOwnerDataSource() *schema.Resource {
 				Description: "A valid OpenID Connect access token of the workspace owner. " +
 					"This is only available if the workspace owner authenticated with OpenID Connect. " +
 					"If a valid token cannot be obtained, this value will be an empty string.",
+			},
+			"oidc_refresh_token": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Description: "A valid OpenID Connect refresh token of the workspace owner. Can be used to refresh access token if expired " +
+					"This is only available if the workspace owner authenticated with OpenID Connect. " +
+					"If a valid refresh token cannot be obtained, this value will be an empty string.",
 			},
 		},
 	}

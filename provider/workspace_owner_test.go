@@ -35,6 +35,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_OWNER_GROUPS", `["group1", "group2"]`)
 		t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", `supersecret`)
 		t.Setenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN", `alsosupersecret`)
+		t.Setenv("CODER_WORKSPACE_OWNER_OIDC_REFRESH_TOKEN", `alsosupersecretrefresh`)
 
 		resource.Test(t, resource.TestCase{
 			Providers: map[string]*schema.Provider{
@@ -63,6 +64,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Equal(t, `group2`, attrs["groups.1"])
 					assert.Equal(t, `supersecret`, attrs["session_token"])
 					assert.Equal(t, `alsosupersecret`, attrs["oidc_access_token"])
+					assert.Equal(t, `alsosupersecretrefresh`, attrs["oidc_refresh_token"])
 					return nil
 				},
 			}},
@@ -80,6 +82,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 			"CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN",
 			"CODER_WORKSPACE_OWNER_SSH_PUBLIC_KEY",
 			"CODER_WORKSPACE_OWNER_SSH_PRIVATE_KEY",
+			"CODER_WORKSPACE_OWNER_OIDC_REFRESH_TOKEN",
 		} { // https://github.com/golang/go/issues/52817
 			t.Setenv(v, "")
 			os.Unsetenv(v)
@@ -111,6 +114,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Empty(t, attrs["groups.0"])
 					assert.Empty(t, attrs["session_token"])
 					assert.Empty(t, attrs["oidc_access_token"])
+					assert.Empty(t, attrs["oidc_refresh_token"])
 					return nil
 				},
 			}},
