@@ -99,6 +99,7 @@ func workspaceOwnerDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "Session token for authenticating with a Coder deployment. It is regenerated every time a workspace is started.",
+				Sensitive:   true,
 			},
 			"oidc_access_token": {
 				Type:     schema.TypeString,
@@ -106,6 +107,7 @@ func workspaceOwnerDataSource() *schema.Resource {
 				Description: "A valid OpenID Connect access token of the workspace owner. " +
 					"This is only available if the workspace owner authenticated with OpenID Connect. " +
 					"If a valid token cannot be obtained, this value will be an empty string.",
+				Sensitive:   true,
 			},
 		},
 	}
