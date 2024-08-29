@@ -14,7 +14,9 @@ func metadataResource() *schema.Resource {
 		SchemaVersion: 1,
 
 		Description: "Use this resource to attach metadata to a resource. They will be " +
-			"displayed in the Coder dashboard.",
+			"displayed in the Coder dashboard alongside the resource. " +
+			"The resource containing the agent, and it's metadata, will be shown by default. " + "\n\n" +
+			"Alternatively, to attach metadata to the agent, use a `metadata` block within a `coder_agent` resource.",
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
 
@@ -86,7 +88,7 @@ func metadataResource() *schema.Resource {
 						},
 						"value": {
 							Type:        schema.TypeString,
-							Description: "The value of this metadata item.",
+							Description: "The value of this metadata item. Supports basic Markdown, including hyperlinks.",
 							ForceNew:    true,
 							Optional:    true,
 						},
