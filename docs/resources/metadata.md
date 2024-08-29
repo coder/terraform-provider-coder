@@ -3,12 +3,15 @@
 page_title: "coder_metadata Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard.
+  Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard alongside the resource. The resource containing the agent, and it's metadata, will be shown by default.
+  Alternatively, to attach metadata to the agent, use a metadata block within a coder_agent resource.
 ---
 
 # coder_metadata (Resource)
 
-Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard.
+Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard alongside the resource. The resource containing the agent, and it's metadata, will be shown by default. 
+
+Alternatively, to attach metadata to the agent, use a `metadata` block within a `coder_agent` resource.
 
 ## Example Usage
 
@@ -82,7 +85,7 @@ Required:
 Optional:
 
 - `sensitive` (Boolean) Set to `true` to for items such as API keys whose values should be hidden from view by default. Note that this does not prevent metadata from being retrieved using the API, so it is not suitable for secrets that should not be exposed to workspace users.
-- `value` (String) The value of this metadata item.
+- `value` (String) The value of this metadata item. Supports basic Markdown, including hyperlinks.
 
 Read-Only:
 
