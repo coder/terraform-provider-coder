@@ -85,7 +85,7 @@ Required:
 Optional:
 
 - `sensitive` (Boolean) Set to `true` to for items such as API keys whose values should be hidden from view by default. Note that this does not prevent metadata from being retrieved using the API, so it is not suitable for secrets that should not be exposed to workspace users.
-- `value` (String) The value of this metadata item.
+- `value` (String) The value of this metadata item. Supports basic Markdown, including hyperlinks.
 
 Read-Only:
 

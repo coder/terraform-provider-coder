@@ -88,7 +88,7 @@ func metadataResource() *schema.Resource {
 						},
 						"value": {
 							Type:        schema.TypeString,
-							Description: "The value of this metadata item.",
+							Description: "The value of this metadata item. Supports basic Markdown, including hyperlinks.",
 							ForceNew:    true,
 							Optional:    true,
 						},
