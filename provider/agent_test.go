@@ -254,6 +254,7 @@ func TestAgent_MetadataDuplicateKeys(t *testing.T) {
 				}
 				`,
 			ExpectError: regexp.MustCompile("duplicate agent metadata key"),
+			PlanOnly:    true,
 		}},
 	})
 }
@@ -281,7 +282,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 							web_terminal = false
 							port_forwarding_helper = false
 							ssh_helper = false
-						} 
+						}
 					}
 					`,
 				Check: func(state *terraform.State) error {
@@ -331,7 +332,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 						display_apps {
 							vscode_insiders = true
 							web_terminal = true
-						} 
+						}
 					}
 					`,
 				Check: func(state *terraform.State) error {
@@ -426,7 +427,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 							web_terminal = false
 							port_forwarding_helper = false
 							ssh_helper = false
-						} 
+						}
 					}
 					`,
 				ExpectError: regexp.MustCompile(`An argument named "fake_app" is not expected here.`),

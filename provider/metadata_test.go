@@ -123,7 +123,8 @@ func TestMetadataDuplicateKeys(t *testing.T) {
 					}
 				}
 				`,
-			ExpectError: regexp.MustCompile("duplicate metadata key"),
+			PlanOnly:    true,
+			ExpectError: regexp.MustCompile("duplicate resource metadata key"),
 		}},
 	})
 }
