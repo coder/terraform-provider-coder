@@ -117,7 +117,7 @@ func TestIntegration(t *testing.T) {
 				"workspace.transition":              `start`,
 				"workspace_owner.email":             `testing@coder\.com`,
 				"workspace_owner.full_name":         `default`,
-				"workspace_owner.groups":            `\[\]`,
+				"workspace_owner.groups":            `\[(\"Everyone\")?\]`,
 				"workspace_owner.id":                `[a-zA-Z0-9-]+`,
 				"workspace_owner.name":              `testing`,
 				"workspace_owner.oidc_access_token": `^$`, // TODO: test OIDC integration
