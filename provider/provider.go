@@ -97,14 +97,8 @@ func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err 
 	items := rawPlan.GetAttr("item").AsValueSlice()
 
 	var resultItems []interface{}
-	itemKeys := map[string]struct{}{}
 	for _, item := range items {
 		key := valueAsString(item.GetAttr("key"))
-		_, exists := itemKeys[key]
-		if exists {
-			return nil, xerrors.Errorf("duplicate metadata key %q", key)
-		}
-		itemKeys[key] = struct{}{}
 		resultItem := map[string]interface{}{
 			"key":       key,
 			"value":     valueAsString(item.GetAttr("value")),

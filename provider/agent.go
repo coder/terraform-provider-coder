@@ -43,18 +43,6 @@ func agentResource() *schema.Resource {
 				}
 			}
 
-			rawPlan := resourceData.GetRawPlan()
-			items := rawPlan.GetAttr("metadata").AsValueSlice()
-			itemKeys := map[string]struct{}{}
-			for _, item := range items {
-				key := valueAsString(item.GetAttr("key"))
-				_, exists := itemKeys[key]
-				if exists {
-					return diag.FromErr(xerrors.Errorf("duplicate agent metadata key %q", key))
-				}
-				itemKeys[key] = struct{}{}
-			}
-
 			return updateInitScript(resourceData, i)
 		},
 		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
@@ -271,6 +259,32 @@ func agentResource() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 			},
+		},
+		CustomizeDiff: func(ctx context.Context, rd *schema.ResourceDiff, i any) error {
+			if !rd.HasChange("metadata") {
+				return nil
+			}
+
+			keys := map[string]bool{}
+			metadata, ok := rd.Get("metadata").([]any)
+			if !ok {
+				return xerrors.Errorf("unexpected type %T for metadata, expected []any", rd.Get("metadata"))
+			}
+			for _, t := range metadata {
+				obj, ok := t.(map[string]any)
+				if !ok {
+					return xerrors.Errorf("unexpected type %T for metadata, expected map[string]any", t)
+				}
+				key, ok := obj["key"].(string)
+				if !ok {
+					return xerrors.Errorf("unexpected type %T for metadata key, expected string", obj["key"])
+				}
+				if keys[key] {
+					return xerrors.Errorf("duplicate agent metadata key %q", key)
+				}
+				keys[key] = true
+			}
+			return nil
 		},
 	}
 }
