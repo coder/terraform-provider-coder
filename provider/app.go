@@ -187,6 +187,13 @@ func appResource() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 			},
+			"hidden": {
+				Type:        schema.TypeBool,
+				Description: "Determines if the app is visible in the UI.",
+				Default:     false,
+				ForceNew:    true,
+				Optional:    true,
+			},
 		},
 	}
 }
