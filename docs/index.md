@@ -3,7 +3,7 @@
 page_title: "Coder Provider"
 subcategory: "Infrastructure"
 description: |-
-    Terraform provider for managing Coder templates, which are the underlying infrastructure for Coder workspaces.
+    Terraform provider for defining Coder templates, which are the underlying infrastructure for Coder workspaces.
 ---
 
 # Coder Provider
