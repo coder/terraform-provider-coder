@@ -80,7 +80,7 @@ func TestIntegration(t *testing.T) {
 				"workspace.name":                    `test-data-source`,
 				"workspace.owner":                   `testing`,
 				"workspace.owner_email":             `testing@coder\.com`,
-				"workspace.owner_groups":            `\[\]`,
+				"workspace.owner_groups":            `\[(\"Everyone\")?\]`,
 				"workspace.owner_id":                `[a-zA-Z0-9]+`,
 				"workspace.owner_name":              `default`,
 				"workspace.owner_oidc_access_token": `^$`, // TODO: need a test OIDC integration
@@ -105,7 +105,7 @@ func TestIntegration(t *testing.T) {
 				"workspace.name":                    ``,
 				"workspace.owner":                   `testing`,
 				"workspace.owner_email":             `testing@coder\.com`,
-				"workspace.owner_groups":            `\[\]`,
+				"workspace.owner_groups":            `\[(\"Everyone\")?\]`,
 				"workspace.owner_id":                `[a-zA-Z0-9]+`,
 				"workspace.owner_name":              `default`,
 				"workspace.owner_oidc_access_token": `^$`, // TODO: need a test OIDC integration
