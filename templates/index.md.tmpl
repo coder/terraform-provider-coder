@@ -3,10 +3,12 @@
 page_title: "Coder Provider"
 subcategory: "Infrastructure"
 description: |-
-  
+    Terraform provider for defining Coder templates, which are the underlying infrastructure for Coder workspaces.
 ---
 
 # Coder Provider
+
+Terraform provider for defining Coder [templates](https://coder.com/docs/templates), which are the underlying infrastructure for Coder [workspaces](https://coder.com/docs/workspaces).
 
 ## Example
 
