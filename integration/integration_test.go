@@ -126,6 +126,15 @@ func TestIntegration(t *testing.T) {
 				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
 			},
 		},
+		{
+			name:       "coder-app-hidden",
+			minVersion: "v0.0.0",
+			expectedOutput: map[string]string{
+				"coder_app.hidden.hidden":    "true",
+				"coder_app.visible.hidden":   "false",
+				"coder_app.defaulted.hidden": "false",
+			},
+		},
 	} {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
