@@ -30,7 +30,36 @@ func appResource() *schema.Resource {
 		Description: "Use this resource to define shortcuts to access applications in a workspace.",
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
-			return nil
+
+			diags := diag.Diagnostics{}
+
+			hiddenData := resourceData.Get("hidden")
+			if hidden, ok := hiddenData.(bool); !ok {
+				return diag.Errorf("hidden should be a bool")
+			} else if hidden {
+				if _, ok := resourceData.GetOk("display_name"); ok {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "`display_name` set when app is hidden",
+					})
+				}
+
+				if _, ok := resourceData.GetOk("icon"); ok {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "`icon` set when app is hidden",
+					})
+				}
+
+				if _, ok := resourceData.GetOk("order"); ok {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "`order` set when app is hidden",
+					})
+				}
+			}
+
+			return diags
 		},
 		ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			return nil
