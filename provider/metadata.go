@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"golang.org/x/xerrors"
 )
 
 func metadataResource() *schema.Resource {
@@ -110,6 +111,32 @@ func metadataResource() *schema.Resource {
 					},
 				},
 			},
+		},
+		CustomizeDiff: func(ctx context.Context, rd *schema.ResourceDiff, i interface{}) error {
+			if !rd.HasChange("item") {
+				return nil
+			}
+
+			keys := map[string]bool{}
+			metadata, ok := rd.Get("item").([]any)
+			if !ok {
+				return xerrors.Errorf("unexpected type %T for items, expected []any", rd.Get("metadata"))
+			}
+			for _, t := range metadata {
+				obj, ok := t.(map[string]any)
+				if !ok {
+					return xerrors.Errorf("unexpected type %T for item, expected map[string]any", t)
+				}
+				key, ok := obj["key"].(string)
+				if !ok {
+					return xerrors.Errorf("unexpected type %T for items 'key' attribute, expected string", obj["key"])
+				}
+				if keys[key] {
+					return xerrors.Errorf("duplicate resource metadata key %q", key)
+				}
+				keys[key] = true
+			}
+			return nil
 		},
 	}
 }
