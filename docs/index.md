@@ -8,7 +8,7 @@ description: |-
 
 # Coder Provider
 
-Terraform provider for managing Coder [templates](https://coder.com/docs/templates), which are the underlying infrastructure for Coder [workspaces](https://coder.com/docs/workspaces).
+Terraform provider for defining Coder [templates](https://coder.com/docs/templates), which are the underlying infrastructure for Coder [workspaces](https://coder.com/docs/workspaces).
 
 ## Example
 
