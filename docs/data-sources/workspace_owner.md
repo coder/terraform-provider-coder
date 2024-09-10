@@ -55,3 +55,4 @@ resource "coder_env" "git_author_email" {
 - `session_token` (String) Session token for authenticating with a Coder deployment. It is regenerated every time a workspace is started.
 - `ssh_private_key` (String, Sensitive) The user's generated SSH private key.
 - `ssh_public_key` (String) The user's generated SSH public key.
+- `login_type` (String) The user's login type. The valid options are `password`, `github`, `oidc` or `none`.
