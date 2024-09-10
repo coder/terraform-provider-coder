@@ -3,9 +3,7 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"os"
-	"slices"
 	"strings"
 
 	"github.com/google/uuid"
@@ -55,12 +53,7 @@ func workspaceOwnerDataSource() *schema.Resource {
 			_ = rd.Set("session_token", os.Getenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN"))
 			_ = rd.Set("oidc_access_token", os.Getenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN"))
 
-			types := []string{"password", "github", "oidc", "none"}
 			if login_type := os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE"); login_type != "" {
-				if !slices.Contains(types, login_type) {
-					errorMessage := "invalid login type: %s, the valid types are: 'password, github, oidc, or none'"
-					return diag.Errorf(errorMessage, errors.New(errorMessage))
-				}
 				_ = rd.Set("login_type", login_type)
 			} else {
 				_ = rd.Set("login_type", "none")
