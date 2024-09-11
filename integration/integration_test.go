@@ -112,7 +112,7 @@ func TestIntegration(t *testing.T) {
 				"workspace_owner.session_token":     `.+`,
 				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
 				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
-				"workspace_owner.login_type":        `none`,
+				"workspace_owner.login_type":        ``,
 			},
 		},
 		{
