@@ -58,7 +58,7 @@ func workspaceOwnerDataSource() *schema.Resource {
 			if os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE") == "" {
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Warning,
-					Summmary: "WARNING: The CODER_WORKSPACE_OWNER_LOGIN_TYPE env variable is not set"
+					Summmary: "WARNING: The CODER_WORKSPACE_OWNER_LOGIN_TYPE env variable is not set",
 				},
 			}
 			_ = rd.Set("login_type", os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE"))
