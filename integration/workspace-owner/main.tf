@@ -39,6 +39,7 @@ locals {
     "workspace_owner.session_token" : data.coder_workspace_owner.me.session_token,
     "workspace_owner.ssh_private_key" : data.coder_workspace_owner.me.ssh_private_key,
     "workspace_owner.ssh_public_key" : data.coder_workspace_owner.me.ssh_public_key,
+    "workspace_owner.login_type" : data.coder_workspace_owner.me.login_type,
   }
 }
 
