@@ -115,7 +115,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Empty(t, attrs["groups.0"])
 					assert.Empty(t, attrs["session_token"])
 					assert.Empty(t, attrs["oidc_access_token"])
-					assert.Equal(t, "none", attrs["login_type"])
+					assert.Empty(t, attrs["login_type"])
 					return nil
 				},
 			}},

@@ -53,11 +53,7 @@ func workspaceOwnerDataSource() *schema.Resource {
 			_ = rd.Set("session_token", os.Getenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN"))
 			_ = rd.Set("oidc_access_token", os.Getenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN"))
 
-			if login_type := os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE"); login_type != "" {
-				_ = rd.Set("login_type", login_type)
-			} else {
-				_ = rd.Set("login_type", "none")
-			}
+			_ = rd.Set("login_type", os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE"))
 
 			return nil
 		},
