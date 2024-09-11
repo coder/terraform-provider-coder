@@ -15,6 +15,8 @@ func workspaceOwnerDataSource() *schema.Resource {
 	return &schema.Resource{
 		Description: "Use this data source to fetch information about the workspace owner.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+			diags := diag.Diagnostics{}
+
 			if idStr := os.Getenv("CODER_WORKSPACE_OWNER_ID"); idStr != "" {
 				rd.SetId(idStr)
 			} else {
@@ -53,7 +55,15 @@ func workspaceOwnerDataSource() *schema.Resource {
 			_ = rd.Set("session_token", os.Getenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN"))
 			_ = rd.Set("oidc_access_token", os.Getenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN"))
 
-			return nil
+			if os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE") == "" {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary: "WARNING: The CODER_WORKSPACE_OWNER_LOGIN_TYPE env variable is not set",
+				})
+			}
+			_ = rd.Set("login_type", os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE"))
+
+			return diags
 		},
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -106,6 +116,11 @@ func workspaceOwnerDataSource() *schema.Resource {
 				Description: "A valid OpenID Connect access token of the workspace owner. " +
 					"This is only available if the workspace owner authenticated with OpenID Connect. " +
 					"If a valid token cannot be obtained, this value will be an empty string.",
+			},
+			"login_type": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The type of login the user has.",
 			},
 		},
 	}
