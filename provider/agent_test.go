@@ -6,20 +6,15 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
-
-	"github.com/coder/terraform-provider-coder/provider"
 )
 
 func TestAgent(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -110,10 +105,8 @@ func TestAgent_StartupScriptBehavior(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			resource.Test(t, resource.TestCase{
-				Providers: map[string]*schema.Provider{
-					"coder": provider.New(),
-				},
-				IsUnitTest: true,
+				ProviderFactories: coderFactory(),
+				IsUnitTest:        true,
 				Steps: []resource.TestStep{{
 					Config:      tc.Config,
 					ExpectError: tc.ExpectError,
@@ -136,10 +129,8 @@ func TestAgent_StartupScriptBehavior(t *testing.T) {
 func TestAgent_Instance(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -177,10 +168,8 @@ func TestAgent_Instance(t *testing.T) {
 func TestAgent_Metadata(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -225,10 +214,8 @@ func TestAgent_Metadata(t *testing.T) {
 func TestAgent_MetadataDuplicateKeys(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -263,10 +250,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 	t.Parallel()
 	t.Run("OK", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
@@ -316,10 +301,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 
 	t.Run("Subset", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
@@ -363,10 +346,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 	// Assert all the defaults are set correctly.
 	t.Run("Omitted", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -408,10 +389,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 
 	t.Run("InvalidApp", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
