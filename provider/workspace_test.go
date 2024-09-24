@@ -5,12 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	"github.com/coder/terraform-provider-coder/provider"
 )
 
 func TestWorkspace(t *testing.T) {
@@ -26,10 +23,8 @@ func TestWorkspace(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -74,10 +69,8 @@ func TestWorkspace_UndefinedOwner(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -119,10 +112,8 @@ func TestWorkspace_MissingTemplateName(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
