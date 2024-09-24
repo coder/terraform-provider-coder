@@ -24,10 +24,8 @@ func TestProvider(t *testing.T) {
 func TestProviderEmpty(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {}
@@ -45,4 +43,12 @@ func TestProviderEmpty(t *testing.T) {
 			},
 		}},
 	})
+}
+
+func coderFactory() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		"coder": func() (*schema.Provider, error) {
+			return provider.New(), nil
+		},
+	}
 }

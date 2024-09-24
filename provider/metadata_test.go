@@ -4,21 +4,16 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/coder/terraform-provider-coder/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
 )
 
 func TestMetadata(t *testing.T) {
 	t.Parallel()
-	prov := provider.New()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": prov,
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -95,12 +90,9 @@ func TestMetadata(t *testing.T) {
 
 func TestMetadataDuplicateKeys(t *testing.T) {
 	t.Parallel()
-	prov := provider.New()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": prov,
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
