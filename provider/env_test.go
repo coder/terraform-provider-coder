@@ -4,11 +4,9 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/coder/terraform-provider-coder/provider"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
@@ -16,10 +14,8 @@ func TestEnv(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -53,10 +49,8 @@ func TestEnvEmptyValue(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -89,10 +83,8 @@ func TestEnvBadName(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -111,10 +103,8 @@ func TestEnvNoName(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {

@@ -3,10 +3,7 @@ package provider_test
 import (
 	"testing"
 
-	"github.com/coder/terraform-provider-coder/provider"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	"github.com/stretchr/testify/require"
@@ -16,10 +13,8 @@ func TestGitAuth(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
