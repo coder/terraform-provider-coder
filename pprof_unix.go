@@ -26,10 +26,8 @@ func servePprof() {
 	}
 
 	// remove the old file, if it exists. It's probably from the last run of the provider
-	if _, err = os.Stat("../.coder/pprof"); err == nil {
-		if err = os.Remove("../.coder/pprof"); err != nil {
-			return
-		}
+	if err = os.Remove("../.coder/pprof"); err != nil && !os.IsNotExist(err) {
+		return
 	}
 	l, err := net.Listen("unix", "../.coder/pprof")
 	if err != nil {
