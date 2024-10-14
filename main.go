@@ -11,6 +11,7 @@ import (
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 func main() {
+	servePprof()
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: provider.New,
 	})
