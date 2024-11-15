@@ -69,12 +69,14 @@ func New() *schema.Provider {
 			"coder_workspace_owner": workspaceOwnerDataSource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"coder_agent":          agentResource(),
-			"coder_agent_instance": agentInstanceResource(),
-			"coder_app":            appResource(),
-			"coder_metadata":       metadataResource(),
-			"coder_script":         scriptResource(),
-			"coder_env":            envResource(),
+			"coder_agent":                   agentResource(),
+			"coder_agent_instance":          agentInstanceResource(),
+			"coder_app":                     appResource(),
+			"coder_metadata":                metadataResource(),
+			"coder_script":                  scriptResource(),
+			"coder_env":                     envResource(),
+			"coder_pool_resource_claim":     poolResourceClaimResource(),
+			"coder_pool_resource_claimable": poolResourceClaimableResource(),
 		},
 	}
 }
