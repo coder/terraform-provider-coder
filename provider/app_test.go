@@ -6,9 +6,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/coder/terraform-provider-coder/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
 )
@@ -20,10 +18,8 @@ func TestApp(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -45,6 +41,7 @@ func TestApp(t *testing.T) {
 						threshold = 6
 					}
 					order = 4
+					hidden = false
 				}
 				`,
 				Check: func(state *terraform.State) error {
@@ -66,6 +63,7 @@ func TestApp(t *testing.T) {
 						"healthcheck.0.interval",
 						"healthcheck.0.threshold",
 						"order",
+						"hidden",
 					} {
 						value := resource.Primary.Attributes[key]
 						t.Logf("%q = %q", key, value)
@@ -127,10 +125,8 @@ func TestApp(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				t.Parallel()
 				resource.Test(t, resource.TestCase{
-					Providers: map[string]*schema.Provider{
-						"coder": provider.New(),
-					},
-					IsUnitTest: true,
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
 					Steps: []resource.TestStep{{
 						Config: tc.config,
 						Check: func(state *terraform.State) error {
@@ -233,10 +229,8 @@ func TestApp(t *testing.T) {
 				}
 
 				resource.Test(t, resource.TestCase{
-					Providers: map[string]*schema.Provider{
-						"coder": provider.New(),
-					},
-					IsUnitTest: true,
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
 					Steps: []resource.TestStep{{
 						Config:      config,
 						Check:       checkFn,
@@ -246,4 +240,73 @@ func TestApp(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("Hidden", func(t *testing.T) {
+		t.Parallel()
+
+		cases := []struct {
+			name   string
+			config string
+			hidden bool
+		}{{
+			name: "Is Hidden",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "https://google.com"
+				external = true
+				hidden = true
+			}
+			`,
+			hidden: true,
+		}, {
+			name: "Is Not Hidden",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "https://google.com"
+				external = true
+				hidden = false
+			}
+			`,
+			hidden: false,
+		}}
+		for _, tc := range cases {
+			tc := tc
+			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config: tc.config,
+						Check: func(state *terraform.State) error {
+							require.Len(t, state.Modules, 1)
+							require.Len(t, state.Modules[0].Resources, 2)
+							resource := state.Modules[0].Resources["coder_app.test"]
+							require.NotNil(t, resource)
+							require.Equal(t, strconv.FormatBool(tc.hidden), resource.Primary.Attributes["hidden"])
+							return nil
+						},
+						ExpectError: nil,
+					}},
+				})
+			})
+		}
+	})
+
 }

@@ -6,20 +6,15 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
-
-	"github.com/coder/terraform-provider-coder/provider"
 )
 
 func TestAgent(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -34,11 +29,9 @@ func TestAgent(t *testing.T) {
 						hi = "test"
 					}
 					startup_script = "echo test"
-					startup_script_timeout = 120
 					troubleshooting_url = "https://example.com/troubleshoot"
 					motd_file = "/etc/motd"
 					shutdown_script = "echo bye bye"
-					shutdown_script_timeout = 120
 					order = 4
 				}
 				`,
@@ -55,12 +48,10 @@ func TestAgent(t *testing.T) {
 					"dir",
 					"env.hi",
 					"startup_script",
-					"startup_script_timeout",
 					"connection_timeout",
 					"troubleshooting_url",
 					"motd_file",
 					"shutdown_script",
-					"shutdown_script_timeout",
 					"order",
 				} {
 					value := resource.Primary.Attributes[key]
@@ -109,43 +100,13 @@ func TestAgent_StartupScriptBehavior(t *testing.T) {
 				require.Equal(t, "non-blocking", state.Primary.Attributes["startup_script_behavior"])
 			},
 		},
-		{
-			Name: "login_before_ready (deprecated)",
-			Config: `
-				resource "coder_agent" "new" {
-					os = "linux"
-					arch = "amd64"
-					login_before_ready = false
-				}
-			`,
-			Check: func(state *terraform.ResourceState) {
-				require.Equal(t, "false", state.Primary.Attributes["login_before_ready"])
-				// startup_script_behavior must be empty, this indicates that
-				// login_before_ready should be used instead.
-				require.Equal(t, "", state.Primary.Attributes["startup_script_behavior"])
-			},
-		},
-		{
-			Name: "no login_before_ready with startup_script_behavior",
-			Config: `
-				resource "coder_agent" "new" {
-					os = "linux"
-					arch = "amd64"
-					login_before_ready = false
-					startup_script_behavior = "blocking"
-				}
-			`,
-			ExpectError: regexp.MustCompile("conflicts with"),
-		},
 	} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			resource.Test(t, resource.TestCase{
-				Providers: map[string]*schema.Provider{
-					"coder": provider.New(),
-				},
-				IsUnitTest: true,
+				ProviderFactories: coderFactory(),
+				IsUnitTest:        true,
 				Steps: []resource.TestStep{{
 					Config:      tc.Config,
 					ExpectError: tc.ExpectError,
@@ -168,10 +129,8 @@ func TestAgent_StartupScriptBehavior(t *testing.T) {
 func TestAgent_Instance(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -209,10 +168,8 @@ func TestAgent_Instance(t *testing.T) {
 func TestAgent_Metadata(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -257,10 +214,8 @@ func TestAgent_Metadata(t *testing.T) {
 func TestAgent_MetadataDuplicateKeys(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		Providers: map[string]*schema.Provider{
-			"coder": provider.New(),
-		},
-		IsUnitTest: true,
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -286,6 +241,7 @@ func TestAgent_MetadataDuplicateKeys(t *testing.T) {
 				}
 				`,
 			ExpectError: regexp.MustCompile("duplicate agent metadata key"),
+			PlanOnly:    true,
 		}},
 	})
 }
@@ -294,10 +250,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 	t.Parallel()
 	t.Run("OK", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
@@ -313,7 +267,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 							web_terminal = false
 							port_forwarding_helper = false
 							ssh_helper = false
-						} 
+						}
 					}
 					`,
 				Check: func(state *terraform.State) error {
@@ -347,10 +301,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 
 	t.Run("Subset", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
@@ -363,7 +315,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 						display_apps {
 							vscode_insiders = true
 							web_terminal = true
-						} 
+						}
 					}
 					`,
 				Check: func(state *terraform.State) error {
@@ -394,10 +346,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 	// Assert all the defaults are set correctly.
 	t.Run("Omitted", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -439,10 +389,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 
 	t.Run("InvalidApp", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
@@ -458,7 +406,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 							web_terminal = false
 							port_forwarding_helper = false
 							ssh_helper = false
-						} 
+						}
 					}
 					`,
 				ExpectError: regexp.MustCompile(`An argument named "fake_app" is not expected here.`),

@@ -30,7 +30,36 @@ func appResource() *schema.Resource {
 		Description: "Use this resource to define shortcuts to access applications in a workspace.",
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
-			return nil
+
+			diags := diag.Diagnostics{}
+
+			hiddenData := resourceData.Get("hidden")
+			if hidden, ok := hiddenData.(bool); !ok {
+				return diag.Errorf("hidden should be a bool")
+			} else if hidden {
+				if _, ok := resourceData.GetOk("display_name"); ok {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "`display_name` set when app is hidden",
+					})
+				}
+
+				if _, ok := resourceData.GetOk("icon"); ok {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "`icon` set when app is hidden",
+					})
+				}
+
+				if _, ok := resourceData.GetOk("order"); ok {
+					diags = append(diags, diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "`order` set when app is hidden",
+					})
+				}
+			}
+
+			return diags
 		},
 		ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			return nil
@@ -96,14 +125,6 @@ func appResource() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 			},
-			"name": {
-				Type:          schema.TypeString,
-				Description:   "A display name to identify the app.",
-				Deprecated:    "`name` on apps is deprecated, use `display_name` instead",
-				ForceNew:      true,
-				Optional:      true,
-				ConflictsWith: []string{"display_name"},
-			},
 			"subdomain": {
 				Type: schema.TypeBool,
 				Description: "Determines whether the app will be accessed via it's own " +
@@ -112,15 +133,6 @@ func appResource() *schema.Resource {
 					"`subdomain` set to `true` will not be accessible. Defaults to `false`.",
 				ForceNew: true,
 				Optional: true,
-			},
-			"relative_path": {
-				Type:       schema.TypeBool,
-				Deprecated: "`relative_path` on apps is deprecated, use `subdomain` instead.",
-				Description: "Specifies whether the URL will be accessed via a relative " +
-					"path or wildcard. Use if wildcard routing is unavailable. Defaults to `true`.",
-				ForceNew:      true,
-				Optional:      true,
-				ConflictsWith: []string{"subdomain"},
 			},
 			"share": {
 				Type: schema.TypeString,
@@ -201,6 +213,13 @@ func appResource() *schema.Resource {
 			"order": {
 				Type:        schema.TypeInt,
 				Description: "The order determines the position of app in the UI presentation. The lowest order is shown first and apps with equal order are sorted by name (ascending order).",
+				ForceNew:    true,
+				Optional:    true,
+			},
+			"hidden": {
+				Type:        schema.TypeBool,
+				Description: "Determines if the app is visible in the UI (minimum Coder version: v2.16).",
+				Default:     false,
 				ForceNew:    true,
 				Optional:    true,
 			},

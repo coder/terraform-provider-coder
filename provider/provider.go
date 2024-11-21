@@ -35,13 +35,6 @@ func New() *schema.Provider {
 					return nil, nil
 				},
 			},
-			"feature_use_managed_variables": {
-				Type:        schema.TypeBool,
-				Description: "Feature: use managed Terraform variables. The feature flag is not used anymore as Terraform variables are now exclusively utilized for template-wide variables.",
-				Default:     true,
-				Optional:    true,
-				Deprecated:  "Terraform variables are now exclusively utilized for template-wide variables after the removal of support for legacy parameters.",
-			},
 		},
 		ConfigureContextFunc: func(c context.Context, resourceData *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			rawURL, ok := resourceData.Get("url").(string)
@@ -72,7 +65,6 @@ func New() *schema.Provider {
 			"coder_workspace_tags":  workspaceTagDataSource(),
 			"coder_provisioner":     provisionerDataSource(),
 			"coder_parameter":       parameterDataSource(),
-			"coder_git_auth":        gitAuthDataSource(),
 			"coder_external_auth":   externalAuthDataSource(),
 			"coder_workspace_owner": workspaceOwnerDataSource(),
 		},
@@ -105,14 +97,8 @@ func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err 
 	items := rawPlan.GetAttr("item").AsValueSlice()
 
 	var resultItems []interface{}
-	itemKeys := map[string]struct{}{}
 	for _, item := range items {
 		key := valueAsString(item.GetAttr("key"))
-		_, exists := itemKeys[key]
-		if exists {
-			return nil, xerrors.Errorf("duplicate metadata key %q", key)
-		}
-		itemKeys[key] = struct{}{}
 		resultItem := map[string]interface{}{
 			"key":       key,
 			"value":     valueAsString(item.GetAttr("value")),

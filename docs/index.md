@@ -3,13 +3,12 @@
 page_title: "Coder Provider"
 subcategory: "Infrastructure"
 description: |-
-    Terraform provider for Coder. Coder is a self-hosted cloud development environment that allows enterprises to create consistent, secure, and scalable development environments for their teams.
-  
+    Terraform provider for managing Coder templates, which are the underlying infrastructure for Coder workspaces.
 ---
 
 # Coder Provider
 
-The Coder provider is used to help create [Coder](https://coder.com) templates. Coder is a self-hosted cloud development environment that allows enterprises to create consistent, secure, and scalable development environments for their teams.
+Terraform provider for managing Coder [templates](https://coder.com/docs/templates), which are the underlying infrastructure for Coder [workspaces](https://coder.com/docs/workspaces).
 
 -> Requires Coder v2.13.0 or later.
 
@@ -69,5 +68,4 @@ resource "google_compute_instance" "dev" {
 
 ### Optional
 
-- `feature_use_managed_variables` (Boolean, **Deprecated**: Terraform variables are now exclusively utilized for template-wide variables after the removal of support for legacy parameters.) Feature: use managed Terraform variables. The feature flag is not used anymore as Terraform variables are now exclusively utilized for template-wide variables.
 - `url` (String) The URL to access Coder.

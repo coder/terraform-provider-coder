@@ -15,14 +15,12 @@ Use this data source to fetch information about the workspace owner.
 ```terraform
 provider "coder" {}
 
-data "coder_workspace" "me" {}
-
 data "coder_workspace_owner" "me" {}
 
 resource "coder_agent" "dev" {
   arch = "amd64"
   os   = "linux"
-  dir  = local.repo_dir
+  dir  = "/workspace"
   env = {
     OIDC_TOKEN : data.coder_workspace_owner.me.oidc_access_token,
   }
@@ -36,7 +34,7 @@ resource "coder_env" "git_author_name" {
 }
 
 resource "coder_env" "git_author_email" {
-  agent_id = var.agent_id
+  agent_id = coder_agent.dev.id
   name     = "GIT_AUTHOR_EMAIL"
   value    = data.coder_workspace_owner.me.email
   count    = data.coder_workspace_owner.me.email != "" ? 1 : 0
@@ -52,6 +50,7 @@ resource "coder_env" "git_author_email" {
 - `full_name` (String) The full name of the user.
 - `groups` (List of String) The groups of which the user is a member.
 - `id` (String) The UUID of the workspace owner.
+- `login_type` (String) The type of login the user has.
 - `name` (String) The username of the user.
 - `oidc_access_token` (String) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
 - `session_token` (String) Session token for authenticating with a Coder deployment. It is regenerated every time a workspace is started.

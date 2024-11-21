@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -71,25 +73,18 @@ func TestIntegration(t *testing.T) {
 			name:       "test-data-source",
 			minVersion: "v0.0.0",
 			expectedOutput: map[string]string{
-				"provisioner.arch":                  runtime.GOARCH,
-				"provisioner.id":                    `[a-zA-Z0-9-]+`,
-				"provisioner.os":                    runtime.GOOS,
-				"workspace.access_port":             `\d+`,
-				"workspace.access_url":              `https?://\D+:\d+`,
-				"workspace.id":                      `[a-zA-z0-9-]+`,
-				"workspace.name":                    `test-data-source`,
-				"workspace.owner":                   `testing`,
-				"workspace.owner_email":             `testing@coder\.com`,
-				"workspace.owner_groups":            `\[\]`,
-				"workspace.owner_id":                `[a-zA-Z0-9]+`,
-				"workspace.owner_name":              `default`,
-				"workspace.owner_oidc_access_token": `^$`, // TODO: need a test OIDC integration
-				"workspace.owner_session_token":     `[a-zA-Z0-9-]+`,
-				"workspace.start_count":             `1`,
-				"workspace.template_id":             `[a-zA-Z0-9-]+`,
-				"workspace.template_name":           `test-data-source`,
-				"workspace.template_version":        `.+`,
-				"workspace.transition":              `start`,
+				"provisioner.arch":           runtime.GOARCH,
+				"provisioner.id":             `[a-zA-Z0-9-]+`,
+				"provisioner.os":             runtime.GOOS,
+				"workspace.access_port":      `\d+`,
+				"workspace.access_url":       `https?://\D+:\d+`,
+				"workspace.id":               `[a-zA-z0-9-]+`,
+				"workspace.name":             `test-data-source`,
+				"workspace.start_count":      `1`,
+				"workspace.template_id":      `[a-zA-Z0-9-]+`,
+				"workspace.template_name":    `test-data-source`,
+				"workspace.template_version": `.+`,
+				"workspace.transition":       `start`,
 			},
 		},
 		{
@@ -103,13 +98,6 @@ func TestIntegration(t *testing.T) {
 				"workspace.access_url":              `https?://\D+:\d+`,
 				"workspace.id":                      `[a-zA-z0-9-]+`,
 				"workspace.name":                    ``,
-				"workspace.owner":                   `testing`,
-				"workspace.owner_email":             `testing@coder\.com`,
-				"workspace.owner_groups":            `\[\]`,
-				"workspace.owner_id":                `[a-zA-Z0-9]+`,
-				"workspace.owner_name":              `default`,
-				"workspace.owner_oidc_access_token": `^$`, // TODO: need a test OIDC integration
-				"workspace.owner_session_token":     `[a-zA-Z0-9-]+`,
 				"workspace.start_count":             `1`,
 				"workspace.template_id":             `[a-zA-Z0-9-]+`,
 				"workspace.template_name":           `workspace-owner`,
@@ -117,13 +105,23 @@ func TestIntegration(t *testing.T) {
 				"workspace.transition":              `start`,
 				"workspace_owner.email":             `testing@coder\.com`,
 				"workspace_owner.full_name":         `default`,
-				"workspace_owner.groups":            `\[\]`,
+				"workspace_owner.groups":            `\[(\"Everyone\")?\]`,
 				"workspace_owner.id":                `[a-zA-Z0-9-]+`,
 				"workspace_owner.name":              `testing`,
 				"workspace_owner.oidc_access_token": `^$`, // TODO: test OIDC integration
 				"workspace_owner.session_token":     `.+`,
 				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
 				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
+				"workspace_owner.login_type":        ``,
+			},
+		},
+		{
+			name:       "coder-app-hidden",
+			minVersion: "v0.0.0",
+			expectedOutput: map[string]string{
+				"coder_app.hidden.hidden":    "true",
+				"coder_app.visible.hidden":   "false",
+				"coder_app.defaulted.hidden": "false",
 			},
 		},
 	} {
@@ -217,12 +215,24 @@ func setup(ctx context.Context, t *testing.T, name, coderImg, coderVersion strin
 	require.NoError(t, err, "create test deployment")
 
 	t.Logf("created container %s\n", ctr.ID)
-	t.Cleanup(func() { // Make sure we clean up after ourselves.
-		// TODO: also have this execute if you Ctrl+C!
+	var cleanupOnce sync.Once
+	removeContainer := func() {
 		t.Logf("stopping container %s\n", ctr.ID)
 		_ = cli.ContainerRemove(ctx, ctr.ID, container.RemoveOptions{
 			Force: true,
 		})
+	}
+	// Ensure the container is cleaned up if you press Ctrl+C.
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt)
+	go func() {
+		<-sigCh
+		cleanupOnce.Do(removeContainer)
+		os.Exit(1)
+	}()
+
+	t.Cleanup(func() { // Make sure we clean up after ourselves.
+		cleanupOnce.Do(removeContainer)
 	})
 
 	err = cli.ContainerStart(ctx, ctr.ID, container.StartOptions{})

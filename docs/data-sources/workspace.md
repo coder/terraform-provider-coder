@@ -13,11 +13,51 @@ Use this data source to get information for the active workspace build.
 ## Example Usage
 
 ```terraform
-data "coder_workspace" "dev" {
+provider "coder" {}
+
+provider "docker" {}
+
+data "coder_workspace" "me" {}
+
+data "coder_workspace_owner" "me" {}
+
+resource "coder_agent" "dev" {
+  arch = "amd64"
+  os   = "linux"
+  dir  = "/workspace"
 }
 
-resource "kubernetes_pod" "dev" {
-  count = data.coder_workspace.dev.transition == "start" ? 1 : 0
+resource "docker_container" "workspace" {
+  count = data.coder_workspace.me.start_count
+  image = docker_image.main.name
+  # Uses lower() to avoid Docker restriction on container names.
+  name = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}"
+  # Hostname makes the shell more user friendly: coder@my-workspace:~$
+  hostname = data.coder_workspace.me.name
+  # Use the docker gateway if the access URL is 127.0.0.1
+  entrypoint = ["sh", "-c", replace(coder_agent.main.init_script, "/localhost|127\\.0\\.0\\.1/", "host.docker.internal")]
+  env        = ["CODER_AGENT_TOKEN=${coder_agent.main.token}"]
+  host {
+    host = "host.docker.internal"
+    ip   = "host-gateway"
+  }
+  # Add labels in Docker to keep track of orphan resources.
+  labels {
+    label = "coder.owner"
+    value = data.coder_workspace_owner.me.name
+  }
+  labels {
+    label = "coder.owner_id"
+    value = data.coder_workspace_owner.me.id
+  }
+  labels {
+    label = "coder.workspace_id"
+    value = data.coder_workspace.me.id
+  }
+  labels {
+    label = "coder.workspace_name"
+    value = data.coder_workspace.me.name
+  }
 }
 ```
 
@@ -30,13 +70,6 @@ resource "kubernetes_pod" "dev" {
 - `access_url` (String) The access URL of the Coder deployment provisioning this workspace.
 - `id` (String) UUID of the workspace.
 - `name` (String) Name of the workspace.
-- `owner` (String, **Deprecated**: Use `coder_workspace_owner.name` instead.) Username of the workspace owner.
-- `owner_email` (String, **Deprecated**: Use `coder_workspace_owner.email` instead.) Email address of the workspace owner.
-- `owner_groups` (List of String, **Deprecated**: Use `coder_workspace_owner.groups` instead.) List of groups the workspace owner belongs to.
-- `owner_id` (String, **Deprecated**: Use `coder_workspace_owner.id` instead.) UUID of the workspace owner.
-- `owner_name` (String, **Deprecated**: Use `coder_workspace_owner.full_name` instead.) Name of the workspace owner.
-- `owner_oidc_access_token` (String, **Deprecated**: Use `coder_workspace_owner.oidc_access_token` instead.) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
-- `owner_session_token` (String, **Deprecated**: Use `coder_workspace_owner.session_token` instead.) Session token for authenticating with a Coder deployment. It is regenerated everytime a workspace is started.
 - `start_count` (Number) A computed count based on `transition` state. If `start`, count will equal 1.
 - `template_id` (String) ID of the workspace's template.
 - `template_name` (String) Name of the workspace's template.

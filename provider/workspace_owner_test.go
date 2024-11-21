@@ -4,9 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/coder/terraform-provider-coder/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -35,12 +33,11 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_OWNER_GROUPS", `["group1", "group2"]`)
 		t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", `supersecret`)
 		t.Setenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN", `alsosupersecret`)
+		t.Setenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE", `github`)
 
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				Config: `
 			provider "coder" {}
@@ -63,6 +60,8 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Equal(t, `group2`, attrs["groups.1"])
 					assert.Equal(t, `supersecret`, attrs["session_token"])
 					assert.Equal(t, `alsosupersecret`, attrs["oidc_access_token"])
+					assert.Equal(t, `github`, attrs["login_type"])
+
 					return nil
 				},
 			}},
@@ -80,16 +79,15 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 			"CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN",
 			"CODER_WORKSPACE_OWNER_SSH_PUBLIC_KEY",
 			"CODER_WORKSPACE_OWNER_SSH_PRIVATE_KEY",
+			"CODER_WORKSPACE_OWNER_LOGIN_TYPE",
 		} { // https://github.com/golang/go/issues/52817
 			t.Setenv(v, "")
 			os.Unsetenv(v)
 		}
 
 		resource.Test(t, resource.TestCase{
-			Providers: map[string]*schema.Provider{
-				"coder": provider.New(),
-			},
-			IsUnitTest: true,
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
 			Steps: []resource.TestStep{{
 				Config: `
 			provider "coder" {}
@@ -111,6 +109,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Empty(t, attrs["groups.0"])
 					assert.Empty(t, attrs["session_token"])
 					assert.Empty(t, attrs["oidc_access_token"])
+					assert.Empty(t, attrs["login_type"])
 					return nil
 				},
 			}},
