@@ -8,11 +8,11 @@ description: |-
 
 # Coder Provider
 
-Terraform provider for managing Coder [templates](https://coder.com/docs/templates), which are the underlying infrastructure for Coder [workspaces](https://coder.com/docs/workspaces).
+Terraform provider for managing Coder [templates](https://coder.com/docs/admin/templates), which are the underlying infrastructure for Coder [workspaces](https://coder.com/docs/user-guides/workspace-management).
 
 -> Requires Coder v2.13.0 or later.
 
-!> `coder_git_auth` and owner related fields of `coder_workspace` data source have been removed. Follow the [v0 to v1migration guide](https://registry.terraform.io/providers/codercom/coder/latest/docs/guides/v1-to-v2-migration) to update your code.
+!> [`coder_git_auth`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/git_auth) and owner related fields of [`coder_workspace`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/workspace) data source have been removed. Follow the [Version 2 Upgrade Guide](https://registry.terraform.io/providers/codercom/coder/latest/docs/guides/version-2-upgrade) to update your code.
 
 ## Example
 
