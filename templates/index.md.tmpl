@@ -10,7 +10,7 @@ description: |-
 
 Terraform provider for managing Coder [templates](https://coder.com/docs/admin/templates), which are the underlying infrastructure for Coder [workspaces](https://coder.com/docs/user-guides/workspace-management).
 
--> Requires Coder v2.13.0 or later.
+-> Requires Coder [v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
 
 !> [`coder_git_auth`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/git_auth) and owner related fields of [`coder_workspace`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/workspace) data source have been removed. Follow the [Version 2 Upgrade Guide](https://registry.terraform.io/providers/codercom/coder/latest/docs/guides/version-2-upgrade) to update your code.
 

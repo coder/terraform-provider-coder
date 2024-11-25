@@ -4,11 +4,10 @@ page_title: "Terraform Coder Provider Version 2 Upgrade Guide"
 
 # Terraform Coder Provider Version 2 Upgrade Guide
 
-Version 2.0.0 of the Coder provider for Terraform is a major release that removes and introduces some changes that you will need to consider when upgrading.
-This guide is intended to help with the process and focus only on the changes from version 1.X to version 2.0.0.
+Version 2.0.0 of the Coder provider for Terraform is a major release that introduces some changes that you will need to consider when upgrading.
+This guide is intended to help with the process, and focuses only on the changes from version 1.X to version 2.0.0.
 
-
-!> Using Version 2.0.0 of the Coder provider requires Coder Server version [`2.13.0`](https://github.com/coder/coder/releases/tag/v2.13.0) or later.
+!> Using Version 2.0.0 of the Coder provider requires Coder Server version [`2.18.0`](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
 
 Upgrade topics:
 
@@ -19,9 +18,9 @@ Upgrade topics:
 
 ## Provider Version Configuration
 
--> Before upgrading to version 2.0.0, it is recommended to upgrade to the most recent 1.X version and ensure that your environment successfully runs [`terraform plan`](https://developer.hashicorp.com/terraform/cli/commands/plan) without unexpected changes or deprecation notices.
+-> Before upgrading to version 2.0.0, please first upgrade to the most recent 1.X version and ensure that your environment successfully runs [`terraform plan`](https://developer.hashicorp.com/terraform/cli/commands/plan) without unexpected changes or deprecation notices.
 
-We recommended using [version constraints](https://developer.hashicorp.com/terraform/language/providers/requirements#version-constraints) when configuring Terraform providers.
+We highly recommend using [version constraints](https://developer.hashicorp.com/terraform/language/providers/requirements#version-constraints) when configuring Terraform providers.
 
 
 For example, given the previous configuration:
