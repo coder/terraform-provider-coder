@@ -162,6 +162,25 @@ func appResource() *schema.Resource {
 					return diag.Errorf("invalid app share %q, must be one of \"owner\", \"authenticated\", \"public\"", valStr)
 				},
 			},
+			"cors_behavior": {
+				Type:     schema.TypeString,
+				Default:  "simple",
+				ForceNew: true,
+				Optional: true,
+				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+					valStr, ok := val.(string)
+					if !ok {
+						return diag.Errorf("expected string, got %T", val)
+					}
+
+					switch valStr {
+					case "simple", "passthru":
+						return nil
+					}
+
+					return diag.Errorf("invalid app CORS behavior %q, must be one of \"simple\", \"passthru\"", valStr)
+				},
+			},
 			"url": {
 				Type: schema.TypeString,
 				Description: "An external url if `external=true` or a URL to be proxied to from inside the workspace. " +
