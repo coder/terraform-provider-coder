@@ -309,4 +309,63 @@ func TestApp(t *testing.T) {
 		}
 	})
 
+	t.Run("CORS Behavior", func(t *testing.T) {
+		t.Parallel()
+
+		baseConfig := `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "https://google.com"
+				external = true
+				%s
+			}`
+
+		cases := []struct {
+			name     string
+			config   string
+			behavior string
+		}{{
+			name:     "Default CORS",
+			config:   fmt.Sprintf(baseConfig, ""),
+			behavior: "simple",
+		}, {
+			name:     "Simple CORS",
+			config:   fmt.Sprintf(baseConfig, "cors_behavior = \"simple\""),
+			behavior: "simple",
+		}, {
+			name:     "Passthru CORS",
+			config:   fmt.Sprintf(baseConfig, "cors_behavior = \"passthru\""),
+			behavior: "passthru",
+		}}
+		for _, tc := range cases {
+			tc := tc
+			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config: tc.config,
+						Check: func(state *terraform.State) error {
+							require.Len(t, state.Modules, 1)
+							require.Len(t, state.Modules[0].Resources, 2)
+							resource := state.Modules[0].Resources["coder_app.test"]
+							require.NotNil(t, resource)
+							require.Equal(t, tc.behavior, resource.Primary.Attributes["cors_behavior"])
+							return nil
+						},
+						ExpectError: nil,
+					}},
+				})
+			})
+		}
+	})
+
 }
