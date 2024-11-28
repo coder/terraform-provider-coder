@@ -12,7 +12,7 @@ Terraform provider for managing Coder [templates](https://coder.com/docs/admin/t
 
 -> Requires Coder [v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
 
-!> [`coder_git_auth`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/git_auth) and owner related fields of [`coder_workspace`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/workspace) data source have been removed. Follow the [Version 2 Upgrade Guide](https://registry.terraform.io/providers/codercom/coder/latest/docs/guides/version-2-upgrade) to update your code.
+!> [`coder_git_auth`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/git_auth) and owner related fields of [`coder_workspace`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/workspace) data source have been removed. Follow the [Version 2 Upgrade Guide](https://registry.terraform.io/providers/coder/coder/latest/docs/guides/version-2-upgrade) to update your code.
 
 ## Example
 
