@@ -46,3 +46,17 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           # GitHub sets this automatically
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ghrelease:
+    runs-on: ubuntu-latest
+    needs: ["goreleaser"]
+    steps:
+      - name: Create a draft GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create \
+            --draft \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-from-tag \
+            "${GITHUB_REF_NAME}"
