@@ -13,8 +13,8 @@ Upgrade topics:
 
 - [Provider Version Configuration](#provider-version-configuration)
 - [Provider Arguments](#provider-arguments)
-- [Data Source: [`coder_git_auth`](#data-source-coder_git_auth)
-- [Data Source: [`coder_workspace`](#data-source-coder_workspace)
+- [Data Source: `coder_git_auth`](#data-source-coder_git_auth)
+- [Data Source: `coder_workspace`](#data-source-coder_workspace)
 
 ## Provider Version Configuration
 
@@ -60,9 +60,9 @@ provider "coder" {}
 Version 2.0.0 removes the [`feature_use_managed_variables`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs#feature_use_managed_variables-1) argument from the `provider` block.
 
 
-## Data Source: [`coder_git_auth`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/git_auth)
+## Data Source: `coder_git_auth`
 
-If you are using this data source, you must replace it with the [`coder_external_auth`](https://registry.terraform.io/providers/coder/coder/2.0.0/docs/data-sources/external_auth) data source. The `coder_external_auth` data source is a more generic data source that can be used to create any external authentication provider which supports OAuth2.
+If you are using the [`coder_git_auth`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/git_auth) data source, you must replace it with the [`coder_external_auth`](https://registry.terraform.io/providers/coder/coder/2.0.0/docs/data-sources/external_auth) data source. The `coder_external_auth` data source is a more generic data source that can be used to create any external authentication provider which supports OAuth2.
 
 For example, given the previous configuration:
 
@@ -80,14 +80,16 @@ data "coder_external_auth" "example" {
 }
 ```
 
-## Data Source: [`coder_workspace`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/workspace)
+## Data Source: `coder_workspace`
 
-If you are using the `owner` properties of the `coder_workspace` data source, you must remove them and use the [`coder_workspace_owner`](https://registry.terraform.io/providers/coder/coder/2.0.0/docs/data-sources/workspace_owner) data source instead. The `coder_workspace_owner` data source provides additional properties of the workspace owner.
+If you are using the `owner` properties of the [`coder_workspace`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/workspace) data source, you must remove them and use the [`coder_workspace_owner`](https://registry.terraform.io/providers/coder/coder/2.0.0/docs/data-sources/workspace_owner) data source instead. The `coder_workspace_owner` data source provides additional properties of the workspace owner.
 
 Update your Terraform configuration to use the `coder_workspace_owner` data source instead and update the following attributes:
 
 ```terraform
+
 data "coder_workspace_owner" "me" {}
+
 ```
 
 - Remove `owner_id` attribute. Use [`data.coder_workspace_owner.me.id`](https://registry.terraform.io/providers/coder/coder/2.0.0/docs/data-sources/workspace_owner#id) instead.
