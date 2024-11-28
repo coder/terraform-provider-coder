@@ -55,13 +55,9 @@ func workspaceOwnerDataSource() *schema.Resource {
 			_ = rd.Set("session_token", os.Getenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN"))
 			_ = rd.Set("oidc_access_token", os.Getenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN"))
 
-			if os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE") == "" {
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary: "WARNING: The CODER_WORKSPACE_OWNER_LOGIN_TYPE env variable is not set",
-				})
+			if loginType := os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE"); loginType != "" {
+				_ = rd.Set("login_type", loginType)
 			}
-			_ = rd.Set("login_type", os.Getenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE"))
 
 			return diags
 		},
