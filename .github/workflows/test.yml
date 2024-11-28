@@ -38,6 +38,14 @@ jobs:
         run: |
           go build -v .
 
+      - name: Check Versions
+        id: checkversions
+        run: |
+          source <(go run ./scripts/coderversion)
+          echo "CODER_MAINLINE_VERSION=${CODER_MAINLINE_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "CODER_STABLE_VERSION=${CODER_STABLE_VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "CODER_OLDSTABLE_VERSION=${CODER_OLDSTABLE_VERSION}" >> "${GITHUB_OUTPUT}"
+
       - name: Run integration test (devel)
         timeout-minutes: 10
         env:
@@ -50,25 +58,25 @@ jobs:
         timeout-minutes: 10
         env:
           CODER_IMAGE: "ghcr.io/coder/coder"
+          CODER_VERSION: ${{ steps.checkversions.outputs.CODER_MAINLINE_VERSION }}
         run: |
-          source <(go run ./scripts/coderversion)
-          CODER_VERSION="${CODER_MAINLINE_VERSION}" go test -v ./integration
+          go test -v ./integration
 
       - name: Run integration test (stable)
         timeout-minutes: 10
         env:
           CODER_IMAGE: "ghcr.io/coder/coder"
+          CODER_VERSION: ${{ steps.checkversions.outputs.CODER_STABLE_VERSION }}
         run: |
-          source <(go run ./scripts/coderversion)
-          CODER_VERSION="${CODER_STABLE_VERSION}" go test -v ./integration
+          go test -v ./integration
 
       - name: Run integration test (oldstable)
         timeout-minutes: 10
         env:
           CODER_IMAGE: "ghcr.io/coder/coder"
+          CODER_VERSION: ${{ steps.checkversions.outputs.CODER_OLDSTABLE_VERSION }}
         run: |
-          source <(go run ./scripts/coderversion)
-          CODER_VERSION="${CODER_OLDSTABLE_VERSION}" go test -v ./integration
+          go test -v ./integration
 
   # run acceptance tests in a matrix with Terraform core versions
   test:
