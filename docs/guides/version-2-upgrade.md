@@ -1,8 +1,8 @@
 ---
-page_title: "Terraform Coder Provider Version 2 Upgrade Guide"
+page_title: "Version 2 Upgrade Guide"
 ---
 
-# Terraform Coder Provider Version 2 Upgrade Guide
+# Version 2 Upgrade Guide
 
 Version 2.0.0 of the Coder provider for Terraform is a major release that introduces some changes that you will need to consider when upgrading.
 This guide is intended to help with the process, and focuses only on the changes from version 1.X to version 2.0.0.
@@ -13,8 +13,8 @@ Upgrade topics:
 
 - [Provider Version Configuration](#provider-version-configuration)
 - [Provider Arguments](#provider-arguments)
-- [Data Source: coder_git_auth --> coder_external_auth](#data-source-coder_git_auth)
-- [Data Source: coder_workspace](#data-source-coder_workspace)
+- [Data Source: [`coder_git_auth`](#data-source-coder_git_auth)
+- [Data Source: [`coder_workspace`](#data-source-coder_workspace)
 
 ## Provider Version Configuration
 
