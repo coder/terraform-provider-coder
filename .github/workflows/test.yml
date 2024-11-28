@@ -38,6 +38,14 @@ jobs:
         run: |
           go build -v .
 
+      - name: Run integration test (devel)
+        timeout-minutes: 10
+        env:
+          CODER_IMAGE: "ghcr.io/coder/coder-preview"
+          CODER_VERSION: "latest"
+        run: |
+          go test -v ./integration
+
       - name: Run integration test (mainline)
         timeout-minutes: 10
         env:
@@ -53,6 +61,14 @@ jobs:
         run: |
           source <(go run ./scripts/coderversion)
           CODER_VERSION="${CODER_STABLE_VERSION}" go test -v ./integration
+
+      - name: Run integration test (oldstable)
+        timeout-minutes: 10
+        env:
+          CODER_IMAGE: "ghcr.io/coder/coder"
+        run: |
+          source <(go run ./scripts/coderversion)
+          CODER_VERSION="${CODER_OLDSTABLE_VERSION}" go test -v ./integration
 
   # run acceptance tests in a matrix with Terraform core versions
   test:
