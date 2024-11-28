@@ -70,10 +70,10 @@ To run these integration tests locally:
 1. Pull the version of the Coder image you wish to test:
 
    ```console
-     docker pull ghcr.io/coder/coder:main-x.y.z-devel-abcd1234
+     docker pull ghcr.io/coder/coder-preview:main-x.y.z-devel-abcd1234
    ```
 
-1. Run `CODER_VERSION=main-x.y.z-devel-abcd1234 make test-integration`.
+1. Run `CODER_IMAGE=ghcr.io/coder/coder-preview CODER_VERSION=main-x.y.z-devel-abcd1234 make test-integration`.
 
 > **Note:** you can specify `CODER_IMAGE` if the Coder image you wish to test is hosted somewhere other than `ghcr.io/coder/coder`.
 > For example, `CODER_IMAGE=example.com/repo/coder CODER_VERSION=foobar make test-integration`.

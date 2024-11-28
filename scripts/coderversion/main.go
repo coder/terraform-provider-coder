@@ -64,6 +64,38 @@ func main() {
 
 	stable := fmt.Sprintf("v%d.%d.%d", stableVer.Major(), stableVer.Minor(), stableVer.Patch())
 	_, _ = fmt.Fprintf(os.Stdout, "CODER_STABLE_VERSION=%q\n", stable)
+
+	expectedOldStableMinor := mainlineVer.Minor() - 2
+	if expectedOldStableMinor < 0 {
+		expectedOldStableMinor = 0
+	}
+	debug("expected old stable minor: %d\n", expectedStableMinor)
+	oldStableVer := semver.MustParse("v0.0.0")
+	for _, rel := range releases {
+		debug("check version %s\n", rel)
+		if rel == "" {
+			debug("ignoring untagged version %s\n", rel)
+			continue
+		}
+
+		ver, err := semver.NewVersion(rel)
+		if err != nil {
+			debug("skipping invalid version %s\n", rel)
+		}
+
+		if ver.Minor() != expectedOldStableMinor {
+			debug("skipping version %s\n", rel)
+			continue
+		}
+
+		if ver.Compare(oldStableVer) > 0 {
+			oldStableVer = ver
+			continue
+		}
+	}
+
+	oldStable := fmt.Sprintf("v%d.%d.%d", oldStableVer.Major(), oldStableVer.Minor(), oldStableVer.Patch())
+	_, _ = fmt.Fprintf(os.Stdout, "CODER_OLDSTABLE_VERSION=%q\n", oldStable)
 }
 
 type release struct {
