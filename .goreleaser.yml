@@ -57,4 +57,7 @@ release:
   # If you want to manually examine the release before its live, uncomment this line:
   # draft: true
 changelog:
-  disable: true
+  # see https://goreleaser.com/customization/changelog/
+  use: github-native
+  sort: asc
+  abbrev: 0
