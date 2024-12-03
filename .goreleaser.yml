@@ -61,5 +61,3 @@ changelog:
   use: github-native
   sort: asc
   abbrev: 0
-git:
-  tag_sort: semver
