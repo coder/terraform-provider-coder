@@ -42,6 +42,7 @@ func TestApp(t *testing.T) {
 					}
 					order = 4
 					hidden = false
+					open_in = "slim-window"
 				}
 				`,
 				Check: func(state *terraform.State) error {
@@ -64,6 +65,7 @@ func TestApp(t *testing.T) {
 						"healthcheck.0.threshold",
 						"order",
 						"hidden",
+						"open_in",
 					} {
 						value := resource.Primary.Attributes[key]
 						t.Logf("%q = %q", key, value)
@@ -98,6 +100,7 @@ func TestApp(t *testing.T) {
 				display_name = "Testing"
 				url = "https://google.com"
 				external = true
+				open_in = "slim-window"
 			}
 			`,
 			external: true,
@@ -116,6 +119,7 @@ func TestApp(t *testing.T) {
 				url = "https://google.com"
 				external = true
 				subdomain = true
+				open_in = "slim-window"
 			}
 			`,
 			expectError: regexp.MustCompile("conflicts with subdomain"),
@@ -209,6 +213,7 @@ func TestApp(t *testing.T) {
 						interval = 5
 						threshold = 6
 					}
+					open_in = "slim-window"
 				}
 				`, sharingLine)
 
@@ -248,6 +253,7 @@ func TestApp(t *testing.T) {
 			name   string
 			config string
 			hidden bool
+			openIn string
 		}{{
 			name: "Is Hidden",
 			config: `
@@ -263,9 +269,11 @@ func TestApp(t *testing.T) {
 				url = "https://google.com"
 				external = true
 				hidden = true
+				open_in = "slim-window"
 			}
 			`,
 			hidden: true,
+			openIn: "slim-window",
 		}, {
 			name: "Is Not Hidden",
 			config: `
@@ -281,9 +289,11 @@ func TestApp(t *testing.T) {
 				url = "https://google.com"
 				external = true
 				hidden = false
+				open_in = "window"
 			}
 			`,
 			hidden: false,
+			openIn: "window",
 		}}
 		for _, tc := range cases {
 			tc := tc
@@ -300,6 +310,7 @@ func TestApp(t *testing.T) {
 							resource := state.Modules[0].Resources["coder_app.test"]
 							require.NotNil(t, resource)
 							require.Equal(t, strconv.FormatBool(tc.hidden), resource.Primary.Attributes["hidden"])
+							require.Equal(t, tc.openIn, resource.Primary.Attributes["open_in"])
 							return nil
 						},
 						ExpectError: nil,
