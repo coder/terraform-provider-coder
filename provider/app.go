@@ -223,6 +223,28 @@ func appResource() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 			},
+			"open_in": {
+				Type: schema.TypeString,
+				Description: "Determines where the app will be opened. Valid values are `\"tab\"`, `\"window\"`, and `\"slim-window\" (default)`. " +
+					"`\"tab\"` opens in a new tab in the same browser window. `\"window\"` opens a fresh browser window with navigation options. " +
+					"`\"slim-window\"` opens a fresh browser window with slim navigation options.",
+				ForceNew: true,
+				Optional: true,
+				Default:  "slim-window",
+				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+					valStr, ok := val.(string)
+					if !ok {
+						return diag.Errorf("expected string, got %T", val)
+					}
+
+					switch valStr {
+					case "tab", "window", "slim-window":
+						return nil
+					}
+
+					return diag.Errorf(`invalid "coder_app" open_in value, must be one of "tab", "window", "slim-window": %q`, valStr)
+				},
+			},
 		},
 	}
 }
