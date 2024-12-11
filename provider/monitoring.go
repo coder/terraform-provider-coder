@@ -25,7 +25,7 @@ func monitoringDataSource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this data source to configure editable options for workspaces.",
+		Description: "Use this data source to configure monitoring for workspaces.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
@@ -71,17 +71,17 @@ func monitoringDataSource() *schema.Resource {
 			"threshold": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The threshold for the monitoring module.",
+				Description: "The threshold for the monitoring module - expressed in percentage.",
 			},
 			"memory_threshold": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The memory threshold for the monitoring module.",
+				Description: "The memory threshold for the monitoring module - expressed in percentage.",
 			},
 			"disk_threshold": {
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "The disk threshold for the monitoring module.",
+				Description: "The disk threshold for the monitoring module - expressed in percentage.",
 			},
 			"disks": {
 				Type:        schema.TypeList,
@@ -117,7 +117,7 @@ func monitoringDataSource() *schema.Resource {
 				Type:        schema.TypeList,
 				MaxItems:    1,
 				Optional:    true,
-				Description: "Validate the input of a parameter.",
+				Description: "Validate the values of the monitoring module.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"min": {
@@ -125,31 +125,10 @@ func monitoringDataSource() *schema.Resource {
 							Optional:    true,
 							Description: "The minimum of a number parameter.",
 						},
-						"min_disabled": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Helper field to check if min is present",
-						},
 						"max": {
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Description: "The maximum of a number parameter.",
-						},
-						"max_disabled": {
-							Type:        schema.TypeBool,
-							Computed:    true,
-							Description: "Helper field to check if max is present",
-						},
-						"monotonic": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							Description: "Number monotonicity, either increasing or decreasing.",
-						},
-						"regex": {
-							Type:          schema.TypeString,
-							ConflictsWith: []string{"validation.0.min", "validation.0.max", "validation.0.monotonic"},
-							Description:   "A regex for the input parameter to match against.",
-							Optional:      true,
 						},
 						"error": {
 							Type:        schema.TypeString,
