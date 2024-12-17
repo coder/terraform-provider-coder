@@ -33,6 +33,7 @@ resource "coder_app" "code-server" {
   url          = "http://localhost:13337"
   share        = "owner"
   subdomain    = false
+  open_in      = "window"
   healthcheck {
     url       = "http://localhost:13337/healthz"
     interval  = 5
@@ -65,7 +66,7 @@ resource "coder_app" "vim" {
 - `healthcheck` (Block Set, Max: 1) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
 - `hidden` (Boolean) Determines if the app is visible in the UI (minimum Coder version: v2.16).
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
-- `open_in` (String) Determines where the app will be opened. Valid values are `"tab"`, `"window"`, and `"slim-window" (default)`. `"tab"` opens in a new tab in the same browser window. `"window"` opens a fresh browser window with navigation options. `"slim-window"` opens a fresh browser window with slim navigation options.
+- `open_in` (String) Determines where the app will be opened. Valid values are `"tab"`, `"window"`, and `"slim-window" (default)`. `"tab"` opens in a new tab in the same browser window. `"window"` opens a fresh browser window with navigation options. `"slim-window"` opens a new browser window without navigation controls.
 - `order` (Number) The order determines the position of app in the UI presentation. The lowest order is shown first and apps with equal order are sorted by name (ascending order).
 - `share` (String) Determines the level which the application is shared at. Valid levels are `"owner"` (default), `"authenticated"` and `"public"`. Level `"owner"` disables sharing on the app, so only the workspace owner can access it. Level `"authenticated"` shares the app with all authenticated users. Level `"public"` shares it with any user, including unauthenticated users. Permitted application sharing levels can be configured site-wide via a flag on `coder server` (Enterprise only).
 - `subdomain` (Boolean) Determines whether the app will be accessed via it's own subdomain or whether it will be accessed via a path on Coder. If wildcards have not been setup by the administrator then apps with `subdomain` set to `true` will not be accessible. Defaults to `false`.
