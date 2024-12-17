@@ -246,6 +246,106 @@ func TestApp(t *testing.T) {
 		}
 	})
 
+	t.Run("OpenIn", func(t *testing.T) {
+		t.Parallel()
+
+		cases := []struct {
+			name        string
+			value       string
+			expectValue string
+			expectError *regexp.Regexp
+		}{
+			{
+				name:        "default",
+				value:       "", // default
+				expectValue: "slim-window",
+			},
+			{
+				name:        "InvalidValue",
+				value:       "nonsense",
+				expectError: regexp.MustCompile(`invalid "coder_app" open_in value, must be one of "tab", "window", "slim-window": "nonsense"`),
+			},
+			{
+				name:        "ExplicitWindow",
+				value:       "window",
+				expectValue: "window",
+			},
+			{
+				name:        "ExplicitSlimWindow",
+				value:       "slim-window",
+				expectValue: "slim-window",
+			},
+			{
+				name:        "ExplicitTab",
+				value:       "tab",
+				expectValue: "tab",
+			},
+		}
+
+		for _, c := range cases {
+			c := c
+
+			t.Run(c.name, func(t *testing.T) {
+				t.Parallel()
+
+				config := `
+				provider "coder" {
+				}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "code-server" {
+					agent_id = coder_agent.dev.id
+					slug = "code-server"
+					display_name = "code-server"
+					icon = "builtin:vim"
+					url = "http://localhost:13337"
+					healthcheck {
+						url = "http://localhost:13337/healthz"
+						interval = 5
+						threshold = 6
+					}`
+
+				if c.value != "" {
+					config += fmt.Sprintf(`
+					open_in = %q
+					`, c.value)
+				}
+
+				config += `
+				}
+				`
+
+				checkFn := func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 2)
+					resource := state.Modules[0].Resources["coder_app.code-server"]
+					require.NotNil(t, resource)
+
+					// Read share and ensure it matches the expected
+					// value.
+					value := resource.Primary.Attributes["open_in"]
+					require.Equal(t, c.expectValue, value)
+					return nil
+				}
+				if c.expectError != nil {
+					checkFn = nil
+				}
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      config,
+						Check:       checkFn,
+						ExpectError: c.expectError,
+					}},
+				})
+			})
+		}
+	})
+
 	t.Run("Hidden", func(t *testing.T) {
 		t.Parallel()
 
