@@ -227,7 +227,7 @@ func appResource() *schema.Resource {
 				Type: schema.TypeString,
 				Description: "Determines where the app will be opened. Valid values are `\"tab\"`, `\"window\"`, and `\"slim-window\" (default)`. " +
 					"`\"tab\"` opens in a new tab in the same browser window. `\"window\"` opens a fresh browser window with navigation options. " +
-					"`\"slim-window\"` opens a fresh browser window with slim navigation options.",
+					"`\"slim-window\"` opens a new browser window without navigation controls.",
 				ForceNew: true,
 				Optional: true,
 				Default:  "slim-window",
