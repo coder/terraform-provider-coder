@@ -144,7 +144,7 @@ func TestIntegration(t *testing.T) {
 			},
 		},
 		{
-			name:       "workspace-with-open-in",
+			name:       "coder-app-open-in",
 			minVersion: "v2.19.0",
 			expectedOutput: map[string]string{
 				"coder_app.window.open_in":      "window",
