@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"golang.org/x/xerrors"
 
-	"github.com/coder/terraform-provider-coder/provider/helpers"
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 )
 
 func agentResource() *schema.Resource {

@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/coder/terraform-provider-coder/provider"
+	"github.com/coder/terraform-provider-coder/v2/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/xerrors"
 )
