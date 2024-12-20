@@ -1,4 +1,4 @@
-module github.com/coder/terraform-provider-coder
+module github.com/coder/terraform-provider-coder/v2
 
 go 1.22.9
 
