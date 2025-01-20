@@ -17,11 +17,11 @@ resource "coder_agent" "dev" {
   dir  = "/workspace"
 }
 
-resource "coder_app" "slim-window" {
+resource "coder_app" "tab" {
   agent_id = coder_agent.dev.id
-  slug     = "slim-window"
+  slug     = "tab"
   share    = "owner"
-  open_in  = "slim-window"
+  open_in  = "tab"
 }
 
 resource "coder_app" "defaulted" {
