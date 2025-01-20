@@ -33,7 +33,7 @@ resource "coder_app" "defaulted" {
 locals {
   # NOTE: these must all be strings in the output
   output = {
-    "coder_app.slim-window.open_in" = tostring(coder_app.slim-window.open_in)
+    "coder_app.tab.open_in" = tostring(coder_app.tab.open_in)
     "coder_app.defaulted.open_in"   = tostring(coder_app.defaulted.open_in)
   }
 }
