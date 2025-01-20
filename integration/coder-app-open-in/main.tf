@@ -17,18 +17,11 @@ resource "coder_agent" "dev" {
   dir  = "/workspace"
 }
 
-resource "coder_app" "window" {
+resource "coder_app" "tab" {
   agent_id = coder_agent.dev.id
-  slug     = "window"
+  slug     = "tab"
   share    = "owner"
-  open_in  = "window"
-}
-
-resource "coder_app" "slim-window" {
-  agent_id = coder_agent.dev.id
-  slug     = "slim-window"
-  share    = "owner"
-  open_in  = "slim-window"
+  open_in  = "tab"
 }
 
 resource "coder_app" "defaulted" {
@@ -40,9 +33,8 @@ resource "coder_app" "defaulted" {
 locals {
   # NOTE: these must all be strings in the output
   output = {
-    "coder_app.window.open_in"      = tostring(coder_app.window.open_in)
-    "coder_app.slim-window.open_in" = tostring(coder_app.slim-window.open_in)
-    "coder_app.defaulted.open_in"   = tostring(coder_app.defaulted.open_in)
+    "coder_app.tab.open_in"       = tostring(coder_app.tab.open_in)
+    "coder_app.defaulted.open_in" = tostring(coder_app.defaulted.open_in)
   }
 }
 

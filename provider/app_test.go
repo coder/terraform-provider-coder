@@ -263,12 +263,7 @@ func TestApp(t *testing.T) {
 			{
 				name:        "InvalidValue",
 				value:       "nonsense",
-				expectError: regexp.MustCompile(`invalid "coder_app" open_in value, must be one of "tab", "window", "slim-window": "nonsense"`),
-			},
-			{
-				name:        "ExplicitWindow",
-				value:       "window",
-				expectValue: "window",
+				expectError: regexp.MustCompile(`invalid "coder_app" open_in value, must be one of "tab", "slim-window": "nonsense"`),
 			},
 			{
 				name:        "ExplicitSlimWindow",
@@ -389,11 +384,11 @@ func TestApp(t *testing.T) {
 				url = "https://google.com"
 				external = true
 				hidden = false
-				open_in = "window"
+				open_in = "tab"
 			}
 			`,
 			hidden: false,
-			openIn: "window",
+			openIn: "tab",
 		}}
 		for _, tc := range cases {
 			tc := tc

@@ -147,9 +147,8 @@ func TestIntegration(t *testing.T) {
 			name:       "coder-app-open-in",
 			minVersion: "v2.19.0",
 			expectedOutput: map[string]string{
-				"coder_app.window.open_in":      "window",
-				"coder_app.slim-window.open_in": "slim-window",
-				"coder_app.defaulted.open_in":   "slim-window",
+				"coder_app.tab.open_in":       "tab",
+				"coder_app.defaulted.open_in": "slim-window",
 			},
 		},
 		{

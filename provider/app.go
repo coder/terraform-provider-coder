@@ -225,8 +225,8 @@ func appResource() *schema.Resource {
 			},
 			"open_in": {
 				Type: schema.TypeString,
-				Description: "Determines where the app will be opened. Valid values are `\"tab\"`, `\"window\"`, and `\"slim-window\" (default)`. " +
-					"`\"tab\"` opens in a new tab in the same browser window. `\"window\"` opens a fresh browser window with navigation options. " +
+				Description: "Determines where the app will be opened. Valid values are `\"tab\"` and `\"slim-window\" (default)`. " +
+					"`\"tab\"` opens in a new tab in the same browser window. " +
 					"`\"slim-window\"` opens a new browser window without navigation controls.",
 				ForceNew: true,
 				Optional: true,
@@ -238,11 +238,11 @@ func appResource() *schema.Resource {
 					}
 
 					switch valStr {
-					case "tab", "window", "slim-window":
+					case "tab", "slim-window":
 						return nil
 					}
 
-					return diag.Errorf(`invalid "coder_app" open_in value, must be one of "tab", "window", "slim-window": %q`, valStr)
+					return diag.Errorf(`invalid "coder_app" open_in value, must be one of "tab", "slim-window": %q`, valStr)
 				},
 			},
 		},
