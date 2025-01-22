@@ -55,7 +55,8 @@ to setup your local Terraform to use your local version rather than the registry
 
 To run Terraform acceptance tests, run `make testacc`. This will test the provider against the locally installed version of Terraform.
 
-> **Note:** our [CI workflow](./github/workflows/test.yml) runs a test matrix against multiple Terraform versions.
+> [!Note]
+> Our [CI workflow](./github/workflows/test.yml) runs a test matrix against multiple Terraform versions.
 
 #### Integration Tests
 
@@ -75,11 +76,13 @@ To run these integration tests locally:
 
 1. Run `CODER_IMAGE=ghcr.io/coder/coder-preview CODER_VERSION=main-x.y.z-devel-abcd1234 make test-integration`.
 
-> **Note:** you can specify `CODER_IMAGE` if the Coder image you wish to test is hosted somewhere other than `ghcr.io/coder/coder`.
+> [!Note]
+> You can specify `CODER_IMAGE` if the Coder image you wish to test is hosted somewhere other than `ghcr.io/coder/coder`.
 > For example, `CODER_IMAGE=example.com/repo/coder CODER_VERSION=foobar make test-integration`.
 
 ### How to create a new release
-> **Warning:** Before creating a new release, make sure you have pulled the latest commit from the main branch i.e. `git pull origin main`
+> [!Warning]
+> Before creating a new release, make sure you have pulled the latest commit from the main branch i.e. `git pull origin main`
 
 1. Create a new tag with a version number (following semantic versioning):
    ```console
