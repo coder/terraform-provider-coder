@@ -77,3 +77,18 @@ To run these integration tests locally:
 
 > **Note:** you can specify `CODER_IMAGE` if the Coder image you wish to test is hosted somewhere other than `ghcr.io/coder/coder`.
 > For example, `CODER_IMAGE=example.com/repo/coder CODER_VERSION=foobar make test-integration`.
+
+### How to create a new release
+> **Warning:** Before creating a new release, make sure you have pulled the latest commit from the main branch.
+
+1. Create a new tag with a version number (following semantic versioning):
+   ```console
+   git tag -a v2.1.2 -m "v2.1.2"
+   ```
+
+2. Push the tag to the remote repository:
+   ```console
+   git push origin tag v2.1.2
+   ```
+
+A GitHub Actions workflow named "Release" will automatically trigger, run integration tests, and publish the new release.
