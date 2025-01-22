@@ -79,7 +79,7 @@ To run these integration tests locally:
 > For example, `CODER_IMAGE=example.com/repo/coder CODER_VERSION=foobar make test-integration`.
 
 ### How to create a new release
-> **Warning:** Before creating a new release, make sure you have pulled the latest commit from the main branch.
+> **Warning:** Before creating a new release, make sure you have pulled the latest commit from the main branch i.e. `git pull origin main`
 
 1. Create a new tag with a version number (following semantic versioning):
    ```console
