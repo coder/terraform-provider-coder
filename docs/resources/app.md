@@ -61,6 +61,7 @@ resource "coder_app" "vim" {
 ### Optional
 
 - `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either `command` or `url` may be specified, but not both.
+- `cors_behavior` (String)
 - `display_name` (String) A display name to identify the app. Defaults to the slug.
 - `external` (Boolean) Specifies whether `url` is opened on the client machine instead of proxied through the workspace.
 - `healthcheck` (Block Set, Max: 1) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
