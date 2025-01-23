@@ -59,6 +59,14 @@ func workspaceOwnerDataSource() *schema.Resource {
 				_ = rd.Set("login_type", loginType)
 			}
 
+			var rbacRoles []map[string]string
+			if rolesRaw, ok := os.LookupEnv("CODER_WORKSPACE_OWNER_RBAC_ROLES"); ok {
+				if err := json.NewDecoder(strings.NewReader(rolesRaw)).Decode(&rbacRoles); err != nil {
+					return diag.Errorf("invalid user rbac roles: %s", err.Error())
+				}
+			}
+			_ = rd.Set("rbac_roles", rbacRoles)
+
 			return diags
 		},
 		Schema: map[string]*schema.Schema{
@@ -117,6 +125,25 @@ func workspaceOwnerDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of login the user has.",
+			},
+			"rbac_roles": {
+				Type: schema.TypeList,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"name": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The name of the RBAC role.",
+						},
+						"org_id": {
+							Type:        schema.TypeString,
+							Computed:    true,
+							Description: "The organization ID associated with the RBAC role.",
+						},
+					},
+				},
+				Computed:    true,
+				Description: "The RBAC roles of which the user is assigned.",
 			},
 		},
 	}

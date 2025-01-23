@@ -113,6 +113,7 @@ func TestIntegration(t *testing.T) {
 				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
 				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
 				"workspace_owner.login_type":        ``,
+				"workspace_owner.rbac_roles":        `\[\]`,
 			},
 		},
 		{
@@ -141,6 +142,7 @@ func TestIntegration(t *testing.T) {
 				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
 				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
 				"workspace_owner.login_type":        `password`,
+				"workspace_owner.rbac_roles":        `\[\]`,
 			},
 		},
 		{
