@@ -259,6 +259,68 @@ func agentResource() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 			},
+			"resources_monitoring": {
+				Type:        schema.TypeSet,
+				Description: "The resources monitoring configuration for this agent.",
+				ForceNew:    true,
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"memory": {
+							Type:        schema.TypeSet,
+							Description: "The memory monitoring configuration for this agent.",
+							ForceNew:    true,
+							Optional:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:        schema.TypeBool,
+										Description: "Enable memory monitoring for this agent.",
+										ForceNew:    true,
+										Optional:    true,
+										Default:     true,
+									},
+									"threshold": {
+										Type:        schema.TypeInt,
+										Description: "The memory usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.",
+										ForceNew:    true,
+										Optional:    true,
+									},
+								},
+							},
+						},
+						"volume": {
+							Type:        schema.TypeSet,
+							Description: "The volumes monitoring configuration for this agent.",
+							ForceNew:    true,
+							Optional:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"path": {
+										Type:        schema.TypeString,
+										Description: "The path of the volume to monitor.",
+										ForceNew:    true,
+										Optional:    true,
+									},
+									"enabled": {
+										Type:        schema.TypeBool,
+										Description: "Enable volume monitoring for this agent.",
+										ForceNew:    true,
+										Optional:    true,
+										Default:     true,
+									},
+									"threshold": {
+										Type:        schema.TypeInt,
+										Description: "The volume usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.",
+										ForceNew:    true,
+										Optional:    true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 		CustomizeDiff: func(ctx context.Context, rd *schema.ResourceDiff, i any) error {
 			if !rd.HasChange("metadata") {
