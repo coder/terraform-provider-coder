@@ -125,21 +125,22 @@ Optional:
 Optional:
 
 - `memory` (Block Set) The memory monitoring configuration for this agent. (see [below for nested schema](#nestedblock--resources_monitoring--memory))
-- `volumes` (Block Set) The volumes monitoring configuration for this agent. (see [below for nested schema](#nestedblock--resources_monitoring--volumes))
+- `volume` (Block Set) The volumes monitoring configuration for this agent. (see [below for nested schema](#nestedblock--resources_monitoring--volume))
 
 <a id="nestedblock--resources_monitoring--memory"></a>
 ### Nested Schema for `resources_monitoring.memory`
 
-Optional:
+Required:
 
 - `enabled` (Boolean) Enable memory monitoring for this agent.
 - `threshold` (Number) The memory usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.
 
 
-<a id="nestedblock--resources_monitoring--volumes"></a>
-### Nested Schema for `resources_monitoring.volumes`
+<a id="nestedblock--resources_monitoring--volume"></a>
+### Nested Schema for `resources_monitoring.volume`
 
-Optional:
+Required:
 
 - `enabled` (Boolean) Enable volume monitoring for this agent.
+- `path` (String) The path of the volume to monitor.
 - `threshold` (Number) The volume usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.
