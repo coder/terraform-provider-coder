@@ -68,13 +68,14 @@ func New() *schema.Provider {
 			}, nil
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"coder_workspace":       workspaceDataSource(),
-			"coder_workspace_tags":  workspaceTagDataSource(),
-			"coder_provisioner":     provisionerDataSource(),
-			"coder_parameter":       parameterDataSource(),
-			"coder_git_auth":        gitAuthDataSource(),
-			"coder_external_auth":   externalAuthDataSource(),
-			"coder_workspace_owner": workspaceOwnerDataSource(),
+			"coder_workspace":        workspaceDataSource(),
+			"coder_workspace_tags":   workspaceTagDataSource(),
+			"coder_provisioner":      provisionerDataSource(),
+			"coder_parameter":        parameterDataSource(),
+			"coder_git_auth":         gitAuthDataSource(),
+			"coder_external_auth":    externalAuthDataSource(),
+			"coder_workspace_owner":  workspaceOwnerDataSource(),
+			"coder_workspace_preset": workspacePresetDataSource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"coder_agent":          agentResource(),
