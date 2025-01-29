@@ -8,6 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type WorkspacePreset struct {
+	Name       string            `mapstructure:"name"`
+	Parameters map[string]string `mapstructure:"parameters"`
+}
+
 func workspacePresetDataSource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
