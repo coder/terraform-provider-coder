@@ -3,12 +3,14 @@ package provider
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -22,10 +24,54 @@ func agentResource() *schema.Resource {
 		SchemaVersion: 1,
 
 		Description: "Use this resource to associate an agent.",
-		CreateContext: func(_ context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+		CreateContext: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			// This should be a real authentication token!
 			resourceData.SetId(uuid.NewString())
-			err := resourceData.Set("token", uuid.NewString())
+
+			// CODER_RUNNING_WORKSPACE_AGENT_TOKEN is *only* used for prebuilds. We pass it down when we want to rebuild a prebuilt workspace
+			// but not generate a new agent token. The provisionerdserver will retrieve this token and push it down to
+			// here where it will be reused.
+			// Context: the agent token is often used in immutable attributes of workspace resource (e.g. VM/container)
+			// to initialize the agent, so if that value changes it will necessitate a replacement of that resource, thus
+			// obviating the whole point of the prebuild.
+			//
+			// The default path is for a new token to be generated on each new resource creation.
+			// TODO: add logging when the running token is actually used.
+			var token string
+
+			isPrebuild := helpers.OptionalEnv(IsPrebuildEnvironmentVariable()) == "true"
+			if !isPrebuild {
+				token = os.Getenv(RunningAgentTokenEnvironmentVariable())
+			}
+
+			allEnv := make(map[string]interface{})
+			for _, v := range os.Environ() {
+				split := strings.Split(v, "=")
+				var key, val string
+				if len(split) > 0 {
+					key = split[0]
+				}
+				if len(split) > 1 {
+					val = split[1]
+				}
+
+				allEnv[key] = val
+			}
+
+			allEnv["is_prebuild"] = fmt.Sprintf("%v", isPrebuild)
+
+			if token == "" {
+				token = uuid.NewString()
+				if !isPrebuild {
+					tflog.Warn(ctx, "NOT USING EXISTING AGENT TOKEN", allEnv)
+				}
+			} else {
+				if !isPrebuild {
+					tflog.Info(ctx, "IS USING EXISTING AGENT TOKEN", allEnv)
+				}
+			}
+
+			err := resourceData.Set("token", token)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -468,4 +514,8 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+func RunningAgentTokenEnvironmentVariable() string {
+	return "CODER_RUNNING_WORKSPACE_AGENT_TOKEN"
 }
