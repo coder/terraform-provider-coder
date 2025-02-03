@@ -27,6 +27,14 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("start_count", count)
 
+			prebuild := helpers.OptionalEnv(IsPrebuildEnvironmentVariable())
+			prebuildCount := 0
+			if prebuild == "true" {
+				prebuildCount = 1
+				_ = rd.Set("is_prebuild", true)
+			}
+			_ = rd.Set("prebuild_count", prebuildCount)
+
 			name := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_NAME", "default")
 			rd.Set("name", name)
 
@@ -88,6 +96,16 @@ func workspaceDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "A computed count based on `transition` state. If `start`, count will equal 1.",
 			},
+			"prebuild_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "TODO",
+			},
+			"is_prebuild": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "TODO",
+			},
 			"transition": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -120,4 +138,8 @@ func workspaceDataSource() *schema.Resource {
 			},
 		},
 	}
+}
+
+func IsPrebuildEnvironmentVariable() string {
+	return "CODER_WORKSPACE_IS_PREBUILD"
 }
