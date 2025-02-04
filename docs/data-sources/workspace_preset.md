@@ -24,7 +24,7 @@ data "coder_workspace_preset" "example" {
   name = "example"
   parameters = {
     (data.coder_parameter.example.name) = "us-central1-a"
-    (data.coder_parameter.ami.name) = "ami-xxxxxxxx"
+    (data.coder_parameter.ami.name)     = "ami-xxxxxxxx"
   }
 }
 ```
