@@ -380,6 +380,30 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 			}},
 		})
 	})
+
+	t.Run("NoPath", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								enabled = true
+								threshold = 80
+							}
+						}
+					}`,
+				ExpectError: regexp.MustCompile(`The argument "path" is required, but no definition was found.`),
+			}},
+		})
+	})
 }
 
 func TestAgent_MetadataDuplicateKeys(t *testing.T) {
