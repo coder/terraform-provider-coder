@@ -10,11 +10,16 @@ import (
 )
 
 func TestWorkspacePreset(t *testing.T) {
-	// Happy Path:
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
+	t.Parallel()
+	type testcase struct {
+		Name        string
+		Config      string
+		ExpectError *regexp.Regexp
+		Check       func(state *terraform.State) error
+	}
+	testcases := []testcase{
+		{
+			Name: "Happy Path",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
@@ -32,30 +37,21 @@ func TestWorkspacePreset(t *testing.T) {
 				require.Equal(t, attrs["parameters.region"], "us-east1-a")
 				return nil
 			},
-		}},
-	})
-
-	// Given the Name field is not provided
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
+		},
+		{
+			Name: "Name field is not provided",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				parameters = {
 					"region" = "us-east1-a"
 				}
 			}`,
-			// This is from terraform's validation based on our schema, not based on our validation in ReadContext:
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
 			ExpectError: regexp.MustCompile("The argument \"name\" is required, but no definition was found"),
-		}},
-	})
-
-	// Given the Name field is empty
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
+		},
+		{
+			Name: "Name field is empty",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = ""
@@ -63,15 +59,12 @@ func TestWorkspacePreset(t *testing.T) {
 					"region" = "us-east1-a"
 				}
 			}`,
-			ExpectError: regexp.MustCompile("workspace preset name must be set"),
-		}},
-	})
-
-	// Given the Name field is not a string
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
+			ExpectError: regexp.MustCompile("expected \"name\" to not be an empty string"),
+		},
+		{
+			Name: "Name field is not a string",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = [1, 2, 3]
@@ -79,49 +72,57 @@ func TestWorkspacePreset(t *testing.T) {
 					"region" = "us-east1-a"
 				}
 			}`,
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
 			ExpectError: regexp.MustCompile("Incorrect attribute value type"),
-		}},
-	})
-
-	// Given the Parameters field is not provided
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
+		},
+		{
+			Name: "Parameters field is not provided",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 			}`,
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
 			ExpectError: regexp.MustCompile("The argument \"parameters\" is required, but no definition was found"),
-		}},
-	})
-
-	// Given the Parameters field is empty
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
+		},
+		{
+			Name: "Parameters field is empty",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				parameters = {}
 			}`,
-			ExpectError: regexp.MustCompile("workspace preset must define a value for at least one parameter"),
-		}},
-	})
-
-	// Given the Parameters field is not a map
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
+			// This validation is *not* done by Terraform, because MinItems doesn't work with maps.
+			// We've implemented the validation in ReadContext, so we test it here to make sure we don't regress.
+			ExpectError: regexp.MustCompile("expected \"parameters\" to not be an empty map"),
+		},
+		{
+			Name: "Parameters field is not a map",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				parameters = "not a map"
 			}`,
-			// This is from terraform's validation based on our schema, not based on our validation in ReadContext:
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
 			ExpectError: regexp.MustCompile("Inappropriate value for attribute \"parameters\": map of string required"),
-		}},
-	})
+		},
+	}
+
+	for _, testcase := range testcases {
+		t.Run(testcase.Name, func(t *testing.T) {
+			t.Parallel()
+
+			resource.Test(t, resource.TestCase{
+				ProviderFactories: coderFactory(),
+				IsUnitTest:        true,
+				Steps: []resource.TestStep{{
+					Config:      testcase.Config,
+					ExpectError: testcase.ExpectError,
+					Check:       testcase.Check,
+				}},
+			})
+		})
+	}
 }

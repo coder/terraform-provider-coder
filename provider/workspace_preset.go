@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -31,12 +32,11 @@ func workspacePresetDataSource() *schema.Resource {
 				return diag.Errorf("decode workspace preset: %s", err)
 			}
 
-			if preset.Name == "" {
-				return diag.Errorf("workspace preset name must be set")
-			}
-
+			// MinItems doesn't work with maps, so we need to check the length
+			// of the map manually. All other validation is handled by the
+			// schema.
 			if len(preset.Parameters) == 0 {
-				return diag.Errorf("workspace preset must define a value for at least one parameter")
+				return diag.Errorf("expected \"parameters\" to not be an empty map")
 			}
 
 			rd.SetId(preset.Name)
@@ -50,14 +50,20 @@ func workspacePresetDataSource() *schema.Resource {
 				Computed:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the workspace preset.",
-				Required:    true,
+				Type:         schema.TypeString,
+				Description:  "Name of the workspace preset.",
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"parameters": {
 				Type:        schema.TypeMap,
 				Description: "Parameters of the workspace preset.",
 				Required:    true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					Required:     true,
+					ValidateFunc: validation.StringIsNotEmpty,
+				},
 			},
 		},
 	}
