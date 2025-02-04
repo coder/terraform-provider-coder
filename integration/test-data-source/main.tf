@@ -14,6 +14,17 @@ terraform {
 data "coder_provisioner" "me" {}
 data "coder_workspace" "me" {}
 data "coder_workspace_owner" "me" {}
+data "coder_parameter" "param" {
+  name = "param"
+  description = "param description"
+  icon = "param icon"
+}
+data "coder_workspace_preset" "preset" {
+  name = "preset"
+  parameters = {
+    (data.coder_parameter.param.name) = "preset param value"
+  }
+}
 
 locals {
   # NOTE: these must all be strings in the output
@@ -30,6 +41,12 @@ locals {
     "workspace.template_name" : data.coder_workspace.me.template_name,
     "workspace.template_version" : data.coder_workspace.me.template_version,
     "workspace.transition" : data.coder_workspace.me.transition,
+    "workspace_parameter.name" : data.coder_parameter.param.name,
+    "workspace_parameter.description" : data.coder_parameter.param.description,
+    "workspace_parameter.value" : data.coder_parameter.param.value,
+    "workspace_parameter.icon" : data.coder_parameter.param.icon,
+    "workspace_preset.name" : data.coder_workspace_preset.preset.name,
+    "workspace_preset.parameters.param" : data.coder_workspace_preset.preset.parameters.param,
   }
 }
 
