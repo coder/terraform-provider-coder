@@ -73,18 +73,27 @@ func TestIntegration(t *testing.T) {
 			name:       "test-data-source",
 			minVersion: "v0.0.0",
 			expectedOutput: map[string]string{
-				"provisioner.arch":           runtime.GOARCH,
-				"provisioner.id":             `[a-zA-Z0-9-]+`,
-				"provisioner.os":             runtime.GOOS,
-				"workspace.access_port":      `\d+`,
-				"workspace.access_url":       `https?://\D+:\d+`,
-				"workspace.id":               `[a-zA-z0-9-]+`,
-				"workspace.name":             `test-data-source`,
-				"workspace.start_count":      `1`,
-				"workspace.template_id":      `[a-zA-Z0-9-]+`,
-				"workspace.template_name":    `test-data-source`,
-				"workspace.template_version": `.+`,
-				"workspace.transition":       `start`,
+				"provisioner.arch":                runtime.GOARCH,
+				"provisioner.id":                  `[a-zA-Z0-9-]+`,
+				"provisioner.os":                  runtime.GOOS,
+				"workspace.access_port":           `\d+`,
+				"workspace.access_url":            `https?://\D+:\d+`,
+				"workspace.id":                    `[a-zA-z0-9-]+`,
+				"workspace.name":                  `test-data-source`,
+				"workspace.start_count":           `1`,
+				"workspace.template_id":           `[a-zA-Z0-9-]+`,
+				"workspace.template_name":         `test-data-source`,
+				"workspace.template_version":      `.+`,
+				"workspace.transition":            `start`,
+				"workspace_parameter.name":        `param`,
+				"workspace_parameter.description": `param description`,
+				// TODO (sasswart): the cli doesn't support presets yet.
+				// once it does, the value for workspace_parameter.value
+				// will be the preset value.
+				"workspace_parameter.value":         `param value`,
+				"workspace_parameter.icon":          `param icon`,
+				"workspace_preset.name":             `preset`,
+				"workspace_preset.parameters.param": `preset param value`,
 			},
 		},
 		{
@@ -179,8 +188,18 @@ func TestIntegration(t *testing.T) {
 			}
 			_, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`coder templates %s %s --directory /src/integration/%s --var output_path=/tmp/%s.json --yes`, templateCreateCmd, tt.name, tt.name, tt.name))
 			require.Equal(t, 0, rc)
+
+			// Check if parameters.yaml exists
+			_, rc = execContainer(ctx, t, ctrID, fmt.Sprintf(`stat /src/integration/%s/parameters.yaml 2>/dev/null > /dev/null`, tt.name))
+			hasParameters := rc == 0
+			var includeParameters string
+			if hasParameters {
+				// If it exists, include it in the create command
+				includeParameters = fmt.Sprintf(`--rich-parameter-file /src/integration/%s/parameters.yaml`, tt.name)
+			}
+
 			// Create a workspace
-			_, rc = execContainer(ctx, t, ctrID, fmt.Sprintf(`coder create %s -t %s --yes`, tt.name, tt.name))
+			_, rc = execContainer(ctx, t, ctrID, fmt.Sprintf(`coder create %s -t %s %s --yes`, tt.name, tt.name, includeParameters))
 			require.Equal(t, 0, rc)
 			// Fetch the output created by the template
 			out, rc := execContainer(ctx, t, ctrID, fmt.Sprintf(`cat /tmp/%s.json`, tt.name))
