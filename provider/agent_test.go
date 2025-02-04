@@ -213,11 +213,13 @@ func TestAgent_Metadata(t *testing.T) {
 
 func TestAgent_ResourcesMonitoring(t *testing.T) {
 	t.Parallel()
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
-			Config: `
+
+	t.Run("OK", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
 				provider "coder" {
 					url = "https://example.com"
 				}
@@ -241,65 +243,115 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 						}
 					}
 				}`,
-			Check: func(state *terraform.State) error {
-				require.Len(t, state.Modules, 1)
-				require.Len(t, state.Modules[0].Resources, 1)
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 1)
 
-				resource := state.Modules[0].Resources["coder_agent.dev"]
-				require.NotNil(t, resource)
+					resource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, resource)
 
-				t.Logf("resource: %v", resource.Primary.Attributes)
-
-				attr := resource.Primary.Attributes
-				require.Equal(t, "1", attr["resources_monitoring.#"])
-				require.Equal(t, "1", attr["resources_monitoring.0.memory.#"])
-				require.Equal(t, "2", attr["resources_monitoring.0.volume.#"])
-				require.Equal(t, "80", attr["resources_monitoring.0.memory.0.threshold"])
-				require.Equal(t, "/volume1", attr["resources_monitoring.0.volume.0.path"])
-				require.Equal(t, "100", attr["resources_monitoring.0.volume.1.threshold"])
-				require.Equal(t, "/volume2", attr["resources_monitoring.0.volume.1.path"])
-				return nil
-			},
-		}},
+					attr := resource.Primary.Attributes
+					require.Equal(t, "1", attr["resources_monitoring.#"])
+					require.Equal(t, "1", attr["resources_monitoring.0.memory.#"])
+					require.Equal(t, "2", attr["resources_monitoring.0.volume.#"])
+					require.Equal(t, "80", attr["resources_monitoring.0.memory.0.threshold"])
+					require.Equal(t, "/volume1", attr["resources_monitoring.0.volume.0.path"])
+					require.Equal(t, "100", attr["resources_monitoring.0.volume.1.threshold"])
+					require.Equal(t, "/volume2", attr["resources_monitoring.0.volume.1.path"])
+					return nil
+				},
+			}},
+		})
 	})
-}
 
-func TestAgent_ResourcesMonitoring_OnlyMemory(t *testing.T) {
-	t.Parallel()
-	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
-			Config: `
-				provider "coder" {
-					url = "https://example.com"
-				}
-				resource "coder_agent" "dev" {
-					os = "linux"
-					arch = "amd64"
-					resources_monitoring {
-						memory {
-							enabled = true
-							threshold = 80
-						}
+	t.Run("OnlyMemory", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
 					}
-				}`,
-			Check: func(state *terraform.State) error {
-				require.Len(t, state.Modules, 1)
-				require.Len(t, state.Modules[0].Resources, 1)
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							memory {
+								enabled = true
+								threshold = 80
+							}
+						}
+					}`,
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 1)
 
-				resource := state.Modules[0].Resources["coder_agent.dev"]
-				require.NotNil(t, resource)
+					resource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, resource)
 
-				t.Logf("resource: %v", resource.Primary.Attributes)
+					attr := resource.Primary.Attributes
+					require.Equal(t, "1", attr["resources_monitoring.#"])
+					require.Equal(t, "1", attr["resources_monitoring.0.memory.#"])
+					require.Equal(t, "80", attr["resources_monitoring.0.memory.0.threshold"])
+					return nil
+				},
+			}},
+		})
+	})
 
-				attr := resource.Primary.Attributes
-				require.Equal(t, "1", attr["resources_monitoring.#"])
-				require.Equal(t, "1", attr["resources_monitoring.0.memory.#"])
-				require.Equal(t, "80", attr["resources_monitoring.0.memory.0.threshold"])
-				return nil
-			},
-		}},
+	t.Run("InvalidThreshold", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							memory {
+								enabled = true
+								threshold = 101
+							}
+						}
+					}`,
+				ExpectError: regexp.MustCompile("threshold must be between 0 and 100"),
+			}},
+		})
+	})
+
+	t.Run("DuplicatePaths", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								path = "/volume1"
+								enabled = true
+								threshold = 80
+							}
+							volume {
+								path = "/volume1"
+								enabled = true
+								threshold = 100
+							}
+						}
+					}`,
+				ExpectError: regexp.MustCompile("duplicate volume path"),
+			}},
+		})
 	})
 }
 
