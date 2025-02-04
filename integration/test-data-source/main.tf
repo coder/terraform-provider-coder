@@ -15,9 +15,9 @@ data "coder_provisioner" "me" {}
 data "coder_workspace" "me" {}
 data "coder_workspace_owner" "me" {}
 data "coder_parameter" "param" {
-  name = "param"
+  name        = "param"
   description = "param description"
-  icon = "param icon"
+  icon        = "param icon"
 }
 data "coder_workspace_preset" "preset" {
   name = "preset"
