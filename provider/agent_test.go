@@ -299,6 +299,33 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 			}},
 		})
 	})
+	t.Run("MultipleMemory", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							memory {
+								enabled = true
+								threshold = 80
+							}
+							memory {
+								enabled = true
+								threshold = 90
+							}
+						}
+					}`,
+				ExpectError: regexp.MustCompile(`No more than 1 "memory" blocks are allowed`),
+			}},
+		})
+	})
 
 	t.Run("InvalidThreshold", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
