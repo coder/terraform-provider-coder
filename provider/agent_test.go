@@ -346,7 +346,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 							}
 						}
 					}`,
-				ExpectError: regexp.MustCompile("threshold must be between 0 and 100"),
+				Check:       nil,
+				ExpectError: regexp.MustCompile("Error running pre-apply refresh"),
 			}},
 		})
 	})

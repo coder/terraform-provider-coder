@@ -284,16 +284,11 @@ func agentResource() *schema.Resource {
 										Required:    true,
 									},
 									"threshold": {
-										Type:        schema.TypeInt,
-										Description: "The memory usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.",
-										ForceNew:    true,
-										Required:    true,
-										ValidateDiagFunc: func(i interface{}, s cty.Path) diag.Diagnostics {
-											if i.(int) < 0 || i.(int) > 100 {
-												return diag.Errorf("volume threshold must be between 0 and 100")
-											}
-											return nil
-										},
+										Type:         schema.TypeInt,
+										Description:  "The memory usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.",
+										ForceNew:     true,
+										Required:     true,
+										ValidateFunc: validation.IntBetween(0, 100),
 									},
 								},
 							},
@@ -329,16 +324,11 @@ func agentResource() *schema.Resource {
 										Required:    true,
 									},
 									"threshold": {
-										Type:        schema.TypeInt,
-										Description: "The volume usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.",
-										ForceNew:    true,
-										Required:    true,
-										ValidateDiagFunc: func(i interface{}, s cty.Path) diag.Diagnostics {
-											if i.(int) < 0 || i.(int) > 100 {
-												return diag.Errorf("volume threshold must be between 0 and 100")
-											}
-											return nil
-										},
+										Type:         schema.TypeInt,
+										Description:  "The volume usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.",
+										ForceNew:     true,
+										Required:     true,
+										ValidateFunc: validation.IntBetween(0, 100),
 									},
 								},
 							},
