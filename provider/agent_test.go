@@ -404,6 +404,106 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 			}},
 		})
 	})
+
+	t.Run("NonAbsPath", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								path = "tmp"
+								enabled = true
+								threshold = 80
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`volume path must be an absolute path`),
+			}},
+		})
+	})
+
+	t.Run("EmptyPath", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								path = ""
+								enabled = true
+								threshold = 80
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`volume path must not be empty`),
+			}},
+		})
+	})
+
+	t.Run("ThresholdMissing", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								path = "/volume1"
+								enabled = true
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`The argument "threshold" is required, but no definition was found.`),
+			}},
+		})
+	})
+	t.Run("EnabledMissing", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							memory {
+								threshold = 80
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`The argument "enabled" is required, but no definition was found.`),
+			}},
+		})
+	})
 }
 
 func TestAgent_MetadataDuplicateKeys(t *testing.T) {
