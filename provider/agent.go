@@ -306,7 +306,11 @@ func agentResource() *schema.Resource {
 										ForceNew:    true,
 										Required:    true,
 										ValidateDiagFunc: func(i interface{}, s cty.Path) diag.Diagnostics {
-											if i.(string) == "" {
+											path, ok := i.(string)
+											if !ok {
+												return diag.Errorf("volume path must be a string")
+											}
+											if path == "" {
 												return diag.Errorf("volume path must not be empty")
 											}
 

@@ -347,7 +347,7 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 						}
 					}`,
 				Check:       nil,
-				ExpectError: regexp.MustCompile("Error running pre-apply refresh"),
+				ExpectError: regexp.MustCompile(`expected resources_monitoring\.0\.memory\.0\.threshold to be in the range \(0 - 100\), got 101`),
 			}},
 		})
 	})
