@@ -88,11 +88,8 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - "1.5.*"
-          - "1.6.*"
-          - "1.7.*"
-          - "1.8.*"
           - "1.9.*"
+          - "1.10.*"
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
