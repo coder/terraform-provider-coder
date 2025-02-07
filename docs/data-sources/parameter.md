@@ -20,7 +20,7 @@ data "coder_parameter" "example" {
   description = "Specify a region to place your workspace."
   mutable     = false
   type        = "string"
-  default     = "asia-central1-a"
+  default     = "us-central1-a"
   option {
     value = "us-central1-a"
     name  = "US Central"
