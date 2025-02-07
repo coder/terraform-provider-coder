@@ -9,12 +9,12 @@ data "coder_parameter" "example" {
   option {
     value = "us-central1-a"
     name  = "US Central"
-    icon  = "/icon/usa.svg"
+    icon  = "/icons/1f1fa-1f1f8.png"
   }
   option {
-    value = "asia-central1-a"
-    name  = "Asia"
-    icon  = "/icon/asia.svg"
+    value = "asia-southeast1-a"
+    name  = "Singapore"
+    icon  = "/icons/1f1f8-1f1ec.png"
   }
 }
 
