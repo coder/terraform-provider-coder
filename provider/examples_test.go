@@ -15,6 +15,7 @@ func TestExamples(t *testing.T) {
 	for _, testDir := range []string{
 		"coder_parameter",
 		"coder_workspace_tags",
+		"coder_resources_monitoring",
 	} {
 		t.Run(testDir, func(t *testing.T) {
 			testDir := testDir

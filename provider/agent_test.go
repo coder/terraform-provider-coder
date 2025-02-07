@@ -211,6 +211,302 @@ func TestAgent_Metadata(t *testing.T) {
 	})
 }
 
+func TestAgent_ResourcesMonitoring(t *testing.T) {
+	t.Parallel()
+
+	t.Run("OK", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+				provider "coder" {
+					url = "https://example.com"
+				}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+					resources_monitoring {
+						memory {
+							enabled = true
+							threshold = 80
+						}
+						volume {
+							path = "/volume1"
+							enabled = true
+							threshold = 80
+						}
+						volume {
+							path = "/volume2"
+							enabled = true
+							threshold = 100
+						}
+					}
+				}`,
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 1)
+
+					resource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, resource)
+
+					attr := resource.Primary.Attributes
+					require.Equal(t, "1", attr["resources_monitoring.#"])
+					require.Equal(t, "1", attr["resources_monitoring.0.memory.#"])
+					require.Equal(t, "2", attr["resources_monitoring.0.volume.#"])
+					require.Equal(t, "80", attr["resources_monitoring.0.memory.0.threshold"])
+					require.Equal(t, "/volume1", attr["resources_monitoring.0.volume.0.path"])
+					require.Equal(t, "100", attr["resources_monitoring.0.volume.1.threshold"])
+					require.Equal(t, "/volume2", attr["resources_monitoring.0.volume.1.path"])
+					return nil
+				},
+			}},
+		})
+	})
+
+	t.Run("OnlyMemory", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							memory {
+								enabled = true
+								threshold = 80
+							}
+						}
+					}`,
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					require.Len(t, state.Modules[0].Resources, 1)
+
+					resource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, resource)
+
+					attr := resource.Primary.Attributes
+					require.Equal(t, "1", attr["resources_monitoring.#"])
+					require.Equal(t, "1", attr["resources_monitoring.0.memory.#"])
+					require.Equal(t, "80", attr["resources_monitoring.0.memory.0.threshold"])
+					return nil
+				},
+			}},
+		})
+	})
+	t.Run("MultipleMemory", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							memory {
+								enabled = true
+								threshold = 80
+							}
+							memory {
+								enabled = true
+								threshold = 90
+							}
+						}
+					}`,
+				ExpectError: regexp.MustCompile(`No more than 1 "memory" blocks are allowed`),
+			}},
+		})
+	})
+
+	t.Run("InvalidThreshold", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							memory {
+								enabled = true
+								threshold = 101
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`expected resources_monitoring\.0\.memory\.0\.threshold to be in the range \(0 - 100\), got 101`),
+			}},
+		})
+	})
+
+	t.Run("DuplicatePaths", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								path = "/volume1"
+								enabled = true
+								threshold = 80
+							}
+							volume {
+								path = "/volume1"
+								enabled = true
+								threshold = 100
+							}
+						}
+					}`,
+				ExpectError: regexp.MustCompile("duplicate volume path"),
+			}},
+		})
+	})
+
+	t.Run("NoPath", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								enabled = true
+								threshold = 80
+							}
+						}
+					}`,
+				ExpectError: regexp.MustCompile(`The argument "path" is required, but no definition was found.`),
+			}},
+		})
+	})
+
+	t.Run("NonAbsPath", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								path = "tmp"
+								enabled = true
+								threshold = 80
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`volume path must be an absolute path`),
+			}},
+		})
+	})
+
+	t.Run("EmptyPath", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								path = ""
+								enabled = true
+								threshold = 80
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`volume path must not be empty`),
+			}},
+		})
+	})
+
+	t.Run("ThresholdMissing", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							volume {
+								path = "/volume1"
+								enabled = true
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`The argument "threshold" is required, but no definition was found.`),
+			}},
+		})
+	})
+	t.Run("EnabledMissing", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {
+							memory {
+								threshold = 80
+							}
+						}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`The argument "enabled" is required, but no definition was found.`),
+			}},
+		})
+	})
+}
+
 func TestAgent_MetadataDuplicateKeys(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{

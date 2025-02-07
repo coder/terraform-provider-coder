@@ -79,6 +79,7 @@ resource "kubernetes_pod" "dev" {
 - `metadata` (Block List) Each `metadata` block defines a single item consisting of a key/value pair. This feature is in alpha and may break in future releases. (see [below for nested schema](#nestedblock--metadata))
 - `motd_file` (String) The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be `"/etc/motd"`.
 - `order` (Number) The order determines the position of agents in the UI presentation. The lowest order is shown first and agents with equal order are sorted by name (ascending order).
+- `resources_monitoring` (Block Set, Max: 1) The resources monitoring configuration for this agent. (see [below for nested schema](#nestedblock--resources_monitoring))
 - `shutdown_script` (String) A script to run before the agent is stopped. The script should exit when it is done to signal that the workspace can be stopped. This option is an alias for defining a `coder_script` resource with `run_on_stop` set to `true`.
 - `startup_script` (String) A script to run after the agent starts. The script should exit when it is done to signal that the agent is ready. This option is an alias for defining a `coder_script` resource with `run_on_start` set to `true`.
 - `startup_script_behavior` (String) This option sets the behavior of the `startup_script`. When set to `"blocking"`, the `startup_script` must exit before the workspace is ready. When set to `"non-blocking"`, the `startup_script` may run in the background and the workspace will be ready immediately. Default is `"non-blocking"`, although `"blocking"` is recommended. This option is an alias for defining a `coder_script` resource with `start_blocks_login` set to `true` (blocking).
@@ -116,3 +117,30 @@ Optional:
 - `display_name` (String) The user-facing name of this value.
 - `order` (Number) The order determines the position of agent metadata in the UI presentation. The lowest order is shown first and metadata with equal order are sorted by key (ascending order).
 - `timeout` (Number) The maximum time the command is allowed to run in seconds.
+
+
+<a id="nestedblock--resources_monitoring"></a>
+### Nested Schema for `resources_monitoring`
+
+Optional:
+
+- `memory` (Block Set, Max: 1) The memory monitoring configuration for this agent. (see [below for nested schema](#nestedblock--resources_monitoring--memory))
+- `volume` (Block Set) The volumes monitoring configuration for this agent. (see [below for nested schema](#nestedblock--resources_monitoring--volume))
+
+<a id="nestedblock--resources_monitoring--memory"></a>
+### Nested Schema for `resources_monitoring.memory`
+
+Required:
+
+- `enabled` (Boolean) Enable memory monitoring for this agent.
+- `threshold` (Number) The memory usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.
+
+
+<a id="nestedblock--resources_monitoring--volume"></a>
+### Nested Schema for `resources_monitoring.volume`
+
+Required:
+
+- `enabled` (Boolean) Enable volume monitoring for this agent.
+- `path` (String) The path of the volume to monitor.
+- `threshold` (Number) The volume usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.

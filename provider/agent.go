@@ -3,10 +3,12 @@ package provider
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"reflect"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -259,31 +261,142 @@ func agentResource() *schema.Resource {
 				ForceNew:    true,
 				Optional:    true,
 			},
+			"resources_monitoring": {
+				Type:        schema.TypeSet,
+				Description: "The resources monitoring configuration for this agent.",
+				ForceNew:    true,
+				Optional:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"memory": {
+							Type:        schema.TypeSet,
+							Description: "The memory monitoring configuration for this agent.",
+							ForceNew:    true,
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"enabled": {
+										Type:        schema.TypeBool,
+										Description: "Enable memory monitoring for this agent.",
+										ForceNew:    true,
+										Required:    true,
+									},
+									"threshold": {
+										Type:         schema.TypeInt,
+										Description:  "The memory usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.",
+										ForceNew:     true,
+										Required:     true,
+										ValidateFunc: validation.IntBetween(0, 100),
+									},
+								},
+							},
+						},
+						"volume": {
+							Type:        schema.TypeSet,
+							Description: "The volumes monitoring configuration for this agent.",
+							ForceNew:    true,
+							Optional:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"path": {
+										Type:        schema.TypeString,
+										Description: "The path of the volume to monitor.",
+										ForceNew:    true,
+										Required:    true,
+										ValidateDiagFunc: func(i interface{}, s cty.Path) diag.Diagnostics {
+											path, ok := i.(string)
+											if !ok {
+												return diag.Errorf("volume path must be a string")
+											}
+											if path == "" {
+												return diag.Errorf("volume path must not be empty")
+											}
+
+											if !filepath.IsAbs(i.(string)) {
+												return diag.Errorf("volume path must be an absolute path")
+											}
+
+											return nil
+										},
+									},
+									"enabled": {
+										Type:        schema.TypeBool,
+										Description: "Enable volume monitoring for this agent.",
+										ForceNew:    true,
+										Required:    true,
+									},
+									"threshold": {
+										Type:         schema.TypeInt,
+										Description:  "The volume usage threshold in percentage at which to trigger an alert. Value should be between 0 and 100.",
+										ForceNew:     true,
+										Required:     true,
+										ValidateFunc: validation.IntBetween(0, 100),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 		CustomizeDiff: func(ctx context.Context, rd *schema.ResourceDiff, i any) error {
-			if !rd.HasChange("metadata") {
-				return nil
+			if rd.HasChange("metadata") {
+				keys := map[string]bool{}
+				metadata, ok := rd.Get("metadata").([]any)
+				if !ok {
+					return xerrors.Errorf("unexpected type %T for metadata, expected []any", rd.Get("metadata"))
+				}
+				for _, t := range metadata {
+					obj, ok := t.(map[string]any)
+					if !ok {
+						return xerrors.Errorf("unexpected type %T for metadata, expected map[string]any", t)
+					}
+					key, ok := obj["key"].(string)
+					if !ok {
+						return xerrors.Errorf("unexpected type %T for metadata key, expected string", obj["key"])
+					}
+					if keys[key] {
+						return xerrors.Errorf("duplicate agent metadata key %q", key)
+					}
+					keys[key] = true
+				}
 			}
 
-			keys := map[string]bool{}
-			metadata, ok := rd.Get("metadata").([]any)
-			if !ok {
-				return xerrors.Errorf("unexpected type %T for metadata, expected []any", rd.Get("metadata"))
-			}
-			for _, t := range metadata {
-				obj, ok := t.(map[string]any)
+			if rd.HasChange("resources_monitoring") {
+				monitors, ok := rd.Get("resources_monitoring").(*schema.Set)
 				if !ok {
-					return xerrors.Errorf("unexpected type %T for metadata, expected map[string]any", t)
+					return xerrors.Errorf("unexpected type %T for resources_monitoring.0.volume, expected []any", rd.Get("resources_monitoring.0.volume"))
 				}
-				key, ok := obj["key"].(string)
+
+				monitor := monitors.List()[0].(map[string]any)
+
+				volumes, ok := monitor["volume"].(*schema.Set)
 				if !ok {
-					return xerrors.Errorf("unexpected type %T for metadata key, expected string", obj["key"])
+					return xerrors.Errorf("unexpected type %T for resources_monitoring.0.volume, expected []any", monitor["volume"])
 				}
-				if keys[key] {
-					return xerrors.Errorf("duplicate agent metadata key %q", key)
+
+				paths := map[string]bool{}
+				for _, volume := range volumes.List() {
+					obj, ok := volume.(map[string]any)
+					if !ok {
+						return xerrors.Errorf("unexpected type %T for volume, expected map[string]any", volume)
+					}
+
+					// print path for debug purpose
+
+					path, ok := obj["path"].(string)
+					if !ok {
+						return xerrors.Errorf("unexpected type %T for volume path, expected string", obj["path"])
+					}
+					if paths[path] {
+						return xerrors.Errorf("duplicate volume path %q", path)
+					}
+					paths[path] = true
 				}
-				keys[key] = true
 			}
+
 			return nil
 		},
 	}
