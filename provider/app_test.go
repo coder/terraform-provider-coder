@@ -415,4 +415,62 @@ func TestApp(t *testing.T) {
 		}
 	})
 
+	t.Run("DisplayName", func(t *testing.T) {
+		t.Parallel()
+
+		cases := []struct {
+			name        string
+			displayName string
+			expectValue string
+			expectError *regexp.Regexp
+		}{
+			{
+				name:        "Empty",
+				displayName: "",
+			},
+			{
+				name:        "Regular",
+				displayName: "Regular Application",
+			},
+			{
+				name:        "DisplayNameTooLong",
+				displayName: "01234567890123456789012345678901234567890123456789012345678901234",
+				expectError: regexp.MustCompile("display name is too long"),
+			},
+		}
+
+		for _, c := range cases {
+			c := c
+
+			t.Run(c.name, func(t *testing.T) {
+				t.Parallel()
+
+				config := fmt.Sprintf(`
+				provider "coder" {
+				}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "code-server" {
+					agent_id = coder_agent.dev.id
+					slug = "code-server"
+					display_name = "%s"
+					url = "http://localhost:13337"
+					open_in = "slim-window"
+				}
+				`, c.displayName)
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      config,
+						ExpectError: c.expectError,
+					}},
+				})
+			})
+		}
+	})
+
 }

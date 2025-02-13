@@ -23,6 +23,8 @@ var (
 	appSlugRegex = regexp.MustCompile(`^[a-z0-9](-?[a-z0-9])*$`)
 )
 
+const appDisplayNameMaxLength = 64 // database column limit
+
 func appResource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
@@ -124,6 +126,17 @@ func appResource() *schema.Resource {
 				Description: "A display name to identify the app. Defaults to the slug.",
 				ForceNew:    true,
 				Optional:    true,
+				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+					valStr, ok := val.(string)
+					if !ok {
+						return diag.Errorf("expected string, got %T", val)
+					}
+
+					if len(valStr) > appDisplayNameMaxLength {
+						return diag.Errorf("display name is too long (max %d characters)", appDisplayNameMaxLength)
+					}
+					return nil
+				},
 			},
 			"subdomain": {
 				Type: schema.TypeBool,
