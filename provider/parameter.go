@@ -237,7 +237,6 @@ func parameterDataSource() *schema.Resource {
 				Description: "Each `option` block defines a value for a user to select from.",
 				ForceNew:    true,
 				Optional:    true,
-				MaxItems:    64,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"name": {

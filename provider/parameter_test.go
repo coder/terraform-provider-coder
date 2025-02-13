@@ -1,7 +1,9 @@
 package provider_test
 
 import (
+	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -815,4 +817,44 @@ func TestValueValidatesType(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParameterWithManyOptions(t *testing.T) {
+	t.Parallel()
+
+	const maxItemsInTest = 1024
+
+	var options strings.Builder
+	for i := 0; i < maxItemsInTest; i++ {
+		_, _ = options.WriteString(fmt.Sprintf(`option {
+					name = "%d"
+					value = "%d"
+				}
+`, i, i))
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
+		Steps: []resource.TestStep{{
+			Config: fmt.Sprintf(`data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				%s
+			}`, options.String()),
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				param := state.Modules[0].Resources["data.coder_parameter.region"]
+
+				for i := 0; i < maxItemsInTest; i++ {
+					name, _ := param.Primary.Attributes[fmt.Sprintf("option.%d.name", i)]
+					value, _ := param.Primary.Attributes[fmt.Sprintf("option.%d.value", i)]
+					require.Equal(t, fmt.Sprintf("%d", i), name)
+					require.Equal(t, fmt.Sprintf("%d", i), value)
+				}
+				return nil
+			},
+		}},
+	})
 }
