@@ -147,7 +147,7 @@ data "coder_parameter" "home_volume_size" {
 - `ephemeral` (Boolean) The value of an ephemeral parameter will not be preserved between consecutive workspace builds.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
 - `mutable` (Boolean) Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!
-- `option` (Block List, Max: 64) Each `option` block defines a value for a user to select from. (see [below for nested schema](#nestedblock--option))
+- `option` (Block List) Each `option` block defines a value for a user to select from. (see [below for nested schema](#nestedblock--option))
 - `order` (Number) The order determines the position of a template parameter in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by name (ascending order).
 - `type` (String) The type of this parameter. Must be one of: `"number"`, `"string"`, `"bool"`, or `"list(string)"`.
 - `validation` (Block List, Max: 1) Validate the input of a parameter. (see [below for nested schema](#nestedblock--validation))
