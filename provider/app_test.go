@@ -433,6 +433,10 @@ func TestApp(t *testing.T) {
 				displayName: "Regular Application",
 			},
 			{
+				name:        "DisplayNameStillOK",
+				displayName: "0123456789012345678901234567890123456789012345678901234567890123",
+			},
+			{
 				name:        "DisplayNameTooLong",
 				displayName: "01234567890123456789012345678901234567890123456789012345678901234",
 				expectError: regexp.MustCompile("display name is too long"),
