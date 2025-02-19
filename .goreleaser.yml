@@ -56,6 +56,8 @@ release:
       name_template: '{{ .ProjectName }}_{{ .Version }}_manifest.json'
   # If you want to manually examine the release before its live, uncomment this line:
   # draft: true
+  prerelease: auto
+  make_latest: "{{ not .Prerelease }}"
 changelog:
   # see https://goreleaser.com/customization/changelog/
   use: github-native
