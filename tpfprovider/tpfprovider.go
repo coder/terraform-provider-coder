@@ -16,8 +16,10 @@ type coderProvider struct {
 
 var _ provider.Provider = (*coderProvider)(nil)
 
-func NewFrameworkProvider() provider.Provider {
-	return &coderProvider{}
+func NewFrameworkProvider() func() provider.Provider {
+	return func() provider.Provider {
+		return &coderProvider{}
+	}
 }
 
 func (p *coderProvider) Resources(_ context.Context) []func() resource.Resource {
@@ -25,7 +27,9 @@ func (p *coderProvider) Resources(_ context.Context) []func() resource.Resource 
 }
 
 func (p *coderProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		NewParameterDataSource,
+	}
 }
 
 func (p *coderProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
