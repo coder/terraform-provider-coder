@@ -2,6 +2,7 @@ package tpfprovider
 
 import (
 	"context"
+	"net/url"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -9,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-type coderProvider struct{}
+type coderProvider struct {
+	URL *url.URL
+}
 
 var _ provider.Provider = (*coderProvider)(nil)
 
@@ -27,7 +30,12 @@ func (p *coderProvider) DataSources(_ context.Context) []func() datasource.DataS
 
 func (p *coderProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Attributes: map[string]schema.Attribute{},
+		Attributes: map[string]schema.Attribute{
+			"url": schema.StringAttribute{
+				Description: "The URL to access Coder.",
+				Optional:    true,
+			},
+		},
 	}
 }
 
