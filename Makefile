@@ -11,7 +11,7 @@ build: terraform-provider-coder
 
 # Builds the provider. Note that as coder/coder is based on
 # alpine, we need to disable cgo.
-terraform-provider-coder: provider/*.go main.go
+terraform-provider-coder: provider/*.go tpfprovider/*.go main.go
 	CGO_ENABLED=0 go build .
 
 # Run integration tests
@@ -22,4 +22,4 @@ test-integration: terraform-provider-coder
 # Run acceptance tests
 .PHONY: testacc
 testacc:
-	TF_ACC=1 go test ./... -v $(TESTARGS) -timeout 120m
+	TF_ACC=1 go test ./... -v -count=1 $(TESTARGS) -timeout 120m
