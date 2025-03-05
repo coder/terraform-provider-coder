@@ -90,6 +90,7 @@ jobs:
         terraform:
           - "1.9.*"
           - "1.10.*"
+          - "1.11.*"
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
