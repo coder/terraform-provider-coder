@@ -69,6 +69,7 @@ jobs:
 
   goreleaser:
     runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
