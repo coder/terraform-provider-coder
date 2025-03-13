@@ -155,6 +155,10 @@ func parameterDataSource() *schema.Resource {
 			// Validate options
 			var optionType string
 			optionType, parameter.FormType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			rd.Set("form_type", parameter.FormType)
 
 			if len(parameter.Option) > 0 {
 				names := map[string]interface{}{}
