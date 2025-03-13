@@ -51,6 +51,7 @@ type Parameter struct {
 	DisplayName string `mapstructure:"display_name"`
 	Description string
 	Type        string
+	FormType    ParameterFormType `mapstructure:"form_type"`
 	Mutable     bool
 	Default     string
 	Icon        string
@@ -86,6 +87,7 @@ func parameterDataSource() *schema.Resource {
 				DisplayName interface{}
 				Description interface{}
 				Type        interface{}
+				FormType    interface{}
 				Mutable     interface{}
 				Default     interface{}
 				Icon        interface{}
@@ -100,6 +102,7 @@ func parameterDataSource() *schema.Resource {
 				DisplayName: rd.Get("display_name"),
 				Description: rd.Get("description"),
 				Type:        rd.Get("type"),
+				FormType:    rd.Get("form_type"),
 				Mutable:     rd.Get("mutable"),
 				Default:     rd.Get("default"),
 				Icon:        rd.Get("icon"),
@@ -149,6 +152,10 @@ func parameterDataSource() *schema.Resource {
 				}
 			}
 
+			// Validate options
+			var optionType string
+			parameter.FormType, optionType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
+
 			if len(parameter.Option) > 0 {
 				names := map[string]interface{}{}
 				values := map[string]interface{}{}
@@ -161,7 +168,7 @@ func parameterDataSource() *schema.Resource {
 					if exists {
 						return diag.Errorf("multiple options cannot have the same value %q", option.Value)
 					}
-					err := valueIsType(parameter.Type, option.Value)
+					err := valueIsType(optionType, option.Value)
 					if err != nil {
 						return err
 					}
@@ -205,6 +212,13 @@ func parameterDataSource() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"number", "string", "bool", "list(string)"}, false),
 				Description:  "The type of this parameter. Must be one of: `\"number\"`, `\"string\"`, `\"bool\"`, or `\"list(string)\"`.",
+			},
+			"form_type": {
+				Type:         schema.TypeString,
+				Default:      ParameterFormTypeDefault,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice(toStrings(ParameterFormTypes()), false),
+				Description:  fmt.Sprintf("The type of this parameter. Must be one of: [%s].", strings.Join(toStrings(ParameterFormTypes()), ", ")),
 			},
 			"mutable": {
 				Type:        schema.TypeBool,
