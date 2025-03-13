@@ -78,10 +78,10 @@ var formTypeTruthTable = map[string]map[bool][]ParameterFormType{
 // | `list(string)`    | Y       |                     | `radio`        |                                |
 // | `list(string)`    | N       |                     | `tag-select`   |                                |
 // | `list(string)`    | Y       | `multi-select`      | `multi-select` | Option values will be `string` |
-func ValidateFormType(paramType string, optionCount int, specifiedFormType ParameterFormType) (ParameterFormType, string, error) {
+func ValidateFormType(paramType string, optionCount int, specifiedFormType ParameterFormType) (string, ParameterFormType, error) {
 	allowed, ok := formTypeTruthTable[paramType][optionCount > 0]
 	if !ok || len(allowed) == 0 {
-		return specifiedFormType, paramType, xerrors.Errorf("value type %q is not supported for 'form_types'", paramType)
+		return paramType, specifiedFormType, xerrors.Errorf("value type %q is not supported for 'form_types'", paramType)
 	}
 
 	if specifiedFormType == ParameterFormTypeDefault {
@@ -90,15 +90,15 @@ func ValidateFormType(paramType string, optionCount int, specifiedFormType Param
 	}
 
 	if !slices.Contains(allowed, specifiedFormType) {
-		return specifiedFormType, paramType, xerrors.Errorf("value type %q is not supported for 'form_types'", paramType)
+		return paramType, specifiedFormType, xerrors.Errorf("value type %q is not supported for 'form_types'", paramType)
 	}
 
 	// Special case
 	if paramType == "list(string)" && specifiedFormType == ParameterFormTypeMultiSelect {
-		return ParameterFormTypeMultiSelect, "string", nil
+		return "string", ParameterFormTypeMultiSelect, nil
 	}
 
-	return specifiedFormType, paramType, nil
+	return paramType, specifiedFormType, nil
 }
 
 func toStrings[A ~string](l []A) []string {

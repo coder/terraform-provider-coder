@@ -154,7 +154,7 @@ func parameterDataSource() *schema.Resource {
 
 			// Validate options
 			var optionType string
-			parameter.FormType, optionType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
+			optionType, parameter.FormType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
 
 			if len(parameter.Option) > 0 {
 				names := map[string]interface{}{}
