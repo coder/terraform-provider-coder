@@ -17,6 +17,8 @@ const (
 	ParameterFormTypeSwitch      ParameterFormType = "switch"
 	ParameterFormTypeMultiSelect ParameterFormType = "multi-select"
 	ParameterFormTypeTagInput    ParameterFormType = "tag-input"
+	//ParameterFormTypeTextArea    ParameterFormType = "textarea"
+	ParameterFormTypeError ParameterFormType = "error"
 )
 
 func ParameterFormTypes() []ParameterFormType {
@@ -29,6 +31,8 @@ func ParameterFormTypes() []ParameterFormType {
 		ParameterFormTypeSwitch,
 		ParameterFormTypeMultiSelect,
 		ParameterFormTypeTagInput,
+		//ParameterFormTypeTextArea,
+		ParameterFormTypeError,
 	}
 }
 
