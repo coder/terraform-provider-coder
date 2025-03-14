@@ -181,9 +181,35 @@ func parameterDataSource() *schema.Resource {
 				}
 
 				if parameter.Default != "" {
-					_, defaultIsValid := values[parameter.Default]
-					if !defaultIsValid {
-						return diag.Errorf("default value %q must be defined as one of options", parameter.Default)
+					if parameter.Type == "list(string)" && optionType == "string" {
+						// If the type is list(string) and optionType is string, we have
+						// to ensure all elements of the default exist as options.
+						var defaultValues []string
+						err = json.Unmarshal([]byte(parameter.Default), &defaultValues)
+						if err != nil {
+							return diag.Errorf("default value %q is not a list of strings", parameter.Default)
+						}
+
+						var missing []string
+						for _, defaultValue := range defaultValues {
+							_, defaultIsValid := values[defaultValue]
+							if !defaultIsValid {
+								missing = append(missing, defaultValue)
+							}
+						}
+
+						if len(missing) > 0 {
+							return diag.Errorf(
+								"default value %q is not a valid option, values %q are missing from the option",
+								parameter.Default, strings.Join(missing, ", "),
+							)
+						}
+
+					} else {
+						_, defaultIsValid := values[parameter.Default]
+						if !defaultIsValid {
+							return diag.Errorf("%q default value %q must be defined as one of options", parameter.FormType, parameter.Default)
+						}
 					}
 				}
 			}
