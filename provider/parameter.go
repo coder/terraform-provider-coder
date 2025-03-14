@@ -51,7 +51,7 @@ type Parameter struct {
 	DisplayName string `mapstructure:"display_name"`
 	Description string
 	Type        string
-	FormType    ParameterFormType `mapstructure:"form_type"`
+	FormType    ParameterFormType
 	Mutable     bool
 	Default     string
 	Icon        string

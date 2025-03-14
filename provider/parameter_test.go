@@ -27,7 +27,7 @@ func TestParameter(t *testing.T) {
 				name = "region"
 				display_name = "Region"
 				type = "string"
- 				form_type = "radio"
+ 				form_type = "dropdown"
 				description = <<-EOT
 					# Select the machine image
 					See the [registry](https://container.registry.blah/namespace) for options.
@@ -57,7 +57,7 @@ func TestParameter(t *testing.T) {
 				"name":                 "region",
 				"display_name":         "Region",
 				"type":                 "string",
-				"form_type":            "radio",
+				"form_type":            "dropdown",
 				"description":          "# Select the machine image\nSee the [registry](https://container.registry.blah/namespace) for options.\n",
 				"mutable":              "true",
 				"icon":                 "/icon/region.svg",
