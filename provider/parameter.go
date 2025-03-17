@@ -276,6 +276,12 @@ func parameterDataSource() *schema.Resource {
 					return nil, nil
 				},
 			},
+			"form_type_metadata": {
+				Type:        schema.TypeString,
+				Default:     `{}`,
+				Description: "JSON encoded string containing the metadata for controlling the appearance of this parameter in the UI.",
+				Optional:    true,
+			},
 			"option": {
 				Type:        schema.TypeList,
 				Description: "Each `option` block defines a value for a user to select from.",

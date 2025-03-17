@@ -11,14 +11,15 @@ type ParameterFormType string
 const (
 	ParameterFormTypeDefault     ParameterFormType = ""
 	ParameterFormTypeRadio       ParameterFormType = "radio"
+	ParameterFormTypeSlider      ParameterFormType = "slider"
 	ParameterFormTypeInput       ParameterFormType = "input"
 	ParameterFormTypeDropdown    ParameterFormType = "dropdown"
 	ParameterFormTypeCheckbox    ParameterFormType = "checkbox"
 	ParameterFormTypeSwitch      ParameterFormType = "switch"
 	ParameterFormTypeMultiSelect ParameterFormType = "multi-select"
 	ParameterFormTypeTagInput    ParameterFormType = "tag-input"
-	//ParameterFormTypeTextArea    ParameterFormType = "textarea"
-	ParameterFormTypeError ParameterFormType = "error"
+	ParameterFormTypeTextArea    ParameterFormType = "textarea"
+	ParameterFormTypeError       ParameterFormType = "error"
 )
 
 func ParameterFormTypes() []ParameterFormType {
@@ -26,12 +27,13 @@ func ParameterFormTypes() []ParameterFormType {
 		ParameterFormTypeDefault,
 		ParameterFormTypeRadio,
 		ParameterFormTypeInput,
+		ParameterFormTypeSlider,
 		ParameterFormTypeDropdown,
 		ParameterFormTypeCheckbox,
 		ParameterFormTypeSwitch,
 		ParameterFormTypeMultiSelect,
 		ParameterFormTypeTagInput,
-		//ParameterFormTypeTextArea,
+		ParameterFormTypeTextArea,
 		ParameterFormTypeError,
 	}
 }
@@ -44,6 +46,8 @@ func ParameterFormTypes() []ParameterFormType {
 // | `string` `number` | Y       |                     | `radio`        |                                |
 // | `string` `number` | Y       | `dropdown`          | `dropdown`     |                                |
 // | `string` `number` | N       |                     | `input`        |                                |
+// | `string`          | N       | 'textarea'          | `textarea`     |                                |
+// | `number`          | N       | 'slider'            | `slider`       | min/max validation             |
 // | `bool`            | Y       |                     | `radio`        |                                |
 // | `bool`            | N       |                     | `checkbox`     |                                |
 // | `bool`            | N       | `switch`            | `switch`       |                                |
@@ -53,11 +57,11 @@ func ParameterFormTypes() []ParameterFormType {
 var formTypeTruthTable = map[string]map[bool][]ParameterFormType{
 	"string": {
 		true:  {ParameterFormTypeRadio, ParameterFormTypeDropdown},
-		false: {ParameterFormTypeInput},
+		false: {ParameterFormTypeInput, ParameterFormTypeTextArea},
 	},
 	"number": {
 		true:  {ParameterFormTypeRadio, ParameterFormTypeDropdown},
-		false: {ParameterFormTypeInput},
+		false: {ParameterFormTypeInput, ParameterFormTypeSlider},
 	},
 	"bool": {
 		true:  {ParameterFormTypeRadio},
@@ -71,17 +75,6 @@ var formTypeTruthTable = map[string]map[bool][]ParameterFormType{
 
 // ValidateFormType handles the truth table for the valid set of `type` and
 // `form_type` options.
-// | Type              | Options | Specified Form Type | form_type      | Notes                          |
-// |-------------------|---------|---------------------|----------------|--------------------------------|
-// | `string` `number` | Y       |                     | `radio`        |                                |
-// | `string` `number` | Y       | `dropdown`          | `dropdown`     |                                |
-// | `string` `number` | N       |                     | `input`        |                                |
-// | `bool`            | Y       |                     | `radio`        |                                |
-// | `bool`            | N       |                     | `checkbox`     |                                |
-// | `bool`            | N       | `switch`            | `switch`       |                                |
-// | `list(string)`    | Y       |                     | `radio`        |                                |
-// | `list(string)`    | N       |                     | `tag-select`   |                                |
-// | `list(string)`    | Y       | `multi-select`      | `multi-select` | Option values will be `string` |
 func ValidateFormType(paramType string, optionCount int, specifiedFormType ParameterFormType) (string, ParameterFormType, error) {
 	allowed, ok := formTypeTruthTable[paramType][optionCount > 0]
 	if !ok || len(allowed) == 0 {
