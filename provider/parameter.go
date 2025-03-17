@@ -250,6 +250,12 @@ func parameterDataSource() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(toStrings(ParameterFormTypes()), false),
 				Description:  fmt.Sprintf("The type of this parameter. Must be one of: [%s].", strings.Join(toStrings(ParameterFormTypes()), ", ")),
 			},
+			"form_type_metadata": {
+				Type:        schema.TypeString,
+				Default:     `{}`,
+				Description: "JSON encoded string containing the metadata for controlling the appearance of this parameter in the UI.",
+				Optional:    true,
+			},
 			"mutable": {
 				Type:        schema.TypeBool,
 				Optional:    true,
@@ -275,12 +281,6 @@ func parameterDataSource() *schema.Resource {
 					}
 					return nil, nil
 				},
-			},
-			"form_type_metadata": {
-				Type:        schema.TypeString,
-				Default:     `{}`,
-				Description: "JSON encoded string containing the metadata for controlling the appearance of this parameter in the UI.",
-				Optional:    true,
 			},
 			"option": {
 				Type:        schema.TypeList,
