@@ -87,7 +87,7 @@ func ValidateFormType(paramType string, optionCount int, specifiedFormType Param
 	}
 
 	if !slices.Contains(allowed, specifiedFormType) {
-		return paramType, specifiedFormType, xerrors.Errorf("value type %q is not supported for 'form_types'", paramType)
+		return paramType, specifiedFormType, xerrors.Errorf("value type %q is not supported for 'form_types'", specifiedFormType)
 	}
 
 	// Special case
