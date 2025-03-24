@@ -17,7 +17,7 @@ const (
 	ParameterFormTypeCheckbox    ParameterFormType = "checkbox"
 	ParameterFormTypeSwitch      ParameterFormType = "switch"
 	ParameterFormTypeMultiSelect ParameterFormType = "multi-select"
-	ParameterFormTypeTagInput    ParameterFormType = "tag-input"
+	ParameterFormTypeTagSelect   ParameterFormType = "tag-select"
 	ParameterFormTypeTextArea    ParameterFormType = "textarea"
 	ParameterFormTypeError       ParameterFormType = "error"
 )
@@ -32,7 +32,7 @@ func ParameterFormTypes() []ParameterFormType {
 		ParameterFormTypeCheckbox,
 		ParameterFormTypeSwitch,
 		ParameterFormTypeMultiSelect,
-		ParameterFormTypeTagInput,
+		ParameterFormTypeTagSelect,
 		ParameterFormTypeTextArea,
 		ParameterFormTypeError,
 	}
@@ -69,7 +69,7 @@ var formTypeTruthTable = map[string]map[bool][]ParameterFormType{
 	},
 	"list(string)": {
 		true:  {ParameterFormTypeRadio, ParameterFormTypeMultiSelect},
-		false: {ParameterFormTypeTagInput},
+		false: {ParameterFormTypeTagSelect},
 	},
 }
 
