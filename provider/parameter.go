@@ -34,7 +34,6 @@ type Validation struct {
 	Max         int
 	MaxDisabled bool `mapstructure:"max_disabled"`
 
-	Invalid   bool
 	Monotonic string
 
 	Regex string
@@ -159,6 +158,8 @@ func parameterDataSource() *schema.Resource {
 			if err != nil {
 				return diag.FromErr(err)
 			}
+			// Set the form_type back in case the value was changed, eg via a
+			// default.
 			rd.Set("form_type", parameter.FormType)
 
 			if len(parameter.Option) > 0 {
@@ -364,11 +365,6 @@ func parameterDataSource() *schema.Resource {
 							Description:   "A regex for the input parameter to match against.",
 							Optional:      true,
 						},
-						"invalid": {
-							Type:        schema.TypeBool,
-							Optional:    true,
-							Description: "If invalid is 'true', the error will be shown.",
-						},
 						"error": {
 							Type:        schema.TypeString,
 							Optional:    true,
@@ -458,10 +454,6 @@ func valueIsType(typ OptionType, value string) diag.Diagnostics {
 }
 
 func (v *Validation) Valid(typ OptionType, value string) error {
-	if v.Invalid {
-		return v.errorRendered(value)
-	}
-
 	if typ != OptionTypeNumber {
 		if !v.MinDisabled {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)

@@ -690,8 +690,8 @@ func TestValueValidatesType(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
 		Name,
-		Type,
-		Value,
+		Type provider.OptionType
+		Value string
 		Regex,
 		RegexError string
 		Min,
