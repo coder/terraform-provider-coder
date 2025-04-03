@@ -6,6 +6,26 @@ import (
 	"golang.org/x/xerrors"
 )
 
+// OptionType is a type of option that can be used in the 'type' argument of
+// a parameter.
+type OptionType string
+
+const (
+	OptionTypeString     OptionType = "string"
+	OptionTypeNumber     OptionType = "number"
+	OptionTypeBoolean    OptionType = "bool"
+	OptionTypeListString OptionType = "list(string)"
+)
+
+func OptionTypes() []OptionType {
+	return []OptionType{
+		OptionTypeString,
+		OptionTypeNumber,
+		OptionTypeBoolean,
+		OptionTypeListString,
+	}
+}
+
 type ParameterFormType string
 
 const (
@@ -22,12 +42,13 @@ const (
 	ParameterFormTypeError       ParameterFormType = "error"
 )
 
+// ParameterFormTypes should be kept in sync with the enum list above.
 func ParameterFormTypes() []ParameterFormType {
 	return []ParameterFormType{
 		ParameterFormTypeDefault,
 		ParameterFormTypeRadio,
-		ParameterFormTypeInput,
 		ParameterFormTypeSlider,
+		ParameterFormTypeInput,
 		ParameterFormTypeDropdown,
 		ParameterFormTypeCheckbox,
 		ParameterFormTypeSwitch,
@@ -41,6 +62,8 @@ func ParameterFormTypes() []ParameterFormType {
 // formTypeTruthTable is a map of [`type`][`optionCount` > 0] to `form_type`.
 // The first value in the slice is the default value assuming `form_type` is
 // not specified.
+//
+// The boolean key indicates whether the `options` field is specified.
 // | Type              | Options | Specified Form Type | form_type      | Notes                          |
 // |-------------------|---------|---------------------|----------------|--------------------------------|
 // | `string` `number` | Y       |                     | `radio`        |                                |
@@ -54,20 +77,20 @@ func ParameterFormTypes() []ParameterFormType {
 // | `list(string)`    | Y       |                     | `radio`        |                                |
 // | `list(string)`    | N       |                     | `tag-select`   |                                |
 // | `list(string)`    | Y       | `multi-select`      | `multi-select` | Option values will be `string` |
-var formTypeTruthTable = map[string]map[bool][]ParameterFormType{
-	"string": {
+var formTypeTruthTable = map[OptionType]map[bool][]ParameterFormType{
+	OptionTypeString: {
 		true:  {ParameterFormTypeRadio, ParameterFormTypeDropdown},
 		false: {ParameterFormTypeInput, ParameterFormTypeTextArea},
 	},
-	"number": {
+	OptionTypeNumber: {
 		true:  {ParameterFormTypeRadio, ParameterFormTypeDropdown},
 		false: {ParameterFormTypeInput, ParameterFormTypeSlider},
 	},
-	"bool": {
+	OptionTypeBoolean: {
 		true:  {ParameterFormTypeRadio},
 		false: {ParameterFormTypeCheckbox, ParameterFormTypeSwitch},
 	},
-	"list(string)": {
+	OptionTypeListString: {
 		true:  {ParameterFormTypeRadio, ParameterFormTypeMultiSelect},
 		false: {ParameterFormTypeTagSelect},
 	},
@@ -75,7 +98,11 @@ var formTypeTruthTable = map[string]map[bool][]ParameterFormType{
 
 // ValidateFormType handles the truth table for the valid set of `type` and
 // `form_type` options.
-func ValidateFormType(paramType string, optionCount int, specifiedFormType ParameterFormType) (string, ParameterFormType, error) {
+// The OptionType is also returned because it is possible the 'type' of the
+// 'value' & 'default' fields is different from the 'type' of the options.
+// The use case is when using multi-select. The options are 'string' and the
+// value is 'list(string)'.
+func ValidateFormType(paramType OptionType, optionCount int, specifiedFormType ParameterFormType) (OptionType, ParameterFormType, error) {
 	allowed, ok := formTypeTruthTable[paramType][optionCount > 0]
 	if !ok || len(allowed) == 0 {
 		return paramType, specifiedFormType, xerrors.Errorf("value type %q is not supported for 'form_types'", paramType)
@@ -91,8 +118,8 @@ func ValidateFormType(paramType string, optionCount int, specifiedFormType Param
 	}
 
 	// Special case
-	if paramType == "list(string)" && specifiedFormType == ParameterFormTypeMultiSelect {
-		return "string", ParameterFormTypeMultiSelect, nil
+	if paramType == OptionTypeListString && specifiedFormType == ParameterFormTypeMultiSelect {
+		return OptionTypeListString, ParameterFormTypeMultiSelect, nil
 	}
 
 	return paramType, specifiedFormType, nil

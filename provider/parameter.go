@@ -51,7 +51,7 @@ type Parameter struct {
 	Name        string
 	DisplayName string `mapstructure:"display_name"`
 	Description string
-	Type        string
+	Type        OptionType
 	FormType    ParameterFormType
 	Mutable     bool
 	Default     string
@@ -154,7 +154,7 @@ func parameterDataSource() *schema.Resource {
 			}
 
 			// Validate options
-			var optionType string
+			var optionType OptionType
 			optionType, parameter.FormType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
 			if err != nil {
 				return diag.FromErr(err)
@@ -182,7 +182,7 @@ func parameterDataSource() *schema.Resource {
 				}
 
 				if parameter.Default != "" {
-					if parameter.Type == "list(string)" && optionType == "string" {
+					if parameter.Type == OptionTypeListString && optionType == OptionTypeString {
 						// If the type is list(string) and optionType is string, we have
 						// to ensure all elements of the default exist as options.
 						var defaultValues []string
@@ -241,7 +241,7 @@ func parameterDataSource() *schema.Resource {
 				Type:         schema.TypeString,
 				Default:      "string",
 				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"number", "string", "bool", "list(string)"}, false),
+				ValidateFunc: validation.StringInSlice(toStrings(OptionTypes()), false),
 				Description:  "The type of this parameter. Must be one of: `\"number\"`, `\"string\"`, `\"bool\"`, or `\"list(string)\"`.",
 			},
 			"form_type": {
@@ -431,25 +431,25 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 	return vArr, nil
 }
 
-func valueIsType(typ, value string) diag.Diagnostics {
+func valueIsType(typ OptionType, value string) diag.Diagnostics {
 	switch typ {
-	case "number":
+	case OptionTypeNumber:
 		_, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return diag.Errorf("%q is not a number", value)
 		}
-	case "bool":
+	case OptionTypeBoolean:
 		_, err := strconv.ParseBool(value)
 		if err != nil {
 			return diag.Errorf("%q is not a bool", value)
 		}
-	case "list(string)":
+	case OptionTypeListString:
 		var items []string
 		err := json.Unmarshal([]byte(value), &items)
 		if err != nil {
 			return diag.Errorf("%q is not an array of strings", value)
 		}
-	case "string":
+	case OptionTypeString:
 		// Anything is a string!
 	default:
 		return diag.Errorf("invalid type %q", typ)
@@ -457,12 +457,12 @@ func valueIsType(typ, value string) diag.Diagnostics {
 	return nil
 }
 
-func (v *Validation) Valid(typ, value string) error {
+func (v *Validation) Valid(typ OptionType, value string) error {
 	if v.Invalid {
 		return v.errorRendered(value)
 	}
 
-	if typ != "number" {
+	if typ != OptionTypeNumber {
 		if !v.MinDisabled {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
 		}
@@ -473,16 +473,16 @@ func (v *Validation) Valid(typ, value string) error {
 			return fmt.Errorf("monotonic validation can only be specified for number types, not %s types", typ)
 		}
 	}
-	if typ != "string" && v.Regex != "" {
+	if typ != OptionTypeString && v.Regex != "" {
 		return fmt.Errorf("a regex cannot be specified for a %s type", typ)
 	}
 	switch typ {
-	case "bool":
+	case OptionTypeBoolean:
 		if value != "true" && value != "false" {
 			return fmt.Errorf(`boolean value can be either "true" or "false"`)
 		}
 		return nil
-	case "string":
+	case OptionTypeString:
 		if v.Regex == "" {
 			return nil
 		}
@@ -497,7 +497,7 @@ func (v *Validation) Valid(typ, value string) error {
 		if !matched {
 			return fmt.Errorf("%s (value %q does not match %q)", v.Error, value, regex)
 		}
-	case "number":
+	case OptionTypeNumber:
 		num, err := strconv.Atoi(value)
 		if err != nil {
 			return takeFirstError(v.errorRendered(value), fmt.Errorf("value %q is not a number", value))
@@ -511,7 +511,7 @@ func (v *Validation) Valid(typ, value string) error {
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
 			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
 		}
-	case "list(string)":
+	case OptionTypeListString:
 		var listOfStrings []string
 		err := json.Unmarshal([]byte(value), &listOfStrings)
 		if err != nil {
