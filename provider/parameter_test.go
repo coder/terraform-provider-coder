@@ -27,6 +27,7 @@ func TestParameter(t *testing.T) {
 				name = "region"
 				display_name = "Region"
 				type = "string"
+ 				form_type = "dropdown"
 				description = <<-EOT
 					# Select the machine image
 					See the [registry](https://container.registry.blah/namespace) for options.
@@ -56,6 +57,7 @@ func TestParameter(t *testing.T) {
 				"name":                 "region",
 				"display_name":         "Region",
 				"type":                 "string",
+				"form_type":            "dropdown",
 				"description":          "# Select the machine image\nSee the [registry](https://container.registry.blah/namespace) for options.\n",
 				"mutable":              "true",
 				"icon":                 "/icon/region.svg",
@@ -137,6 +139,7 @@ func TestParameter(t *testing.T) {
 			for key, expected := range map[string]string{
 				"name":                      "Region",
 				"type":                      "number",
+				"form_type":                 "input",
 				"validation.#":              "1",
 				"default":                   "2",
 				"validation.0.min":          "1",
@@ -686,9 +689,9 @@ data "coder_parameter" "region" {
 func TestValueValidatesType(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
-		Name,
-		Type,
-		Value,
+		Name  string
+		Type  provider.OptionType
+		Value string
 		Regex,
 		RegexError string
 		Min,
