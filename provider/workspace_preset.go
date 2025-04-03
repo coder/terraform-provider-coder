@@ -84,7 +84,7 @@ func workspacePresetDataSource() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "Prebuilds of the workspace preset.",
 				Optional:    true,
-				MaxItems:    1, // TODO: is this always true? More than 1 prebuilds config per preset?
+				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"instances": {
