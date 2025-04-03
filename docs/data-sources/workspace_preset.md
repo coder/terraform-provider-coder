@@ -37,6 +37,17 @@ data "coder_workspace_preset" "example" {
 - `name` (String) Name of the workspace preset.
 - `parameters` (Map of String) Parameters of the workspace preset.
 
+### Optional
+
+- `prebuilds` (Block Set, Max: 1) Prebuilds of the workspace preset. (see [below for nested schema](#nestedblock--prebuilds))
+
 ### Read-Only
 
 - `id` (String) ID of the workspace preset.
+
+<a id="nestedblock--prebuilds"></a>
+### Nested Schema for `prebuilds`
+
+Required:
+
+- `instances` (Number)

@@ -69,7 +69,9 @@ resource "docker_container" "workspace" {
 - `access_port` (Number) The access port of the Coder deployment provisioning this workspace.
 - `access_url` (String) The access URL of the Coder deployment provisioning this workspace.
 - `id` (String) UUID of the workspace.
+- `is_prebuild` (Boolean) Whether the workspace is a prebuild.
 - `name` (String) Name of the workspace.
+- `prebuild_count` (Number) A computed count, equal to 1 if the workspace was prebuilt.
 - `start_count` (Number) A computed count based on `transition` state. If `start`, count will equal 1.
 - `template_id` (String) ID of the workspace's template.
 - `template_name` (String) Name of the workspace's template.
