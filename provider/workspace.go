@@ -91,20 +91,15 @@ func workspaceDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "The access port of the Coder deployment provisioning this workspace.",
 			},
+			"prebuild_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "A computed count, equal to 1 if the workspace was prebuilt.",
+			},
 			"start_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
 				Description: "A computed count based on `transition` state. If `start`, count will equal 1.",
-			},
-			"prebuild_count": {
-				Type:        schema.TypeInt,
-				Computed:    true,
-				Description: "TODO",
-			},
-			"is_prebuild": {
-				Type:        schema.TypeBool,
-				Computed:    true,
-				Description: "TODO",
 			},
 			"transition": {
 				Type:        schema.TypeString,
@@ -115,6 +110,11 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "UUID of the workspace.",
+			},
+			"is_prebuild": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Whether the workspace is a prebuild.",
 			},
 			"name": {
 				Type:        schema.TypeString,
