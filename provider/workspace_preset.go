@@ -10,8 +10,13 @@ import (
 )
 
 type WorkspacePreset struct {
-	Name       string            `mapstructure:"name"`
-	Parameters map[string]string `mapstructure:"parameters"`
+	Name       string              `mapstructure:"name"`
+	Parameters map[string]string   `mapstructure:"parameters"`
+	Prebuild   []WorkspacePrebuild `mapstructure:"prebuilds"`
+}
+
+type WorkspacePrebuild struct {
+	Instances int `mapstructure:"instances"`
 }
 
 func workspacePresetDataSource() *schema.Resource {
@@ -24,9 +29,19 @@ func workspacePresetDataSource() *schema.Resource {
 			err := mapstructure.Decode(struct {
 				Name       interface{}
 				Parameters interface{}
+				Prebuilds  []struct {
+					Instances interface{}
+				}
 			}{
 				Name:       rd.Get("name"),
 				Parameters: rd.Get("parameters"),
+				Prebuilds: []struct {
+					Instances interface{}
+				}{
+					{
+						Instances: rd.Get("prebuilds.0.instances"),
+					},
+				},
 			}, &preset)
 			if err != nil {
 				return diag.Errorf("decode workspace preset: %s", err)
@@ -63,6 +78,22 @@ func workspacePresetDataSource() *schema.Resource {
 					Type:         schema.TypeString,
 					Required:     true,
 					ValidateFunc: validation.StringIsNotEmpty,
+				},
+			},
+			"prebuilds": {
+				Type:        schema.TypeSet,
+				Description: "Prebuilds of the workspace preset.",
+				Optional:    true,
+				MaxItems:    1, // TODO: is this always true? More than 1 prebuilds config per preset?
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"instances": {
+							Type:         schema.TypeInt,
+							Required:     true,
+							ForceNew:     true,
+							ValidateFunc: validation.IntAtLeast(0),
+						},
+					},
 				},
 			},
 		},
