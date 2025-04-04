@@ -23,7 +23,7 @@ func workspacePresetDataSource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this data source to predefine common configurations for workspaces.",
+		Description: "Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are not defined by the preset will still be configurable when creating a workspace.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			var preset WorkspacePreset
 			err := mapstructure.Decode(struct {
@@ -52,18 +52,18 @@ func workspacePresetDataSource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Description: "ID of the workspace preset.",
+				Description: "The preset ID is automatically generated and may change between runs. It is recommended to use the `name` attribute to identify the preset.",
 				Computed:    true,
 			},
 			"name": {
 				Type:         schema.TypeString,
-				Description:  "Name of the workspace preset.",
+				Description:  "The name of the workspace preset.",
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"parameters": {
 				Type:        schema.TypeMap,
-				Description: "Parameters of the workspace preset.",
+				Description: "Workspace parameters that will be set by the workspace preset. For simple templates that only need prebuilds, you may define a preset with zero parameters. Because workspace parameters may change between Coder template versions, preset parameters are allowed to define values for parameters that do not exist in the current template version.",
 				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
@@ -73,13 +73,14 @@ func workspacePresetDataSource() *schema.Resource {
 			},
 			"prebuilds": {
 				Type:        schema.TypeSet,
-				Description: "Prebuilds of the workspace preset.",
+				Description: "Prebuilt workspace configuration related to this workspace preset. Coder will build and maintain workspaces in reserve based on this configuration. When a user creates a new workspace using a preset, they will be assigned a prebuilt workspace, instead of waiting for a new workspace to build.",
 				Optional:    true,
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"instances": {
 							Type:         schema.TypeInt,
+							Description:  "The number of workspaces to keep in reserve for this preset.",
 							Required:     true,
 							ForceNew:     true,
 							ValidateFunc: validation.IntAtLeast(0),
