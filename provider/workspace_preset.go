@@ -64,7 +64,7 @@ func workspacePresetDataSource() *schema.Resource {
 			"parameters": {
 				Type:        schema.TypeMap,
 				Description: "Parameters of the workspace preset.",
-				Required:    true,
+				Optional:    true,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
 					Required:     true,

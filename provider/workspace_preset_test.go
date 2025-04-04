@@ -84,7 +84,7 @@ func TestWorkspacePreset(t *testing.T) {
 			}`,
 			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
 			// So we test it here to make sure we don't regress.
-			ExpectError: regexp.MustCompile("The argument \"parameters\" is required, but no definition was found"),
+			ExpectError: nil,
 		},
 		{
 			Name: "Parameters field is empty",
@@ -95,7 +95,7 @@ func TestWorkspacePreset(t *testing.T) {
 			}`,
 			// This validation is *not* done by Terraform, because MinItems doesn't work with maps.
 			// We've implemented the validation in ReadContext, so we test it here to make sure we don't regress.
-			ExpectError: regexp.MustCompile("expected \"parameters\" to not be an empty map"),
+			ExpectError: nil,
 		},
 		{
 			Name: "Parameters field is not a map",
