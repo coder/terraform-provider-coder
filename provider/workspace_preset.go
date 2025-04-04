@@ -10,9 +10,9 @@ import (
 )
 
 type WorkspacePreset struct {
-	Name       string              `mapstructure:"name"`
-	Parameters map[string]string   `mapstructure:"parameters"`
-	Prebuild   []WorkspacePrebuild `mapstructure:"prebuilds"`
+	Name       string            `mapstructure:"name"`
+	Parameters map[string]string `mapstructure:"parameters"`
+	Prebuilds  WorkspacePrebuild `mapstructure:"prebuilds"`
 }
 
 type WorkspacePrebuild struct {
@@ -29,29 +29,20 @@ func workspacePresetDataSource() *schema.Resource {
 			err := mapstructure.Decode(struct {
 				Name       interface{}
 				Parameters interface{}
-				Prebuilds  []struct {
+				Prebuilds  struct {
 					Instances interface{}
 				}
 			}{
 				Name:       rd.Get("name"),
 				Parameters: rd.Get("parameters"),
-				Prebuilds: []struct {
+				Prebuilds: struct {
 					Instances interface{}
 				}{
-					{
-						Instances: rd.Get("prebuilds.0.instances"),
-					},
+					Instances: rd.Get("prebuilds.0.instances"),
 				},
 			}, &preset)
 			if err != nil {
 				return diag.Errorf("decode workspace preset: %s", err)
-			}
-
-			// MinItems doesn't work with maps, so we need to check the length
-			// of the map manually. All other validation is handled by the
-			// schema.
-			if len(preset.Parameters) == 0 {
-				return diag.Errorf("expected \"parameters\" to not be an empty map")
 			}
 
 			rd.SetId(preset.Name)
