@@ -24,6 +24,10 @@ data "coder_workspace_preset" "preset" {
   parameters = {
     (data.coder_parameter.param.name) = "preset param value"
   }
+
+  prebuilds {
+    instances = 1
+  }
 }
 
 locals {
@@ -47,6 +51,7 @@ locals {
     "workspace_parameter.icon" : data.coder_parameter.param.icon,
     "workspace_preset.name" : data.coder_workspace_preset.preset.name,
     "workspace_preset.parameters.param" : data.coder_workspace_preset.preset.parameters.param,
+    "workspace_preset.prebuilds.instances" : tostring(one(data.coder_workspace_preset.preset.prebuilds).instances),
   }
 }
 
