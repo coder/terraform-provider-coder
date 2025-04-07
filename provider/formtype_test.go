@@ -14,6 +14,7 @@ import (
 	"github.com/coder/terraform-provider-coder/v2/provider"
 )
 
+// formTypeTestCase is the config for a single test case.
 type formTypeTestCase struct {
 	name        string
 	config      formTypeCheck
@@ -21,17 +22,19 @@ type formTypeTestCase struct {
 	expectError *regexp.Regexp
 }
 
+// paramAssert is asserted on the provider's parsed terraform state.
 type paramAssert struct {
 	FormType provider.ParameterFormType
 	Type     provider.OptionType
 	Styling  string
 }
 
+// formTypeCheck is a struct that helps build the terraform config
 type formTypeCheck struct {
 	formType      provider.ParameterFormType
 	optionType    provider.OptionType
-	defValue      string
 	options       bool
+	defValue      string
 	customOptions []string
 }
 
@@ -283,18 +286,8 @@ func TestValidateFormType(t *testing.T) {
 	})
 }
 
+// ezconfig converts a formTypeCheck into a terraform config string.
 func ezconfig(paramName string, cfg formTypeCheck) (defaultValue string, tf string) {
-	var body strings.Builder
-	if cfg.defValue != "" {
-		body.WriteString(fmt.Sprintf("default = %q\n", cfg.defValue))
-	}
-	if cfg.formType != "" {
-		body.WriteString(fmt.Sprintf("form_type = %q\n", cfg.formType))
-	}
-	if cfg.optionType != "" {
-		body.WriteString(fmt.Sprintf("type = %q\n", cfg.optionType))
-	}
-
 	options := cfg.customOptions
 	if cfg.options && len(cfg.customOptions) == 0 {
 		switch cfg.optionType {
@@ -309,10 +302,25 @@ func ezconfig(paramName string, cfg formTypeCheck) (defaultValue string, tf stri
 			defaultValue = "1"
 		case provider.OptionTypeListString:
 			options = []string{`["red", "blue"]`}
-			defaultValue = `["red"]`
+			defaultValue = `["red", "blue"]`
 		default:
 			panic(fmt.Sprintf("unknown option type %q when generating options", cfg.optionType))
 		}
+	}
+
+	if cfg.defValue == "" {
+		cfg.defValue = defaultValue
+	}
+
+	var body strings.Builder
+	if cfg.defValue != "" {
+		body.WriteString(fmt.Sprintf("default = %q\n", cfg.defValue))
+	}
+	if cfg.formType != "" {
+		body.WriteString(fmt.Sprintf("form_type = %q\n", cfg.formType))
+	}
+	if cfg.optionType != "" {
+		body.WriteString(fmt.Sprintf("type = %q\n", cfg.optionType))
 	}
 
 	for i, opt := range options {
@@ -322,9 +330,6 @@ func ezconfig(paramName string, cfg formTypeCheck) (defaultValue string, tf stri
 		body.WriteString("}\n")
 	}
 
-	if cfg.defValue == "" {
-		cfg.defValue = defaultValue
-	}
 	return cfg.defValue, fmt.Sprintf(`
 				provider "coder" {
 				}
@@ -352,13 +357,6 @@ func formTypeTest(t *testing.T, c formTypeTestCase) {
 		assert.Equal(t, string(c.assert.FormType), param.Primary.Attributes["form_type"], "form_type")
 		assert.Equal(t, string(c.assert.Type), param.Primary.Attributes["type"], "type")
 		assert.JSONEq(t, c.assert.Styling, param.Primary.Attributes["styling"], "styling")
-
-		//ft := provider.ParameterFormType(param.Primary.Attributes["form_type"])
-		//ot := provider.OptionType(param.Primary.Attributes["type"])
-
-		// Option blocks are not stored in a very friendly format
-		// here.
-		//options := param.Primary.Attributes["option.0.name"] != ""
 
 		return nil
 	}
