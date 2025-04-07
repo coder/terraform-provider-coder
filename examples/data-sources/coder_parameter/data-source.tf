@@ -122,7 +122,7 @@ data "coder_parameter" "tools" {
   type        = "list(string)"
   form_type   = "multi-select"
   stying = jsonencode({
-    disabled = false
+    # Arbitrary JSON object to be passed to the frontend
   })
   default = jsonencode(["git", "docker"])
 
