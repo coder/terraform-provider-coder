@@ -121,10 +121,10 @@ data "coder_parameter" "tools" {
   description = "What tools do you want to install?"
   type        = "list(string)"
   form_type   = "multi-select"
-  stying      = jsonencode({
+  stying = jsonencode({
     disabled = false
   })
-  default     = jsonencode(["git", "docker"])
+  default = jsonencode(["git", "docker"])
 
   option {
     value = "Docker"
