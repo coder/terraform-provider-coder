@@ -252,11 +252,12 @@ func parameterDataSource() *schema.Resource {
 				ValidateFunc: validation.StringInSlice(toStrings(ParameterFormTypes()), false),
 				Description:  fmt.Sprintf("The type of this parameter. Must be one of: [%s].", strings.Join(toStrings(ParameterFormTypes()), ", ")),
 			},
-			"form_type_metadata": {
-				Type:        schema.TypeString,
-				Default:     `{}`,
-				Description: "JSON encoded string containing the metadata for controlling the appearance of this parameter in the UI.",
-				Optional:    true,
+			"styling": {
+				Type:    schema.TypeString,
+				Default: `{}`,
+				Description: "JSON encoded string containing the metadata for controlling the appearance of this parameter in the UI. " +
+					"This option is purely cosmetic and does not affect the function of the parameter in terraform.",
+				Optional: true,
 			},
 			"mutable": {
 				Type:        schema.TypeBool,

@@ -7,7 +7,10 @@ import (
 )
 
 // OptionType is a type of option that can be used in the 'type' argument of
-// a parameter.
+// a parameter. These should match types as defined in terraform:
+//  https://developer.hashicorp.com/terraform/language/expressions/types
+// The value have to be string literals, as type constraint keywords are not
+// supported in providers. :'(
 type OptionType string
 
 const (
@@ -26,6 +29,11 @@ func OptionTypes() []OptionType {
 	}
 }
 
+// ParameterFormType is the list of supported form types for display in
+// the Coder "create workspace" form. These form types are functional as well
+// as cosmetic.
+// For example, "multi-select" has the type "list(string)" but the option
+// values are "string".
 type ParameterFormType string
 
 const (
