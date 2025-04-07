@@ -153,13 +153,17 @@ func parameterDataSource() *schema.Resource {
 			}
 
 			// Validate options
+
+			// optionType might differ from parameter.Type. This is ok, and parameter.Type
+			// should be used for the value type, and optionType for options.
 			var optionType OptionType
 			optionType, parameter.FormType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			// Set the form_type back in case the value was changed, eg via a
-			// default.
+			// Set the form_type back in case the value was changed.
+			// Eg via a default. If a user does not specify, a default value
+			// is used and saved.
 			rd.Set("form_type", parameter.FormType)
 
 			if len(parameter.Option) > 0 {
@@ -187,11 +191,13 @@ func parameterDataSource() *schema.Resource {
 						// If the type is list(string) and optionType is string, we have
 						// to ensure all elements of the default exist as options.
 						var defaultValues []string
+						// TODO: We do this unmarshal in a few spots. It should be standardized.
 						err = json.Unmarshal([]byte(parameter.Default), &defaultValues)
 						if err != nil {
 							return diag.Errorf("default value %q is not a list of strings", parameter.Default)
 						}
 
+						// missing is used to construct a more helpful error message
 						var missing []string
 						for _, defaultValue := range defaultValues {
 							_, defaultIsValid := values[defaultValue]
@@ -206,7 +212,6 @@ func parameterDataSource() *schema.Resource {
 								parameter.Default, strings.Join(missing, ", "),
 							)
 						}
-
 					} else {
 						_, defaultIsValid := values[parameter.Default]
 						if !defaultIsValid {

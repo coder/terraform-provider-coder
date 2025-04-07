@@ -220,6 +220,19 @@ func TestValidateFormType(t *testing.T) {
 			optionType: provider.OptionTypeListString,
 			formType:   provider.ParameterFormTypeTagSelect,
 		}),
+
+		// Some manual test cases
+		{
+			name: "list_string_bad_default",
+			config: formTypeCheck{
+				formType:      provider.ParameterFormTypeMultiSelect,
+				optionType:    provider.OptionTypeListString,
+				customOptions: []string{"red", "blue", "green"},
+				defValue:      `["red", "yellow"]`,
+				styling:       nil,
+			},
+			expectError: regexp.MustCompile("is not a valid option"),
+		},
 	}
 
 	t.Run("TabledTests", func(t *testing.T) {

@@ -127,7 +127,9 @@ func ValidateFormType(paramType OptionType, optionCount int, specifiedFormType P
 		return paramType, specifiedFormType, xerrors.Errorf("value type %q is not supported for 'form_types'", specifiedFormType)
 	}
 
-	// Special case
+	// This is the only current special case. If 'multi-select' is selected, the type
+	// of 'value' and an options 'value' are different. The type of the parameter is
+	// `list(string)` but the type of the individual options is `string`.
 	if paramType == OptionTypeListString && specifiedFormType == ParameterFormTypeMultiSelect {
 		return OptionTypeString, ParameterFormTypeMultiSelect, nil
 	}
