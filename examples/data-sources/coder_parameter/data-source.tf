@@ -115,3 +115,35 @@ data "coder_parameter" "home_volume_size" {
     monotonic = "increasing"
   }
 }
+
+data "coder_parameter" "tools" {
+  name        = "Tools"
+  description = "What tools do you want to install?"
+  type        = "list(string)"
+  form_type   = "multi-select"
+  stying      = jsonencode({
+    disabled = false
+  })
+  default     = jsonencode(["git", "docker"])
+
+  option {
+    value = "Docker"
+    name  = "docker"
+    icon  = "/icon/docker.svg"
+  }
+  option {
+    value = "Git"
+    name  = "git"
+    icon  = "/icon/git.svg"
+  }
+  option {
+    value = "Golang"
+    name  = "go"
+    icon  = "/icon/go.svg"
+  }
+  option {
+    value = "Typescript"
+    name  = "ts"
+    icon  = "/icon/typescript.svg"
+  }
+}
