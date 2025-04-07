@@ -241,12 +241,12 @@ func TestValidateFormType(t *testing.T) {
 			t.Run(c.name, func(t *testing.T) {
 				t.Parallel()
 
+				formTypesChecked[c.config.String()] = struct{}{}
 				formTypeTest(t, c)
 				if _, ok := formTypesChecked[c.config.String()]; ok {
 					t.Log("Duplicated form type check, delete this extra test case")
 					t.Fatalf("form type %q already checked", c.config.String())
 				}
-				formTypesChecked[c.config.String()] = struct{}{}
 			})
 		}
 	})
