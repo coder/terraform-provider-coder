@@ -55,7 +55,9 @@ const (
 // ParameterFormTypes should be kept in sync with the enum list above.
 func ParameterFormTypes() []ParameterFormType {
 	return []ParameterFormType{
-		ParameterFormTypeDefault,
+		// Intentionally omit "ParameterFormTypeDefault" from this set.
+		// It is a valid enum, but will always be mapped to a real value when
+		// being used.
 		ParameterFormTypeRadio,
 		ParameterFormTypeSlider,
 		ParameterFormTypeInput,
