@@ -28,9 +28,11 @@ type paramAssert struct {
 }
 
 type formTypeCheck struct {
-	formType   provider.ParameterFormType
-	optionType provider.OptionType
-	options    bool
+	formType      provider.ParameterFormType
+	optionType    provider.OptionType
+	defValue      string
+	options       bool
+	customOptions []string
 }
 
 func (c formTypeCheck) String() string {
@@ -40,10 +42,12 @@ func (c formTypeCheck) String() string {
 func TestValidateFormType(t *testing.T) {
 	t.Parallel()
 
-	//formTypesChecked := make(map[provider.ParameterFormType]map[provider.OptionType]map[bool]struct{})
+	// formTypesChecked keeps track of all checks run. It will be used to
+	// ensure all combinations of form_type and option_type are tested.
+	// All untested options are assumed to throw an error.
 	formTypesChecked := make(map[string]struct{})
 
-	obvious := func(expected provider.ParameterFormType, opts formTypeCheck) formTypeTestCase {
+	expectType := func(expected provider.ParameterFormType, opts formTypeCheck) formTypeTestCase {
 		ftname := opts.formType
 		if ftname == "" {
 			ftname = "default"
@@ -64,6 +68,12 @@ func TestValidateFormType(t *testing.T) {
 		}
 	}
 
+	// obvious just assumes the FormType in the check is the expected
+	// FormType. Using `expectType` these fields can differ
+	obvious := func(opts formTypeCheck) formTypeTestCase {
+		return expectType(opts.formType, opts)
+	}
+
 	cases := []formTypeTestCase{
 		{
 			// When nothing is specified
@@ -75,77 +85,125 @@ func TestValidateFormType(t *testing.T) {
 				Styling:  "",
 			},
 		},
-		// String
-		obvious(provider.ParameterFormTypeRadio, formTypeCheck{
+		// All default behaviors. Essentially legacy behavior.
+		//	String
+		expectType(provider.ParameterFormTypeRadio, formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeString,
 		}),
-		obvious(provider.ParameterFormTypeRadio, formTypeCheck{
-			options:    true,
+		expectType(provider.ParameterFormTypeInput, formTypeCheck{
+			options:    false,
 			optionType: provider.OptionTypeString,
-			formType:   provider.ParameterFormTypeRadio,
 		}),
-		obvious(provider.ParameterFormTypeDropdown, formTypeCheck{
+		//	Number
+		expectType(provider.ParameterFormTypeRadio, formTypeCheck{
+			options:    true,
+			optionType: provider.OptionTypeNumber,
+		}),
+		expectType(provider.ParameterFormTypeInput, formTypeCheck{
+			options:    false,
+			optionType: provider.OptionTypeNumber,
+		}),
+		//	Boolean
+		expectType(provider.ParameterFormTypeRadio, formTypeCheck{
+			options:    true,
+			optionType: provider.OptionTypeBoolean,
+		}),
+		expectType(provider.ParameterFormTypeCheckbox, formTypeCheck{
+			options:    false,
+			optionType: provider.OptionTypeBoolean,
+		}),
+		//	List(string)
+		expectType(provider.ParameterFormTypeRadio, formTypeCheck{
+			options:    true,
+			optionType: provider.OptionTypeListString,
+		}),
+		expectType(provider.ParameterFormTypeTagSelect, formTypeCheck{
+			options:    false,
+			optionType: provider.OptionTypeListString,
+		}),
+
+		// ---- New Behavior
+		//	String
+		obvious(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeString,
 			formType:   provider.ParameterFormTypeDropdown,
 		}),
-		obvious(provider.ParameterFormTypeInput, formTypeCheck{
+		obvious(formTypeCheck{
+			options:    true,
+			optionType: provider.OptionTypeString,
+			formType:   provider.ParameterFormTypeRadio,
+		}),
+		obvious(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeString,
+			formType:   provider.ParameterFormTypeInput,
 		}),
-		obvious(provider.ParameterFormTypeTextArea, formTypeCheck{
+		obvious(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeString,
 			formType:   provider.ParameterFormTypeTextArea,
 		}),
-		// Numbers
-		obvious(provider.ParameterFormTypeRadio, formTypeCheck{
-			options:    true,
-			optionType: provider.OptionTypeNumber,
-		}),
-		obvious(provider.ParameterFormTypeRadio, formTypeCheck{
-			options:    true,
-			optionType: provider.OptionTypeNumber,
-			formType:   provider.ParameterFormTypeRadio,
-		}),
-		obvious(provider.ParameterFormTypeDropdown, formTypeCheck{
+		//	Number
+		obvious(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeNumber,
 			formType:   provider.ParameterFormTypeDropdown,
 		}),
-		obvious(provider.ParameterFormTypeInput, formTypeCheck{
+		obvious(formTypeCheck{
+			options:    true,
+			optionType: provider.OptionTypeNumber,
+			formType:   provider.ParameterFormTypeRadio,
+		}),
+		obvious(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeNumber,
+			formType:   provider.ParameterFormTypeInput,
 		}),
-		obvious(provider.ParameterFormTypeSlider, formTypeCheck{
+		obvious(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeNumber,
 			formType:   provider.ParameterFormTypeSlider,
 		}),
-		// booleans
-		obvious(provider.ParameterFormTypeRadio, formTypeCheck{
+		//	Boolean
+		obvious(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeBoolean,
+			formType:   provider.ParameterFormTypeRadio,
 		}),
-		obvious(provider.ParameterFormTypeCheckbox, formTypeCheck{
-			options:    false,
-			optionType: provider.OptionTypeBoolean,
-		}),
-		obvious(provider.ParameterFormTypeCheckbox, formTypeCheck{
-			options:    false,
-			optionType: provider.OptionTypeBoolean,
-			formType:   provider.ParameterFormTypeCheckbox,
-		}),
-		obvious(provider.ParameterFormTypeSwitch, formTypeCheck{
+		obvious(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeBoolean,
 			formType:   provider.ParameterFormTypeSwitch,
 		}),
+		obvious(formTypeCheck{
+			options:    false,
+			optionType: provider.OptionTypeBoolean,
+			formType:   provider.ParameterFormTypeCheckbox,
+		}),
+		//	List(string)
+		obvious(formTypeCheck{
+			options:    true,
+			optionType: provider.OptionTypeListString,
+			formType:   provider.ParameterFormTypeRadio,
+		}),
+		obvious(formTypeCheck{
+			options:       true,
+			optionType:    provider.OptionTypeListString,
+			formType:      provider.ParameterFormTypeMultiSelect,
+			customOptions: []string{"red", "blue", "green"},
+			defValue:      `["red", "blue"]`,
+		}),
+		obvious(formTypeCheck{
+			options:    false,
+			optionType: provider.OptionTypeListString,
+			formType:   provider.ParameterFormTypeTagSelect,
+		}),
 	}
 
-	// TabledCases runs through all the manual test cases
-	t.Run("TabledCases", func(t *testing.T) {
+	t.Run("TabledTests", func(t *testing.T) {
+		// TabledCases runs through all the manual test cases
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
 				t.Parallel()
@@ -154,6 +212,10 @@ func TestValidateFormType(t *testing.T) {
 				}
 
 				formTypeTest(t, c)
+				if _, ok := formTypesChecked[c.config.String()]; ok {
+					t.Log("Duplicated form type check, delete this extra test case")
+					t.Fatalf("form type %q already checked", c.config.String())
+				}
 				formTypesChecked[c.config.String()] = struct{}{}
 			})
 		}
@@ -221,11 +283,11 @@ func TestValidateFormType(t *testing.T) {
 	})
 }
 
-func ezconfig(paramName string, cfg formTypeCheck) string {
+func ezconfig(paramName string, cfg formTypeCheck) (defaultValue string, tf string) {
 	var body strings.Builder
-	//if cfg.Default != "" {
-	//	body.WriteString(fmt.Sprintf("default = %q\n", cfg.Default))
-	//}
+	if cfg.defValue != "" {
+		body.WriteString(fmt.Sprintf("default = %q\n", cfg.defValue))
+	}
 	if cfg.formType != "" {
 		body.WriteString(fmt.Sprintf("form_type = %q\n", cfg.formType))
 	}
@@ -233,17 +295,21 @@ func ezconfig(paramName string, cfg formTypeCheck) string {
 		body.WriteString(fmt.Sprintf("type = %q\n", cfg.optionType))
 	}
 
-	var options []string
-	if cfg.options {
+	options := cfg.customOptions
+	if cfg.options && len(cfg.customOptions) == 0 {
 		switch cfg.optionType {
 		case provider.OptionTypeString:
 			options = []string{"foo"}
+			defaultValue = "foo"
 		case provider.OptionTypeBoolean:
 			options = []string{"true", "false"}
+			defaultValue = "true"
 		case provider.OptionTypeNumber:
 			options = []string{"1"}
+			defaultValue = "1"
 		case provider.OptionTypeListString:
 			options = []string{`["red", "blue"]`}
+			defaultValue = `["red"]`
 		default:
 			panic(fmt.Sprintf("unknown option type %q when generating options", cfg.optionType))
 		}
@@ -256,23 +322,25 @@ func ezconfig(paramName string, cfg formTypeCheck) string {
 		body.WriteString("}\n")
 	}
 
-	return coderParamHCL(paramName, body.String())
-}
-
-func coderParamHCL(paramName string, body string) string {
-	return fmt.Sprintf(`
+	if cfg.defValue == "" {
+		cfg.defValue = defaultValue
+	}
+	return cfg.defValue, fmt.Sprintf(`
 				provider "coder" {
 				}
 				data "coder_parameter" "%s" {
 					name = "%s"
 					%s
 				}
-		`, paramName, paramName, body)
+		`, paramName, paramName, body.String())
 }
 
 func formTypeTest(t *testing.T, c formTypeTestCase) {
+	t.Helper()
 	const paramName = "test_param"
 
+	def, tf := ezconfig(paramName, c.config)
+	t.Logf("Terraform config:\n%s", tf)
 	checkFn := func(state *terraform.State) error {
 		require.Len(t, state.Modules, 1)
 		require.Len(t, state.Modules[0].Resources, 1)
@@ -280,7 +348,7 @@ func formTypeTest(t *testing.T, c formTypeTestCase) {
 		key := strings.Join([]string{"data", "coder_parameter", paramName}, ".")
 		param := state.Modules[0].Resources[key]
 
-		//assert.Equal(t, c.assert.Default, param.Primary.Attributes["default"], "default value")
+		assert.Equal(t, def, param.Primary.Attributes["default"], "default value")
 		assert.Equal(t, string(c.assert.FormType), param.Primary.Attributes["form_type"], "form_type")
 		assert.Equal(t, string(c.assert.Type), param.Primary.Attributes["type"], "type")
 		assert.JSONEq(t, c.assert.Styling, param.Primary.Attributes["styling"], "styling")
@@ -303,7 +371,7 @@ func formTypeTest(t *testing.T, c formTypeTestCase) {
 		ProviderFactories: coderFactory(),
 		Steps: []resource.TestStep{
 			{
-				Config:      ezconfig(paramName, c.config),
+				Config:      tf,
 				Check:       checkFn,
 				ExpectError: c.expectError,
 			},

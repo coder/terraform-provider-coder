@@ -8,7 +8,9 @@ import (
 
 // OptionType is a type of option that can be used in the 'type' argument of
 // a parameter. These should match types as defined in terraform:
-//  https://developer.hashicorp.com/terraform/language/expressions/types
+//
+//	https://developer.hashicorp.com/terraform/language/expressions/types
+//
 // The value have to be string literals, as type constraint keywords are not
 // supported in providers. :'(
 type OptionType string
@@ -127,7 +129,7 @@ func ValidateFormType(paramType OptionType, optionCount int, specifiedFormType P
 
 	// Special case
 	if paramType == OptionTypeListString && specifiedFormType == ParameterFormTypeMultiSelect {
-		return OptionTypeListString, ParameterFormTypeMultiSelect, nil
+		return OptionTypeString, ParameterFormTypeMultiSelect, nil
 	}
 
 	return paramType, specifiedFormType, nil
