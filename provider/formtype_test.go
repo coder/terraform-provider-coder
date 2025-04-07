@@ -235,7 +235,7 @@ func TestValidateFormType(t *testing.T) {
 		},
 	}
 
-	t.Run("TabledTests", func(t *testing.T) {
+	passed := t.Run("TabledTests", func(t *testing.T) {
 		// TabledCases runs through all the manual test cases
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
@@ -250,6 +250,12 @@ func TestValidateFormType(t *testing.T) {
 			})
 		}
 	})
+
+	if !passed {
+		// Do not run additional tests and pollute the output
+		t.Log("Tests failed, will not run the assumed error cases")
+		return
+	}
 
 	// AssumeErrorCases assumes any uncovered test will return an error.
 	// This ensures all valid test case paths are covered.
