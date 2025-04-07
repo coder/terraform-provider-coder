@@ -257,15 +257,16 @@ func TestValidateFormType(t *testing.T) {
 		return
 	}
 
-	// AssumeErrorCases assumes any uncovered test will return an error.
-	// This ensures all valid test case paths are covered.
+	// AssumeErrorCases assumes any uncovered test will return an error. Not covered
+	// cases in the truth table are assumed to be invalid. So if the tests above
+	// cover all valid cases, this asserts all the invalid cases.
+	//
+	// This test consequentially ensures all valid cases are covered manually above.
 	t.Run("AssumeErrorCases", func(t *testing.T) {
 		// requiredChecks loops through all possible form_type and option_type
 		// combinations.
 		requiredChecks := make([]formTypeCheck, 0)
-		//requiredChecks := make(map[provider.ParameterFormType][]provider.OptionType)
 		for _, ft := range append(provider.ParameterFormTypes(), "") {
-			//requiredChecks[ft] = make([]provider.OptionType, 0)
 			for _, ot := range provider.OptionTypes() {
 				requiredChecks = append(requiredChecks, formTypeCheck{
 					formType:   ft,
@@ -304,6 +305,8 @@ func TestValidateFormType(t *testing.T) {
 			t.Run(fc.name, func(t *testing.T) {
 				t.Parallel()
 
+				// This is just helpful log output to give the boilerplate
+				// to write the manual test.
 				tcText := fmt.Sprintf(`
 					obvious(%s, ezconfigOpts{
 						Options:    %t,
@@ -311,7 +314,6 @@ func TestValidateFormType(t *testing.T) {
 						FormType:   %q,
 					}),
 				//`, "<expected_form_type>", check.options, check.optionType, check.formType)
-				var _ = tcText
 
 				probablyPassed := formTypeTest(t, fc)
 				if !probablyPassed {
