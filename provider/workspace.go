@@ -27,6 +27,14 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("start_count", count)
 
+			prebuild := helpers.OptionalEnv(IsPrebuildEnvironmentVariable())
+			prebuildCount := 0
+			if prebuild == "true" {
+				prebuildCount = 1
+				_ = rd.Set("is_prebuild", true)
+			}
+			_ = rd.Set("prebuild_count", prebuildCount)
+
 			name := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_NAME", "default")
 			rd.Set("name", name)
 
@@ -83,6 +91,11 @@ func workspaceDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "The access port of the Coder deployment provisioning this workspace.",
 			},
+			"prebuild_count": {
+				Type:        schema.TypeInt,
+				Computed:    true,
+				Description: "A computed count, equal to 1 if the workspace is a currently unassigned prebuild. Use this to conditionally act on the status of a prebuild. Actions that do not require user identity can be taken when this value is set to 1. Actions that should only be taken once the workspace has been assigned to a user may be taken when this value is set to 0.",
+			},
 			"start_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
@@ -97,6 +110,11 @@ func workspaceDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "UUID of the workspace.",
+			},
+			"is_prebuild": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Similar to `prebuild_count`, but a boolean value instead of a count. This is set to true if the workspace is a currently unassigned prebuild. Once the workspace is assigned, this value will be false.",
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -120,4 +138,8 @@ func workspaceDataSource() *schema.Resource {
 			},
 		},
 	}
+}
+
+func IsPrebuildEnvironmentVariable() string {
+	return "CODER_WORKSPACE_IS_PREBUILD"
 }
