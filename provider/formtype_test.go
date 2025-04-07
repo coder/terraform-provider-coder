@@ -310,9 +310,13 @@ func TestValidateFormType(t *testing.T) {
 						OptionType: %q,
 						FormType:   %q,
 					}),
-				`, "<expected_form_type>", check.options, check.optionType, check.formType)
-				t.Logf("To construct this test case:\n%s", tcText)
-				formTypeTest(t, fc)
+				//`, "<expected_form_type>", check.options, check.optionType, check.formType)
+				var _ = tcText
+
+				probablyPassed := formTypeTest(t, fc)
+				if !probablyPassed {
+					t.Logf("To construct this test case:\n%s", tcText)
+				}
 			})
 
 		}
@@ -376,12 +380,13 @@ func ezconfig(paramName string, cfg formTypeCheck) (defaultValue string, tf stri
 		`, paramName, paramName, body.String())
 }
 
-func formTypeTest(t *testing.T, c formTypeTestCase) {
+func formTypeTest(t *testing.T, c formTypeTestCase) bool {
 	t.Helper()
 	const paramName = "test_param"
+	// probablyPassed is just a guess used for logging. It's not important.
+	probablyPassed := true
 
 	def, tf := ezconfig(paramName, c.config)
-	t.Logf("Terraform config:\n%s", tf)
 	checkFn := func(state *terraform.State) error {
 		require.Len(t, state.Modules, 1)
 		require.Len(t, state.Modules[0].Resources, 1)
@@ -389,10 +394,10 @@ func formTypeTest(t *testing.T, c formTypeTestCase) {
 		key := strings.Join([]string{"data", "coder_parameter", paramName}, ".")
 		param := state.Modules[0].Resources[key]
 
-		assert.Equal(t, def, param.Primary.Attributes["default"], "default value")
-		assert.Equal(t, string(c.assert.FormType), param.Primary.Attributes["form_type"], "form_type")
-		assert.Equal(t, string(c.assert.Type), param.Primary.Attributes["type"], "type")
-		assert.JSONEq(t, string(c.assert.Styling), param.Primary.Attributes["styling"], "styling")
+		probablyPassed = probablyPassed && assert.Equal(t, def, param.Primary.Attributes["default"], "default value")
+		probablyPassed = probablyPassed && assert.Equal(t, string(c.assert.FormType), param.Primary.Attributes["form_type"], "form_type")
+		probablyPassed = probablyPassed && assert.Equal(t, string(c.assert.Type), param.Primary.Attributes["type"], "type")
+		probablyPassed = probablyPassed && assert.JSONEq(t, string(c.assert.Styling), param.Primary.Attributes["styling"], "styling")
 
 		return nil
 	}
@@ -411,4 +416,9 @@ func formTypeTest(t *testing.T, c formTypeTestCase) {
 			},
 		},
 	})
+
+	if !probablyPassed {
+		t.Logf("Terraform config:\n%s", tf)
+	}
+	return probablyPassed
 }
