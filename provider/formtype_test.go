@@ -1,8 +1,10 @@
 package provider_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -26,16 +28,19 @@ type formTypeTestCase struct {
 type paramAssert struct {
 	FormType provider.ParameterFormType
 	Type     provider.OptionType
-	Styling  string
+	Styling  json.RawMessage
 }
 
 // formTypeCheck is a struct that helps build the terraform config
 type formTypeCheck struct {
-	formType      provider.ParameterFormType
-	optionType    provider.OptionType
-	options       bool
-	defValue      string
+	formType   provider.ParameterFormType
+	optionType provider.OptionType
+	options    bool
+
+	// optional to inform the assert
 	customOptions []string
+	defValue      string
+	styling       json.RawMessage
 }
 
 func (c formTypeCheck) String() string {
@@ -55,6 +60,18 @@ func TestValidateFormType(t *testing.T) {
 		if ftname == "" {
 			ftname = "default"
 		}
+
+		if opts.styling == nil {
+			// Try passing arbitrary data in, as anything should be accepted
+			opts.styling, _ = json.Marshal(map[string]any{
+				"foo":      "bar",
+				"disabled": true,
+				"nested": map[string]any{
+					"foo": "bar",
+				},
+			})
+		}
+
 		return formTypeTestCase{
 			name: fmt.Sprintf("%s_%s_%t",
 				ftname,
@@ -65,7 +82,7 @@ func TestValidateFormType(t *testing.T) {
 			assert: paramAssert{
 				FormType: expected,
 				Type:     opts.optionType,
-				Styling:  "",
+				Styling:  opts.styling,
 			},
 			expectError: nil,
 		}
@@ -85,7 +102,7 @@ func TestValidateFormType(t *testing.T) {
 			assert: paramAssert{
 				FormType: provider.ParameterFormTypeInput,
 				Type:     provider.OptionTypeString,
-				Styling:  "",
+				Styling:  []byte("{}"),
 			},
 		},
 		// All default behaviors. Essentially legacy behavior.
@@ -210,9 +227,6 @@ func TestValidateFormType(t *testing.T) {
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
 				t.Parallel()
-				if c.assert.Styling == "" {
-					c.assert.Styling = "{}"
-				}
 
 				formTypeTest(t, c)
 				if _, ok := formTypesChecked[c.config.String()]; ok {
@@ -322,6 +336,9 @@ func ezconfig(paramName string, cfg formTypeCheck) (defaultValue string, tf stri
 	if cfg.optionType != "" {
 		body.WriteString(fmt.Sprintf("type = %q\n", cfg.optionType))
 	}
+	if cfg.styling != nil {
+		body.WriteString(fmt.Sprintf("styling = %s\n", strconv.Quote(string(cfg.styling))))
+	}
 
 	for i, opt := range options {
 		body.WriteString("option {\n")
@@ -356,7 +373,7 @@ func formTypeTest(t *testing.T, c formTypeTestCase) {
 		assert.Equal(t, def, param.Primary.Attributes["default"], "default value")
 		assert.Equal(t, string(c.assert.FormType), param.Primary.Attributes["form_type"], "form_type")
 		assert.Equal(t, string(c.assert.Type), param.Primary.Attributes["type"], "type")
-		assert.JSONEq(t, c.assert.Styling, param.Primary.Attributes["styling"], "styling")
+		assert.JSONEq(t, string(c.assert.Styling), param.Primary.Attributes["styling"], "styling")
 
 		return nil
 	}
