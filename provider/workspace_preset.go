@@ -12,7 +12,12 @@ import (
 type WorkspacePreset struct {
 	Name       string            `mapstructure:"name"`
 	Parameters map[string]string `mapstructure:"parameters"`
-	Prebuilds  WorkspacePrebuild `mapstructure:"prebuilds"`
+	// There should always be only one prebuild block, but Terraform's type system
+	// still parses them as a slice, so we need to handle it as such. We could use
+	// an anonymous type and rd.Get to avoid a slice here, but that would not be possible
+	// for utilities that parse our terraform output using this type. To remain compatible
+	// with those cases, we use a slice here.
+	Prebuilds []WorkspacePrebuild `mapstructure:"prebuilds"`
 }
 
 type WorkspacePrebuild struct {
@@ -27,19 +32,9 @@ func workspacePresetDataSource() *schema.Resource {
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			var preset WorkspacePreset
 			err := mapstructure.Decode(struct {
-				Name       interface{}
-				Parameters interface{}
-				Prebuilds  struct {
-					Instances interface{}
-				}
+				Name interface{}
 			}{
-				Name:       rd.Get("name"),
-				Parameters: rd.Get("parameters"),
-				Prebuilds: struct {
-					Instances interface{}
-				}{
-					Instances: rd.Get("prebuilds.0.instances"),
-				},
+				Name: rd.Get("name"),
 			}, &preset)
 			if err != nil {
 				return diag.Errorf("decode workspace preset: %s", err)
