@@ -12,7 +12,7 @@ import (
 //	https://developer.hashicorp.com/terraform/language/expressions/types
 //
 // The value have to be string literals, as type constraint keywords are not
-// supported in providers. :'(
+// supported in providers.
 type OptionType string
 
 const (
@@ -33,7 +33,7 @@ func OptionTypes() []OptionType {
 
 // ParameterFormType is the list of supported form types for display in
 // the Coder "create workspace" form. These form types are functional as well
-// as cosmetic.
+// as cosmetic. Refer to `formTypeTruthTable` for the allowed pairings.
 // For example, "multi-select" has the type "list(string)" but the option
 // values are "string".
 type ParameterFormType string

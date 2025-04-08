@@ -88,9 +88,9 @@ func TestValidateFormType(t *testing.T) {
 		}
 	}
 
-	// obvious just assumes the FormType in the check is the expected
+	// expectSameFormType just assumes the FormType in the check is the expected
 	// FormType. Using `expectType` these fields can differ
-	obvious := func(opts formTypeCheck) formTypeTestCase {
+	expectSameFormType := func(opts formTypeCheck) formTypeTestCase {
 		return expectType(opts.formType, opts)
 	}
 
@@ -145,77 +145,77 @@ func TestValidateFormType(t *testing.T) {
 
 		// ---- New Behavior
 		//	String
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeString,
 			formType:   provider.ParameterFormTypeDropdown,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeString,
 			formType:   provider.ParameterFormTypeRadio,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeString,
 			formType:   provider.ParameterFormTypeInput,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeString,
 			formType:   provider.ParameterFormTypeTextArea,
 		}),
 		//	Number
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeNumber,
 			formType:   provider.ParameterFormTypeDropdown,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeNumber,
 			formType:   provider.ParameterFormTypeRadio,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeNumber,
 			formType:   provider.ParameterFormTypeInput,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeNumber,
 			formType:   provider.ParameterFormTypeSlider,
 		}),
 		//	Boolean
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeBoolean,
 			formType:   provider.ParameterFormTypeRadio,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeBoolean,
 			formType:   provider.ParameterFormTypeSwitch,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeBoolean,
 			formType:   provider.ParameterFormTypeCheckbox,
 		}),
 		//	List(string)
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    true,
 			optionType: provider.OptionTypeListString,
 			formType:   provider.ParameterFormTypeRadio,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:       true,
 			optionType:    provider.OptionTypeListString,
 			formType:      provider.ParameterFormTypeMultiSelect,
 			customOptions: []string{"red", "blue", "green"},
 			defValue:      `["red", "blue"]`,
 		}),
-		obvious(formTypeCheck{
+		expectSameFormType(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeListString,
 			formType:   provider.ParameterFormTypeTagSelect,
@@ -282,8 +282,7 @@ func TestValidateFormType(t *testing.T) {
 		}
 
 		for _, check := range requiredChecks {
-			_, alreadyChecked := formTypesChecked[check.String()]
-			if alreadyChecked {
+			if _, alreadyChecked := formTypesChecked[check.String()]; alreadyChecked {
 				continue
 			}
 
@@ -308,15 +307,15 @@ func TestValidateFormType(t *testing.T) {
 				// This is just helpful log output to give the boilerplate
 				// to write the manual test.
 				tcText := fmt.Sprintf(`
-					obvious(%s, ezconfigOpts{
+					expectSameFormType(%s, ezconfigOpts{
 						Options:    %t,
 						OptionType: %q,
 						FormType:   %q,
 					}),
 				//`, "<expected_form_type>", check.options, check.optionType, check.formType)
 
-				probablyPassed := formTypeTest(t, fc)
-				if !probablyPassed {
+				logDebugInfo := formTypeTest(t, fc)
+				if !logDebugInfo {
 					t.Logf("To construct this test case:\n%s", tcText)
 				}
 			})
@@ -325,8 +324,8 @@ func TestValidateFormType(t *testing.T) {
 	})
 }
 
-// ezconfig converts a formTypeCheck into a terraform config string.
-func ezconfig(paramName string, cfg formTypeCheck) (defaultValue string, tf string) {
+// createTF converts a formTypeCheck into a terraform config string.
+func createTF(paramName string, cfg formTypeCheck) (defaultValue string, tf string) {
 	options := cfg.customOptions
 	if cfg.options && len(cfg.customOptions) == 0 {
 		switch cfg.optionType {
@@ -385,10 +384,13 @@ func ezconfig(paramName string, cfg formTypeCheck) (defaultValue string, tf stri
 func formTypeTest(t *testing.T, c formTypeTestCase) bool {
 	t.Helper()
 	const paramName = "test_param"
-	// probablyPassed is just a guess used for logging. It's not important.
-	probablyPassed := true
+	// logDebugInfo is just a guess used for logging. It's not important. It cannot
+	// determine for sure if the test passed because the terraform test runner is a
+	// black box. It does not indicate if the test passed or failed. Since this is
+	// just used for logging, this is good enough.
+	logDebugInfo := true
 
-	def, tf := ezconfig(paramName, c.config)
+	def, tf := createTF(paramName, c.config)
 	checkFn := func(state *terraform.State) error {
 		require.Len(t, state.Modules, 1)
 		require.Len(t, state.Modules[0].Resources, 1)
@@ -396,10 +398,10 @@ func formTypeTest(t *testing.T, c formTypeTestCase) bool {
 		key := strings.Join([]string{"data", "coder_parameter", paramName}, ".")
 		param := state.Modules[0].Resources[key]
 
-		probablyPassed = probablyPassed && assert.Equal(t, def, param.Primary.Attributes["default"], "default value")
-		probablyPassed = probablyPassed && assert.Equal(t, string(c.assert.FormType), param.Primary.Attributes["form_type"], "form_type")
-		probablyPassed = probablyPassed && assert.Equal(t, string(c.assert.Type), param.Primary.Attributes["type"], "type")
-		probablyPassed = probablyPassed && assert.JSONEq(t, string(c.assert.Styling), param.Primary.Attributes["styling"], "styling")
+		logDebugInfo = logDebugInfo && assert.Equal(t, def, param.Primary.Attributes["default"], "default value")
+		logDebugInfo = logDebugInfo && assert.Equal(t, string(c.assert.FormType), param.Primary.Attributes["form_type"], "form_type")
+		logDebugInfo = logDebugInfo && assert.Equal(t, string(c.assert.Type), param.Primary.Attributes["type"], "type")
+		logDebugInfo = logDebugInfo && assert.JSONEq(t, string(c.assert.Styling), param.Primary.Attributes["styling"], "styling")
 
 		return nil
 	}
@@ -419,8 +421,8 @@ func formTypeTest(t *testing.T, c formTypeTestCase) bool {
 		},
 	})
 
-	if !probablyPassed {
+	if !logDebugInfo {
 		t.Logf("Terraform config:\n%s", tf)
 	}
-	return probablyPassed
+	return logDebugInfo
 }
