@@ -689,13 +689,13 @@ data "coder_parameter" "region" {
 func TestValueValidatesType(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
-		Name  string
-		Type  provider.OptionType
-		Value string
-		Regex,
-		RegexError string
-		Min,
-		Max int
+		Name                     string
+		Type                     provider.OptionType
+		Value                    string
+		Regex                    string
+		RegexError               string
+		Min                      int
+		Max                      int
 		MinDisabled, MaxDisabled bool
 		Monotonic                string
 		Error                    *regexp.Regexp
