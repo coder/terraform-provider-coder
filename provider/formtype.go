@@ -13,7 +13,7 @@ import (
 //
 // The value have to be string literals, as type constraint keywords are not
 // supported in providers.
-type OptionType string
+type OptionType = string
 
 const (
 	OptionTypeString     OptionType = "string"
