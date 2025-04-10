@@ -34,6 +34,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", `supersecret`)
 		t.Setenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN", `alsosupersecret`)
 		t.Setenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE", `github`)
+		t.Setenv("CODER_WORKSPACE_OWNER_RBAC_ROLES", `[{"name":"member","org_id":"00000000-0000-0000-0000-000000000000"}]`)
 
 		resource.Test(t, resource.TestCase{
 			ProviderFactories: coderFactory(),
@@ -61,7 +62,8 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Equal(t, `supersecret`, attrs["session_token"])
 					assert.Equal(t, `alsosupersecret`, attrs["oidc_access_token"])
 					assert.Equal(t, `github`, attrs["login_type"])
-
+					assert.Equal(t, `member`, attrs["rbac_roles.0.name"])
+					assert.Equal(t, `00000000-0000-0000-0000-000000000000`, attrs["rbac_roles.0.org_id"])
 					return nil
 				},
 			}},
@@ -80,6 +82,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 			"CODER_WORKSPACE_OWNER_SSH_PUBLIC_KEY",
 			"CODER_WORKSPACE_OWNER_SSH_PRIVATE_KEY",
 			"CODER_WORKSPACE_OWNER_LOGIN_TYPE",
+			"CODER_WORKSPACE_OWNER_RBAC_ROLES",
 		} { // https://github.com/golang/go/issues/52817
 			t.Setenv(v, "")
 			os.Unsetenv(v)
@@ -110,6 +113,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Empty(t, attrs["session_token"])
 					assert.Empty(t, attrs["oidc_access_token"])
 					assert.Empty(t, attrs["login_type"])
+					assert.Empty(t, attrs["rbac_roles.0"])
 					return nil
 				},
 			}},

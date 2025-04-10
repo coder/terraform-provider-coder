@@ -90,10 +90,11 @@ func TestIntegration(t *testing.T) {
 				// TODO (sasswart): the cli doesn't support presets yet.
 				// once it does, the value for workspace_parameter.value
 				// will be the preset value.
-				"workspace_parameter.value":         `param value`,
-				"workspace_parameter.icon":          `param icon`,
-				"workspace_preset.name":             `preset`,
-				"workspace_preset.parameters.param": `preset param value`,
+				"workspace_parameter.value":            `param value`,
+				"workspace_parameter.icon":             `param icon`,
+				"workspace_preset.name":                `preset`,
+				"workspace_preset.parameters.param":    `preset param value`,
+				"workspace_preset.prebuilds.instances": `1`,
 			},
 		},
 		{
@@ -122,6 +123,7 @@ func TestIntegration(t *testing.T) {
 				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
 				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
 				"workspace_owner.login_type":        ``,
+				"workspace_owner.rbac_roles":        ``,
 			},
 		},
 		{
@@ -150,6 +152,36 @@ func TestIntegration(t *testing.T) {
 				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
 				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
 				"workspace_owner.login_type":        `password`,
+				"workspace_owner.rbac_roles":        ``,
+			},
+		},
+		{
+			name:       "workspace-owner-rbac-roles",
+			minVersion: "v2.21.0", // anticipated version, update as required
+			expectedOutput: map[string]string{
+				"provisioner.arch":                  runtime.GOARCH,
+				"provisioner.id":                    `[a-zA-Z0-9-]+`,
+				"provisioner.os":                    runtime.GOOS,
+				"workspace.access_port":             `\d+`,
+				"workspace.access_url":              `https?://\D+:\d+`,
+				"workspace.id":                      `[a-zA-z0-9-]+`,
+				"workspace.name":                    ``,
+				"workspace.start_count":             `1`,
+				"workspace.template_id":             `[a-zA-Z0-9-]+`,
+				"workspace.template_name":           `workspace-owner`,
+				"workspace.template_version":        `.+`,
+				"workspace.transition":              `start`,
+				"workspace_owner.email":             `testing@coder\.com`,
+				"workspace_owner.full_name":         `default`,
+				"workspace_owner.groups":            `\[(\"Everyone\")?\]`,
+				"workspace_owner.id":                `[a-zA-Z0-9-]+`,
+				"workspace_owner.name":              `testing`,
+				"workspace_owner.oidc_access_token": `^$`, // TODO: test OIDC integration
+				"workspace_owner.session_token":     `.+`,
+				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
+				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
+				"workspace_owner.login_type":        `password`,
+				"workspace_owner.rbac_roles":        `(?is)\[(\{"name":"[a-z0-9-:]+","org_id":"[a-f0-9-]+"\},?)+\]`,
 			},
 		},
 		{
