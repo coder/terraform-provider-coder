@@ -115,9 +115,11 @@ var formTypeTruthTable = map[OptionType]map[bool][]ParameterFormType{
 // The use case is when using multi-select. The options are 'string' and the
 // value is 'list(string)'.
 func ValidateFormType(paramType OptionType, optionCount int, specifiedFormType ParameterFormType) (OptionType, ParameterFormType, error) {
-	allowed, ok := formTypeTruthTable[paramType][optionCount > 0]
+	optionsExist := optionCount > 0
+	allowed, ok := formTypeTruthTable[paramType][optionsExist]
 	if !ok || len(allowed) == 0 {
-		return paramType, specifiedFormType, xerrors.Errorf("value type %q is not supported for 'form_types'", paramType)
+		// This error should really never be hit, as the provider sdk does an enum validation.
+		return paramType, specifiedFormType, xerrors.Errorf("\"type\" attribute=%q is not supported, choose one of %v", paramType, OptionTypes())
 	}
 
 	if specifiedFormType == ParameterFormTypeDefault {
@@ -126,7 +128,27 @@ func ValidateFormType(paramType OptionType, optionCount int, specifiedFormType P
 	}
 
 	if !slices.Contains(allowed, specifiedFormType) {
-		return paramType, specifiedFormType, xerrors.Errorf("value type %q is not supported for 'form_types'", specifiedFormType)
+		optionMsg := ""
+		opposite := formTypeTruthTable[paramType][!optionsExist]
+
+		// This extra message tells a user if they are using a valid form_type
+		// for a 'type', but it is invalid because options do/do-not exist.
+		// It serves as a more helpful error message.
+		//
+		// Eg: form_type=slider is valid for type=number, but invalid if options exist.
+		// And this error message is more accurate than just saying "form_type=slider is
+		// not valid for type=number".
+		if slices.Contains(opposite, specifiedFormType) {
+			if optionsExist {
+				optionMsg = " when options exist"
+			} else {
+				optionMsg = " when options do no exist"
+			}
+		}
+		return paramType, specifiedFormType,
+			xerrors.Errorf("\"form_type\" attribute=%q is not supported for \"type\"=%q%s, choose one of %v",
+				specifiedFormType, paramType,
+				optionMsg, toStrings(allowed))
 	}
 
 	// This is the only current special case. If 'multi-select' is selected, the type
