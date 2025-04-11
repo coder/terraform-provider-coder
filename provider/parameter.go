@@ -153,11 +153,7 @@ func parameterDataSource() *schema.Resource {
 			}
 
 			// Validate options
-
-			// optionType might differ from parameter.Type. This is ok, and parameter.Type
-			// should be used for the value type, and optionType for options.
-			var optionType OptionType
-			optionType, parameter.FormType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
+			_, parameter.FormType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -166,60 +162,11 @@ func parameterDataSource() *schema.Resource {
 			// is used and saved.
 			rd.Set("form_type", parameter.FormType)
 
-			if len(parameter.Option) > 0 {
-				names := map[string]interface{}{}
-				values := map[string]interface{}{}
-				for _, option := range parameter.Option {
-					_, exists := names[option.Name]
-					if exists {
-						return diag.Errorf("multiple options cannot have the same name %q", option.Name)
-					}
-					_, exists = values[option.Value]
-					if exists {
-						return diag.Errorf("multiple options cannot have the same value %q", option.Value)
-					}
-					err := valueIsType(optionType, option.Value)
-					if err != nil {
-						return err
-					}
-					values[option.Value] = nil
-					names[option.Name] = nil
-				}
-
-				if parameter.Default != "" {
-					if parameter.Type == OptionTypeListString && optionType == OptionTypeString {
-						// If the type is list(string) and optionType is string, we have
-						// to ensure all elements of the default exist as options.
-						var defaultValues []string
-						// TODO: We do this unmarshal in a few spots. It should be standardized.
-						err = json.Unmarshal([]byte(parameter.Default), &defaultValues)
-						if err != nil {
-							return diag.Errorf("default value %q is not a list of strings", parameter.Default)
-						}
-
-						// missing is used to construct a more helpful error message
-						var missing []string
-						for _, defaultValue := range defaultValues {
-							_, defaultIsValid := values[defaultValue]
-							if !defaultIsValid {
-								missing = append(missing, defaultValue)
-							}
-						}
-
-						if len(missing) > 0 {
-							return diag.Errorf(
-								"default value %q is not a valid option, values %q are missing from the option",
-								parameter.Default, strings.Join(missing, ", "),
-							)
-						}
-					} else {
-						_, defaultIsValid := values[parameter.Default]
-						if !defaultIsValid {
-							return diag.Errorf("%q default value %q must be defined as one of options", parameter.FormType, parameter.Default)
-						}
-					}
-				}
+			diags := parameter.Valid()
+			if diags.HasError() {
+				return diags
 			}
+
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
@@ -456,6 +403,76 @@ func valueIsType(typ OptionType, value string) diag.Diagnostics {
 	default:
 		return diag.Errorf("invalid type %q", typ)
 	}
+	return nil
+}
+
+func (v *Parameter) Valid() diag.Diagnostics {
+	// optionType might differ from parameter.Type. This is ok, and parameter.Type
+	// should be used for the value type, and optionType for options.
+	optionType, formType, err := ValidateFormType(v.Type, len(v.Option), v.FormType)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if formType != v.FormType {
+		return diag.FromErr(fmt.Errorf("form_type %q is not valid for type %q", v.FormType, v.Type))
+	}
+
+	optionNames := map[string]interface{}{}
+	optionValues := map[string]interface{}{}
+	if len(v.Option) > 0 {
+		for _, option := range v.Option {
+			_, exists := optionNames[option.Name]
+			if exists {
+				return diag.FromErr(fmt.Errorf("multiple options cannot have the same name %q", option.Name))
+			}
+			_, exists = optionValues[option.Value]
+			if exists {
+				return diag.FromErr(fmt.Errorf("multiple options cannot have the same value %q", option.Value))
+			}
+			diags := valueIsType(optionType, option.Value)
+			if diags.HasError() {
+				return diags
+			}
+			optionValues[option.Value] = nil
+			optionNames[option.Name] = nil
+		}
+	}
+
+	if v.Default != "" {
+		if v.Type == OptionTypeListString && optionType == OptionTypeString {
+			// If the type is list(string) and optionType is string, we have
+			// to ensure all elements of the default exist as options.
+			var defaultValues []string
+			// TODO: We do this unmarshal in a few spots. It should be standardized.
+			err = json.Unmarshal([]byte(v.Default), &defaultValues)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("default value %q is not a list of strings", v.Default))
+			}
+
+			// missing is used to construct a more helpful error message
+			var missing []string
+			for _, defaultValue := range defaultValues {
+				_, defaultIsValid := optionValues[defaultValue]
+				if !defaultIsValid {
+					missing = append(missing, defaultValue)
+				}
+			}
+
+			if len(missing) > 0 {
+				return diag.FromErr(fmt.Errorf(
+					"default value %q is not a valid option, values %q are missing from the option",
+					v.Default, strings.Join(missing, ", "),
+				))
+			}
+		} else {
+			_, defaultIsValid := optionValues[v.Default]
+			if !defaultIsValid {
+				return diag.FromErr(fmt.Errorf("%q default value %q must be defined as one of options", v.FormType, v.Default))
+			}
+		}
+	}
+
 	return nil
 }
 
