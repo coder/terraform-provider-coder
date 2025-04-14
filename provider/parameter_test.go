@@ -946,6 +946,15 @@ func TestParameterValidation(t *testing.T) {
 			ExpectError: regexp.MustCompile("Value must be a valid option"),
 		},
 		{
+			Name: "NumberNotInOptions",
+			Parameter: provider.Parameter{
+				Type:   "number",
+				Option: opts("1", "2", "3"),
+			},
+			Value:       "0", // not in option set
+			ExpectError: regexp.MustCompile("Value must be a valid option"),
+		},
+		{
 			Name: "NonUniqueOptionNames",
 			Parameter: provider.Parameter{
 				Type:   "string",
@@ -982,6 +991,55 @@ func TestParameterValidation(t *testing.T) {
 			},
 			Value:       "not-a-number",
 			ExpectError: regexp.MustCompile("Parameter value is not of type \"number\""),
+		},
+		{
+			Name: "NotListStringDefault",
+			Parameter: provider.Parameter{
+				Type:    "list(string)",
+				Default: "not-a-list",
+			},
+			ExpectError: regexp.MustCompile("not a valid list of strings"),
+		},
+		{
+			Name: "NotListStringDefault",
+			Parameter: provider.Parameter{
+				Type: "list(string)",
+			},
+			Value:       "not-a-list",
+			ExpectError: regexp.MustCompile("not a valid list of strings"),
+		},
+		{
+			Name: "DefaultListStringNotInOptions",
+			Parameter: provider.Parameter{
+				Type:     "list(string)",
+				Default:  `["red", "yellow", "black"]`,
+				Option:   opts("red", "blue", "green"),
+				FormType: provider.ParameterFormTypeMultiSelect,
+			},
+			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
+		},
+		{
+			Name: "ListStringNotInOptions",
+			Parameter: provider.Parameter{
+				Type:     "list(string)",
+				Default:  `["red"]`,
+				Option:   opts("red", "blue", "green"),
+				FormType: provider.ParameterFormTypeMultiSelect,
+			},
+			Value:       `["red", "yellow", "black"]`,
+			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
+		},
+		{
+			Name: "InvalidMiniumum",
+			Parameter: provider.Parameter{
+				Type:    "number",
+				Default: "5",
+				Validation: []provider.Validation{{
+					Min:   10,
+					Error: "must be greater than 10",
+				}},
+			},
+			ExpectError: regexp.MustCompile("must be greater than 10"),
 		},
 	} {
 		tc := tc
