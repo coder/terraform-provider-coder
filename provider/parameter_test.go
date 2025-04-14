@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/coder/terraform-provider-coder/v2/provider"
@@ -688,6 +689,7 @@ data "coder_parameter" "region" {
 	}
 }
 
+<<<<<<< HEAD
 // TestParameterValidationEnforcement tests various parameter states and the
 // validation enforcement that should be applied to them. The table is described
 // by a markdown table. This is done so that the test cases can be more easily
@@ -896,6 +898,107 @@ func TestParameterValidationEnforcement(t *testing.T) {
 				})
 			})
 		}
+=======
+func TestParameterValidation(t *testing.T) {
+	t.Parallel()
+	opts := func(vals ...string) []provider.Option {
+		options := make([]provider.Option, 0, len(vals))
+		for _, val := range vals {
+			options = append(options, provider.Option{
+				Name:  val,
+				Value: val,
+			})
+		}
+		return options
+	}
+
+	for _, tc := range []struct {
+		Name        string
+		Parameter   provider.Parameter
+		Value       string
+		ExpectError *regexp.Regexp
+	}{
+		{
+			Name: "ValidStringParameter",
+			Parameter: provider.Parameter{
+				Type: "string",
+			},
+			Value: "alpha",
+		},
+		// Test invalid states
+		{
+			Name: "InvalidFormType",
+			Parameter: provider.Parameter{
+				Type:     "string",
+				Option:   opts("alpha", "bravo", "charlie"),
+				FormType: provider.ParameterFormTypeSlider,
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Invalid form_type for parameter"),
+		},
+		{
+			Name: "NotInOptions",
+			Parameter: provider.Parameter{
+				Type:   "string",
+				Option: opts("alpha", "bravo", "charlie"),
+			},
+			Value:       "delta", // not in option set
+			ExpectError: regexp.MustCompile("Value must be a valid option"),
+		},
+		{
+			Name: "NonUniqueOptionNames",
+			Parameter: provider.Parameter{
+				Type:   "string",
+				Option: opts("alpha", "alpha"),
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Option names must be unique"),
+		},
+		{
+			Name: "NonUniqueOptionValues",
+			Parameter: provider.Parameter{
+				Type: "string",
+				Option: []provider.Option{
+					{Name: "Alpha", Value: "alpha"},
+					{Name: "AlphaAgain", Value: "alpha"},
+				},
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Option values must be unique"),
+		},
+		{
+			Name: "IncorrectValueTypeOption",
+			Parameter: provider.Parameter{
+				Type:   "number",
+				Option: opts("not-a-number"),
+			},
+			Value:       "5",
+			ExpectError: regexp.MustCompile("is not a number"),
+		},
+		{
+			Name: "IncorrectValueType",
+			Parameter: provider.Parameter{
+				Type: "number",
+			},
+			Value:       "not-a-number",
+			ExpectError: regexp.MustCompile("Parameter value is not of type \"number\""),
+		},
+	} {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			diags := tc.Parameter.Valid(tc.Value)
+			if tc.ExpectError != nil {
+				require.True(t, diags.HasError())
+				errMsg := fmt.Sprintf("%+v", diags[0]) // close enough
+				require.Truef(t, tc.ExpectError.MatchString(errMsg), "got: %s", errMsg)
+			} else {
+				if !assert.False(t, diags.HasError()) {
+					t.Logf("got: %+v", diags[0])
+				}
+			}
+		})
+>>>>>>> c640b02 (begin adding invalid unit tests)
 	}
 }
 

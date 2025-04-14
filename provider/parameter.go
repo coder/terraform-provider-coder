@@ -50,7 +50,6 @@ const (
 )
 
 type Parameter struct {
-	Value       string
 	Name        string
 	DisplayName string `mapstructure:"display_name"`
 	Description string
@@ -86,7 +85,6 @@ func parameterDataSource() *schema.Resource {
 
 			var parameter Parameter
 			err = mapstructure.Decode(struct {
-				Value       interface{}
 				Name        interface{}
 				DisplayName interface{}
 				Description interface{}
@@ -101,7 +99,6 @@ func parameterDataSource() *schema.Resource {
 				Order       interface{}
 				Ephemeral   interface{}
 			}{
-				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
 				DisplayName: rd.Get("display_name"),
 				Description: rd.Get("description"),
@@ -126,14 +123,7 @@ func parameterDataSource() *schema.Resource {
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
 			}
-			var value string
-			if parameter.Default != "" {
-				err := valueIsType(parameter.Type, parameter.Default, defaultValuePath)
-				if err != nil {
-					return err
-				}
-				value = parameter.Default
-			}
+			value := parameter.Default
 			envValue, ok := os.LookupEnv(ParameterEnvironmentVariable(parameter.Name))
 			if ok {
 				value = envValue
@@ -381,27 +371,27 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 	return vArr, nil
 }
 
-func valueIsType(typ OptionType, value string, attrPath cty.Path) diag.Diagnostics {
+func valueIsType(typ OptionType, value string) error {
 	switch typ {
 	case OptionTypeNumber:
 		_, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return diag.Errorf("%q is not a number", value)
+			return fmt.Errorf("%q is not a number", value)
 		}
 	case OptionTypeBoolean:
 		_, err := strconv.ParseBool(value)
 		if err != nil {
-			return diag.Errorf("%q is not a bool", value)
+			return fmt.Errorf("%q is not a bool", value)
 		}
 	case OptionTypeListString:
-		_, diags := valueIsListString(value, attrPath)
-		if diags.HasError() {
-			return diags
+		_, err := valueIsListString(value)
+		if err != nil {
+			return err
 		}
 	case OptionTypeString:
 		// Anything is a string!
 	default:
-		return diag.Errorf("invalid type %q", typ)
+		return fmt.Errorf("invalid type %q", typ)
 	}
 	return nil
 }
@@ -447,9 +437,15 @@ func (v *Parameter) Valid(value string) diag.Diagnostics {
 					},
 				}
 			}
-			diags := valueIsType(optionType, option.Value, cty.Path{})
-			if diags.HasError() {
-				return diags
+			err = valueIsType(optionType, option.Value)
+			if err != nil {
+				return diag.Diagnostics{
+					{
+						Severity: diag.Error,
+						Summary:  fmt.Sprintf("Option %q with value=%q is not of type %q", option.Name, option.Value, optionType),
+						Detail:   err.Error(),
+					},
+				}
 			}
 			optionValues[option.Value] = nil
 			optionNames[option.Name] = nil
@@ -461,6 +457,18 @@ func (v *Parameter) Valid(value string) diag.Diagnostics {
 
 	// Validate the default value
 	if v.Default != "" {
+		err := valueIsType(v.Type, v.Default)
+		if err != nil {
+			return diag.Diagnostics{
+				{
+					Severity:      diag.Error,
+					Summary:       fmt.Sprintf("Default value is not of type %q", v.Type),
+					Detail:        err.Error(),
+					AttributePath: defaultValuePath,
+				},
+			}
+		}
+
 		d := v.validValue(v.Default, optionType, optionValues, defaultValuePath)
 		if d.HasError() {
 			return d
@@ -471,6 +479,17 @@ func (v *Parameter) Valid(value string) diag.Diagnostics {
 	d := v.validValue(value, optionType, optionValues, cty.Path{})
 	if d.HasError() {
 		return d
+	}
+
+	err = valueIsType(v.Type, value)
+	if err != nil {
+		return diag.Diagnostics{
+			{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Parameter value is not of type %q", v.Type),
+				Detail:   err.Error(),
+			},
+		}
 	}
 
 	return nil
@@ -488,9 +507,16 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 		if v.Type == OptionTypeListString && optionType == OptionTypeString {
 			// If the type is list(string) and optionType is string, we have
 			// to ensure all elements of the default exist as options.
-			listValues, diags := valueIsListString(value, defaultValuePath)
-			if diags.HasError() {
-				return diags
+			listValues, err := valueIsListString(value)
+			if err != nil {
+				return diag.Diagnostics{
+					{
+						Severity:      diag.Error,
+						Summary:       "When using list(string) type, value must be a json encoded list of strings",
+						Detail:        err.Error(),
+						AttributePath: defaultValuePath,
+					},
+				}
 			}
 
 			// missing is used to construct a more helpful error message
@@ -608,18 +634,11 @@ func (v *Validation) Valid(typ OptionType, value string) error {
 	return nil
 }
 
-func valueIsListString(value string, path cty.Path) ([]string, diag.Diagnostics) {
+func valueIsListString(value string) ([]string, error) {
 	var items []string
 	err := json.Unmarshal([]byte(value), &items)
 	if err != nil {
-		return nil, diag.Diagnostics{
-			{
-				Severity:      diag.Error,
-				Summary:       "When using list(string) type, value must be a json encoded list of strings",
-				Detail:        fmt.Sprintf("value %q is not a valid list of strings", value),
-				AttributePath: path,
-			},
-		}
+		return nil, fmt.Errorf("value %q is not a valid list of strings", value)
 	}
 	return items, nil
 }
