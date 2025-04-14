@@ -429,8 +429,8 @@ func (v *Parameter) Valid() diag.Diagnostics {
 		}
 	}
 
-	optionNames := map[string]interface{}{}
-	optionValues := map[string]interface{}{}
+	optionNames := map[string]any{}
+	optionValues := map[string]any{}
 	if len(v.Option) > 0 {
 		for _, option := range v.Option {
 			_, exists := optionNames[option.Name]
@@ -577,7 +577,7 @@ func valueIsListString(value string, path cty.Path) ([]string, diag.Diagnostics)
 		return nil, diag.Diagnostics{
 			{
 				Severity:      diag.Error,
-				Summary:       fmt.Sprintf("When using list(string) type, value must be a json encoded list of strings"),
+				Summary:       "When using list(string) type, value must be a json encoded list of strings",
 				Detail:        fmt.Sprintf("value %q is not a valid list of strings", value),
 				AttributePath: path,
 			},

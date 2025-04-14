@@ -142,7 +142,7 @@ func ValidateFormType(paramType OptionType, optionCount int, specifiedFormType P
 			if optionsExist {
 				optionMsg = " when options exist"
 			} else {
-				optionMsg = " when options do no exist"
+				optionMsg = " when options do not exist"
 			}
 		}
 		return paramType, specifiedFormType,
