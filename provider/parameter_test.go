@@ -291,7 +291,7 @@ func TestParameter(t *testing.T) {
 				}
 			}
 			`,
-		ExpectError: regexp.MustCompile("cannot have the same name"),
+		ExpectError: regexp.MustCompile("Option names must be unique"),
 	}, {
 		Name: "DuplicateOptionValue",
 		Config: `
@@ -308,7 +308,7 @@ func TestParameter(t *testing.T) {
 				}
 			}
 			`,
-		ExpectError: regexp.MustCompile("cannot have the same value"),
+		ExpectError: regexp.MustCompile("Option values must be unique"),
 	}, {
 		Name: "RequiredParameterNoDefault",
 		Config: `
