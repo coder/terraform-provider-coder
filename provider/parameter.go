@@ -544,10 +544,14 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 		} else {
 			_, isValid := optionValues[value]
 			if !isValid {
+				extra := ""
+				if value == "" {
+					extra = ". The value is empty, did you forget to set it with a default or from user input?"
+				}
 				return diag.Diagnostics{
 					{
 						Severity:      diag.Error,
-						Summary:       fmt.Sprintf("%s must be a valid option", name),
+						Summary:       fmt.Sprintf("%s must be a valid option%s", name, extra),
 						Detail:        fmt.Sprintf("the value %q must be defined as one of options", value),
 						AttributePath: path,
 					},
