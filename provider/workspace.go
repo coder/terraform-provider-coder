@@ -94,7 +94,7 @@ func workspaceDataSource() *schema.Resource {
 			"prebuild_count": {
 				Type:        schema.TypeInt,
 				Computed:    true,
-				Description: "A computed count, equal to 1 if the workspace was prebuilt.",
+				Description: "A computed count, equal to 1 if the workspace is a currently unassigned prebuild. Use this to conditionally act on the status of a prebuild. Actions that do not require user identity can be taken when this value is set to 1. Actions that should only be taken once the workspace has been assigned to a user may be taken when this value is set to 0.",
 			},
 			"start_count": {
 				Type:        schema.TypeInt,
@@ -114,7 +114,7 @@ func workspaceDataSource() *schema.Resource {
 			"is_prebuild": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "Whether the workspace is a prebuild.",
+				Description: "Similar to `prebuild_count`, but a boolean value instead of a count. This is set to true if the workspace is a currently unassigned prebuild. Once the workspace is assigned, this value will be false.",
 			},
 			"name": {
 				Type:        schema.TypeString,

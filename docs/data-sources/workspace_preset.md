@@ -3,12 +3,12 @@
 page_title: "coder_workspace_preset Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this data source to predefine common configurations for workspaces.
+  Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are not defined by the preset will still be configurable when creating a workspace.
 ---
 
 # coder_workspace_preset (Data Source)
 
-Use this data source to predefine common configurations for workspaces.
+Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are not defined by the preset will still be configurable when creating a workspace.
 
 ## Example Usage
 
@@ -34,8 +34,12 @@ data "coder_workspace_preset" "example" {
 
 ### Required
 
-- `name` (String) Name of the workspace preset.
-- `parameters` (Map of String) Parameters of the workspace preset.
+- `name` (String) The name of the workspace preset.
+
+### Optional
+
+- `parameters` (Map of String) Workspace parameters that will be set by the workspace preset. For simple templates that only need prebuilds, you may define a preset with zero parameters. Because workspace parameters may change between Coder template versions, preset parameters are allowed to define values for parameters that do not exist in the current template version.
+- `prebuilds` (Block Set, Max: 1) Prebuilt workspace configuration related to this workspace preset. Coder will build and maintain workspaces in reserve based on this configuration. When a user creates a new workspace using a preset, they will be assigned a prebuilt workspace, instead of waiting for a new workspace to build. (see [below for nested schema](#nestedblock--prebuilds))
 
 ### Optional
 
@@ -43,11 +47,11 @@ data "coder_workspace_preset" "example" {
 
 ### Read-Only
 
-- `id` (String) ID of the workspace preset.
+- `id` (String) The preset ID is automatically generated and may change between runs. It is recommended to use the `name` attribute to identify the preset.
 
 <a id="nestedblock--prebuilds"></a>
 ### Nested Schema for `prebuilds`
 
 Required:
 
-- `instances` (Number)
+- `instances` (Number) The number of workspaces to keep in reserve for this preset.

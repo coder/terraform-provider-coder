@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 
 	"github.com/coder/terraform-provider-coder/v2/provider"
@@ -11,8 +13,15 @@ import (
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 func main() {
-	servePprof()
-	plugin.Serve(&plugin.ServeOpts{
+	debug := flag.Bool("debug", false, "Enable debug mode for the provider")
+	flag.Parse()
+
+	opts := &plugin.ServeOpts{
+		Debug:        *debug,
+		ProviderAddr: "registry.terraform.io/coder/coder",
 		ProviderFunc: provider.New,
-	})
+	}
+
+	servePprof()
+	plugin.Serve(opts)
 }
