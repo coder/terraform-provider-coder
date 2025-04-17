@@ -140,6 +140,12 @@ func workspaceDataSource() *schema.Resource {
 	}
 }
 
+// IsPrebuildEnvironmentVariable returns the name of the environment
+// variable that indicates whether the workspace was prebuilt. The value of
+// this environment variable should be set to "true" if the workspace is prebuilt.
+// Any other values, including "false" and "" will be interpreted to mean that the
+// workspace is not prebuilt. If the workspace is prebuilt, it may or may not yet
+// have been claimed by a user.
 func IsPrebuildEnvironmentVariable() string {
 	return "CODER_WORKSPACE_IS_PREBUILD"
 }
