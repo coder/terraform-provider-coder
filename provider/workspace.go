@@ -27,7 +27,7 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("start_count", count)
 
-			isPrebuild := isPrebuiltWorkspace(c)
+			isPrebuild := isPrebuiltWorkspace()
 			prebuildCount := 0
 			if isPrebuild {
 				prebuildCount = 1
@@ -140,16 +140,24 @@ func workspaceDataSource() *schema.Resource {
 	}
 }
 
-func isPrebuiltWorkspace(ctx context.Context) bool {
+// isPrebuiltWorkspace returns true if the workspace is an unclaimed prebuilt workspace.
+func isPrebuiltWorkspace() bool {
 	return helpers.OptionalEnv(IsPrebuildEnvironmentVariable()) == "true"
 }
 
-// IsPrebuildEnvironmentVariable returns the name of the environment
-// variable that indicates whether the workspace is an unclaimed prebuilt workspace.
-// The value of this environment variable should be set to "true" if the workspace
-// is prebuilt and it has not yet been claimed by a user.
-// Any other values, including "false" and "" will be interpreted to mean that the
-// workspace is not prebuilt, or was prebuilt but has since been claimed by a user.
+// IsPrebuildEnvironmentVariable returns the name of the environment variable that
+// indicates whether the workspace is an unclaimed prebuilt workspace.
+//
+// Knowing whether the workspace is an unclaimed prebuilt workspace allows template
+// authors to conditionally execute code in the template based on whether the workspace
+// has been assigned to a user or not. This allows identity specific configuration to
+// be applied only after the workspace is claimed, while the rest of the workspace can
+// be pre-configured.
+//
+// The value of this environment variable should be set to "true" if the workspace is prebuilt
+// and it has not yet been claimed by a user. Any other values, including "false"
+// and "" will be interpreted to mean that the workspace is not prebuilt, or was
+// prebuilt but has since been claimed by a user.
 func IsPrebuildEnvironmentVariable() string {
 	return "CODER_WORKSPACE_IS_PREBUILD"
 }
