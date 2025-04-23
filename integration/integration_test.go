@@ -181,7 +181,8 @@ func TestIntegration(t *testing.T) {
 				"workspace_owner.ssh_private_key":   `(?s)^.+?BEGIN OPENSSH PRIVATE KEY.+?END OPENSSH PRIVATE KEY.+?$`,
 				"workspace_owner.ssh_public_key":    `(?s)^ssh-ed25519.+$`,
 				"workspace_owner.login_type":        `password`,
-				"workspace_owner.rbac_roles":        `(?is)\[(\{"name":"[a-z0-9-:]+","org_id":"[a-f0-9-]+"\},?)+\]`,
+				// org_id will either be a uuid or an empty string for site wide roles.
+				"workspace_owner.rbac_roles": `(?is)\[(\{"name":"[a-z0-9-:]+","org_id":"[a-f0-9-]*"\},?)+\]`,
 			},
 		},
 		{
