@@ -27,9 +27,9 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("start_count", count)
 
-			prebuild := helpers.OptionalEnv(IsPrebuildEnvironmentVariable())
+			isPrebuild := isPrebuiltWorkspace(c)
 			prebuildCount := 0
-			if prebuild == "true" {
+			if isPrebuild {
 				prebuildCount = 1
 				_ = rd.Set("is_prebuild", true)
 			}
@@ -140,12 +140,16 @@ func workspaceDataSource() *schema.Resource {
 	}
 }
 
+func isPrebuiltWorkspace(ctx context.Context) bool {
+	return helpers.OptionalEnv(IsPrebuildEnvironmentVariable()) == "true"
+}
+
 // IsPrebuildEnvironmentVariable returns the name of the environment
-// variable that indicates whether the workspace was prebuilt. The value of
-// this environment variable should be set to "true" if the workspace is prebuilt.
+// variable that indicates whether the workspace is an unclaimed prebuilt workspace.
+// The value of this environment variable should be set to "true" if the workspace
+// is prebuilt and it has not yet been claimed by a user.
 // Any other values, including "false" and "" will be interpreted to mean that the
-// workspace is not prebuilt. If the workspace is prebuilt, it may or may not yet
-// have been claimed by a user.
+// workspace is not prebuilt, or was prebuilt but has since been claimed by a user.
 func IsPrebuildEnvironmentVariable() string {
 	return "CODER_WORKSPACE_IS_PREBUILD"
 }

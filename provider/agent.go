@@ -29,33 +29,7 @@ func agentResource() *schema.Resource {
 			agentID := uuid.NewString()
 			resourceData.SetId(agentID)
 
-			// Most of the time, we will generate a new token for the agent.
-			// In the case of a prebuilt workspace being claimed, we will override with
-			// an existing token provided below.
-			token := uuid.NewString()
-
-			// If isPrebuild is true, then this workspace was built by the prebuilds system.
-			// This does not determine whether the workspace has been claimed by a user.
-			// At this point, it may or may not have been claimed.
-			isPrebuild := helpers.OptionalEnv(IsPrebuildEnvironmentVariable()) == "true"
-			// existingToken should only have been set if isPrebuild is true, because we only
-			// reuse the token when a prebuilt workspace is being claimed.
-			existingToken := helpers.OptionalEnv(RunningAgentTokenEnvironmentVariable(agentID))
-			logFields := map[string]interface{}{
-				"agent_id":       agentID,
-				"is_prebuild":    isPrebuild,
-				"token_provided": existingToken != "",
-			}
-			if isPrebuild && existingToken != "" {
-				// check if a token was already generated for this agent.
-				// If so, this workspace is in the process of being claimed
-				// and we should reuse the token. If not, we use a new token as usual.
-				tflog.Info(ctx, "using provided agent token for prebuild", logFields)
-				token = existingToken
-			} else {
-				tflog.Info(ctx, "using a new agent token", logFields)
-			}
-
+			token := agentAuthToken(ctx, "")
 			err := resourceData.Set("token", token)
 			if err != nil {
 				return diag.FromErr(err)
@@ -79,10 +53,12 @@ func agentResource() *schema.Resource {
 			return updateInitScript(resourceData, i)
 		},
 		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
-			err := resourceData.Set("token", uuid.NewString())
+			token := agentAuthToken(ctx, "")
+			err := resourceData.Set("token", token)
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			if _, ok := resourceData.GetOk("display_apps"); !ok {
 				err = resourceData.Set("display_apps", []interface{}{
 					map[string]bool{
@@ -501,15 +477,41 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 	return nil
 }
 
-// RunningAgentTokenEnvironmentVariable returns the name of the environment variable
-// that contains the token for the running agent. This is used for prebuilds, where
-// we want to reuse the same token for the next iteration of a workspace agent before
-// and after the workspace was claimed by a user.
+func agentAuthToken(ctx context.Context, agentID string) string {
+	// Most of the time, we will generate a new token for the agent.
+	// In the case of a prebuilt workspace being claimed, we will override with
+	// an existing token provided below.
+	token := uuid.NewString()
+
+	existingToken := helpers.OptionalEnv(RunningAgentTokenEnvironmentVariable(agentID))
+	logFields := map[string]interface{}{
+		"agent_id":       agentID,
+		"token_provided": existingToken != "",
+	}
+	if existingToken != "" {
+		// An existing token was provided for this agent. That means that this
+		// is a prebuilt workspace in the process of being claimed.
+		// We should reuse the token.
+		tflog.Info(ctx, "using provided agent token for prebuild", logFields)
+		token = existingToken
+	} else {
+		tflog.Info(ctx, "using a new agent token", logFields)
+	}
+
+	return token
+}
+
+// RunningAgentTokenEnvironmentVariable returns the name of an environment variable
+// that contains the token to use for the running agent. This is used for prebuilds,
+// where we want to reuse the same token for the next iteration of a workspace agent
+// before and after the workspace was claimed by a user.
+//
+// By reusing an existing token, we can avoid the need to change a value that may have been
+// used immutably. Thus, allowing us to avoid reprovisioning resources that may take a long time
+// to replace.
 //
 // agentID is unused for now, but will be used as soon as we support multiple agents.
 func RunningAgentTokenEnvironmentVariable(agentID string) string {
-	agentID = "" // remove this once we need to support multiple agents per prebuilt workspace.
-
 	sum := sha256.Sum256([]byte(agentID))
 	return "CODER_RUNNING_WORKSPACE_AGENT_TOKEN_" + hex.EncodeToString(sum[:])
 }
