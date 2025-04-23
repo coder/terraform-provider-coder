@@ -27,13 +27,13 @@ func workspaceDataSource() *schema.Resource {
 			}
 			_ = rd.Set("start_count", count)
 
-			isPrebuild := isPrebuiltWorkspace()
-			prebuildCount := 0
-			if isPrebuild {
-				prebuildCount = 1
+			if isPrebuiltWorkspace() {
+				_ = rd.Set("prebuild_count", 1)
 				_ = rd.Set("is_prebuild", true)
+			} else {
+				_ = rd.Set("prebuild_count", 0)
+				_ = rd.Set("is_prebuild", false)
 			}
-			_ = rd.Set("prebuild_count", prebuildCount)
 
 			name := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_NAME", "default")
 			rd.Set("name", name)

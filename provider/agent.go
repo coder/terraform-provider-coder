@@ -478,27 +478,22 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 }
 
 func agentAuthToken(ctx context.Context, agentID string) string {
-	// Most of the time, we will generate a new token for the agent.
-	// In the case of a prebuilt workspace being claimed, we will override with
-	// an existing token provided below.
-	token := uuid.NewString()
-
 	existingToken := helpers.OptionalEnv(RunningAgentTokenEnvironmentVariable(agentID))
-	logFields := map[string]interface{}{
-		"agent_id":       agentID,
-		"token_provided": existingToken != "",
-	}
-	if existingToken != "" {
-		// An existing token was provided for this agent. That means that this
-		// is a prebuilt workspace in the process of being claimed.
-		// We should reuse the token.
-		tflog.Info(ctx, "using provided agent token for prebuild", logFields)
-		token = existingToken
-	} else {
-		tflog.Info(ctx, "using a new agent token", logFields)
+	if existingToken == "" {
+		// Most of the time, we will generate a new token for the agent.
+		// In the case of a prebuilt workspace being claimed, we will override with
+		// an existing token provided below.
+		token := uuid.NewString()
+		return token
 	}
 
-	return token
+	// An existing token was provided for this agent. That means that this
+	// is a prebuilt workspace in the process of being claimed.
+	// We should reuse the token.
+	tflog.Info(ctx, "using provided agent token for prebuild", map[string]interface{}{
+		"agent_id": agentID,
+	})
+	return existingToken
 }
 
 // RunningAgentTokenEnvironmentVariable returns the name of an environment variable
