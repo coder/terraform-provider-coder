@@ -686,6 +686,183 @@ data "coder_parameter" "region" {
 	}
 }
 
+//nolint:paralleltest,tparallel // Parameters load values from env vars
+func TestParameterValidationEnforcement(t *testing.T) {
+	for _, tc := range []struct {
+		Name        string
+		Config      string
+		Value       string
+		ExpectError *regexp.Regexp
+		Check       func(state *terraform.ResourceState)
+	}{
+		// Empty
+		{
+			Name: "EmptyString",
+			Config: `
+			data "coder_parameter" "parameter" {
+				name = "parameter"
+				type = "string"
+			}
+`,
+			ExpectError: nil,
+			Check: func(state *terraform.ResourceState) {
+				attrs := state.Primary.Attributes
+				for key, value := range map[string]interface{}{
+					"default":  "",
+					"value":    "",
+					"optional": "false",
+				} {
+					require.Equal(t, value, attrs[key])
+				}
+			},
+		},
+		{
+			Name: "EmptyNumber",
+			Config: `
+			data "coder_parameter" "parameter" {
+				name = "parameter"
+				type = "number"
+			}
+`,
+			ExpectError: nil,
+			Check: func(state *terraform.ResourceState) {
+				attrs := state.Primary.Attributes
+				for key, value := range map[string]interface{}{
+					"default":  "",
+					"value":    "",
+					"optional": "false",
+				} {
+					require.Equal(t, value, attrs[key])
+				}
+			},
+		},
+		// EmptyWithOption
+		{
+			Name: "EmptyWithOption",
+			Config: `
+			data "coder_parameter" "parameter" {
+				name = "parameter"
+				type = "number"
+				
+				option {	
+					name = "option"
+					value = "5"	
+				}
+			}
+`,
+			ExpectError: nil,
+			Check: func(state *terraform.ResourceState) {
+				attrs := state.Primary.Attributes
+				for key, value := range map[string]interface{}{
+					"default":  "",
+					"value":    "",
+					"optional": "false",
+				} {
+					require.Equal(t, value, attrs[key])
+				}
+			},
+		},
+		// DefaultSet
+		{
+			Name: "DefaultSet",
+			Config: `
+			data "coder_parameter" "parameter" {
+				name = "parameter"
+				type = "number"
+				default = "5"
+			}
+`,
+			ExpectError: nil,
+			Check: func(state *terraform.ResourceState) {
+				attrs := state.Primary.Attributes
+				for key, value := range map[string]interface{}{
+					"default":  "5",
+					"value":    "5",
+					"optional": "true",
+				} {
+					require.Equal(t, value, attrs[key])
+				}
+			},
+		},
+		{
+			Name: "DefaultSetInOption",
+			Config: `
+			data "coder_parameter" "parameter" {
+				name = "parameter"
+				type = "number"
+				default = "5"
+				option {	
+					name = "option"
+					value = "5"	
+				}
+			}
+`,
+			ExpectError: nil,
+			Check: func(state *terraform.ResourceState) {
+				attrs := state.Primary.Attributes
+				for key, value := range map[string]interface{}{
+					"default":  "5",
+					"value":    "5",
+					"optional": "true",
+				} {
+					require.Equal(t, value, attrs[key])
+				}
+			},
+		},
+		{
+			Name: "DefaultSetOutOption",
+			Config: `
+			data "coder_parameter" "parameter" {
+				name = "parameter"
+				type = "number"
+				default = "2"
+				option {	
+					name = "option"
+					value = "5"	
+				}
+			}
+`,
+			ExpectError: nil,
+			Check: func(state *terraform.ResourceState) {
+				attrs := state.Primary.Attributes
+				for key, value := range map[string]interface{}{
+					"default":  "5",
+					"value":    "5",
+					"optional": "true",
+				} {
+					require.Equal(t, value, attrs[key])
+				}
+			},
+		},
+	} {
+		tc := tc
+		//nolint:paralleltest,tparallel // Parameters load values from env vars
+		t.Run(tc.Name, func(t *testing.T) {
+			if tc.Value != "" {
+				t.Setenv(provider.ParameterEnvironmentVariable("parameter"), tc.Value)
+			}
+			resource.Test(t, resource.TestCase{
+				ProviderFactories: coderFactory(),
+				IsUnitTest:        true,
+				Steps: []resource.TestStep{{
+					Config:      tc.Config,
+					ExpectError: tc.ExpectError,
+					Check: func(state *terraform.State) error {
+						require.Len(t, state.Modules, 1)
+						require.Len(t, state.Modules[0].Resources, 1)
+						param := state.Modules[0].Resources["data.coder_parameter.parameter"]
+						require.NotNil(t, param)
+						if tc.Check != nil {
+							tc.Check(param)
+						}
+						return nil
+					},
+				}},
+			})
+		})
+	}
+}
+
 func TestValueValidatesType(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
@@ -779,6 +956,25 @@ func TestValueValidatesType(t *testing.T) {
 		Min:       0,
 		Max:       2,
 		Monotonic: "decreasing",
+	}, {
+		Name:        "ValidListOfStrings",
+		Type:        "list(string)",
+		Value:       `["first","second","third"]`,
+		MinDisabled: true,
+		MaxDisabled: true,
+	}, {
+		Name:        "InvalidListOfStrings",
+		Type:        "list(string)",
+		Value:       `["first","second","third"`,
+		MinDisabled: true,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("is not valid list of strings"),
+	}, {
+		Name:        "EmptyListOfStrings",
+		Type:        "list(string)",
+		Value:       `[]`,
+		MinDisabled: true,
+		MaxDisabled: true,
 	}, {
 		Name:        "ValidListOfStrings",
 		Type:        "list(string)",
