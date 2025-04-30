@@ -696,35 +696,61 @@ data "coder_parameter" "region" {
 //
 //nolint:paralleltest,tparallel // Parameters load values from env vars
 func TestParameterValidationEnforcement(t *testing.T) {
+	// Some interesting observations:
+	// - Validation logic does not apply to the value of 'options'
+	//	- [NumDefInvOpt] So an invalid option can be present and selected, but would fail
+	// - Validation logic does not apply to the default if a value is given
+	//	- [NumIns/DefInv] So the default can be invalid if an input value is valid.
+	//	  The value is therefore not really optional, but it is marked as such.
+	// - [NumInsNotOptsVal | NumsInsNotOpts] values do not need to be in the option set?
+
 	table := strings.TrimSpace(`
-| Name          | Type          | Input Value | Default | Options           | Validation | -> | Output Value | Optional | Error        |
-|---------------|---------------|-------------|---------|-------------------|------------|----|--------------|----------|--------------|
-|               | Empty Vals    |             |         |                   |            |    |              |          |              |
-| Emty          | string,number |             |         |                   |            |    | ""           | false    |              |
-| EmtyOpts      | string,number |             |         | 1,2,3             |            |    | ""           | false    |              |
-| EmtyRegex     | string        |             |         |                   | world      |    |              |          | regex error  |
-| EmtyMin       | number        |             |         |                   | 1-10       |    |              |          | 1 <  < 10    |
-| EmtyMinOpt    | number        |             |         | 1,2,3             | 2-5        |    |              |          | 2 <  < 5     |
-| EmtyRegexOpt  | string        |             |         | "hello","goodbye" | goodbye    |    |              |          | regex error  |
-| EmtyRegexOk   | string        |             |         |                   | .*         |    | ""           | false    |              |
-|               |               |             |         |                   |            |    |              |          |              |
-|               | Default Set   | No inputs   |         |                   |            |    |              |          |              |
-| NumDef        | number        |             | 5       |                   |            |    | 5            | true     |              |
-| NumDefVal     | number        |             | 5       |                   | 3-7        |    | 5            | true     |              |
-| NumDefInv     | number        |             | 5       |                   | 10-        |    | 5            |          | 10 < 5 < 0   |
-| NumDefOpts    | number        |             | 5       | 1,3,5,7           | 2-6        |    | 5            | true     |              |
-| NumDefNotOpts | number        |             | 5       | 1,3,7,9           | 2-6        |    |              |          | valid option |
-|               |               |             |         |                   |            |    |              |          |              |
-| StrDef        | string        |             | hello   |                   |            |    | hello        | true     |              |
-| StrDefInv     | string        |             | hello   |                   | world      |    |              |          | regex error  |
-| StrDefOpts    | string        |             | a       | a,b,c             |            |    | a            | true     |              |
-| StrDefNotOpts | string        |             | a       | b,c,d             |            |    |              |          | valid option |
-| StrDefOpts    | string        |             | a       | a,b,c,d,e,f       | [a-c]      |    | a            | true     |              |
-|               |               |             |         |                   |            |    |              |          |              |
-|               | Input Vals    |             |         |                   |            |    |              |          |              |
-| NumIns        | number        | 3           | 5       |                   |            |    | 3            | true     |              |
-|               |               |             |         |                   |            |    |              |          |              |
-|               |               |             |         |                   |            |    |              |          |              |
+| Name                | Type          | Input Value | Default | Options           | Validation | -> | Output Value | Optional | Error        |
+|---------------------|---------------|-------------|---------|-------------------|------------|----|--------------|----------|--------------|
+|                     | Empty Vals    |             |         |                   |            |    |              |          |              |
+| Emty                | string,number |             |         |                   |            |    | ""           | false    |              |
+| EmtyOpts            | string,number |             |         | 1,2,3             |            |    | ""           | false    |              |
+| EmtyRegex           | string        |             |         |                   | world      |    |              |          | regex error  |
+| EmtyMin             | number        |             |         |                   | 1-10       |    |              |          | 1 <  < 10    |
+| EmtyMinOpt          | number        |             |         | 1,2,3             | 2-5        |    |              |          | 2 <  < 5     |
+| EmtyRegexOpt        | string        |             |         | "hello","goodbye" | goodbye    |    |              |          | regex error  |
+| EmtyRegexOk         | string        |             |         |                   | .*         |    | ""           | false    |              |
+|                     |               |             |         |                   |            |    |              |          |              |
+|                     | Default Set   | No inputs   |         |                   |            |    |              |          |              |
+| NumDef              | number        |             | 5       |                   |            |    | 5            | true     |              |
+| NumDefVal           | number        |             | 5       |                   | 3-7        |    | 5            | true     |              |
+| NumDefInv           | number        |             | 5       |                   | 10-        |    |              |          | 10 < 5 < 0   |
+| NumDefOpts          | number        |             | 5       | 1,3,5,7           | 2-6        |    | 5            | true     |              |
+| NumDefNotOpts       | number        |             | 5       | 1,3,7,9           | 2-6        |    |              |          | valid option |
+| NumDefInvOpt        | number        |             | 5       | 1,3,5,7           | 6-10       |    |              |          | 6 < 5 < 10   |
+|                     |               |             |         |                   |            |    |              |          |              |
+| StrDef              | string        |             | hello   |                   |            |    | hello        | true     |              |
+| StrDefInv           | string        |             | hello   |                   | world      |    |              |          | regex error  |
+| StrDefOpts          | string        |             | a       | a,b,c             |            |    | a            | true     |              |
+| StrDefNotOpts       | string        |             | a       | b,c,d             |            |    |              |          | valid option |
+| StrDefOpts          | string        |             | a       | a,b,c,d,e,f       | [a-c]      |    | a            | true     |              |
+| StrDefInvOpt        | string        |             | d       | a,b,c,d,e,f       | [a-c]      |    |              |          | regex error  |
+|                     |               |             |         |                   |            |    |              |          |              |
+|                     | Input Vals    |             |         |                   |            |    |              |          |              |
+| NumIns              | number        | 3           |         |                   |            |    | 3            | false    |              |
+| NumInsDef           | number        | 3           | 5       |                   |            |    | 3            | true     |              |
+| NumIns/DefInv       | number        | 3           | 5       |                   | 1-3        |    | 3            | true     |              |
+| NumIns=DefInv       | number        | 5           | 5       |                   | 1-3        |    |              |          | 1 < 5 < 3    |
+| NumInsOpts          | number        | 3           | 5       | 1,2,3,4,5         | 1-3        |    | 3            | true     |              |
+| NumInsNotOptsVal    | number        | 3           | 5       | 1,2,4,5           | 1-3        |    | 3            | true     |              |
+| NumInsNotOptsInv    | number        | 3           | 5       | 1,2,4,5           | 1-2        |    |              | true     | 1 < 3 < 2    |
+| NumInsNotOpts       | number        | 3           | 5       | 1,2,4,5           |            |    | 3            | true     |              |
+| NumInsNotOpts/NoDef | number        | 3           |         | 1,2,4,5           |            |    | 3            | false    |              |
+|                     |               |             |         |                   |            |    |              |          |              |
+| StrIns              | string        | c           |         |                   |            |    | c            | false    |              |
+| StrInsDef           | string        | c           | e       |                   |            |    | c            | true     |              |
+| StrIns/DefInv       | string        | c           | e       |                   | [a-c]      |    | c            | true     |              |
+| NumIns=DefInv       | string        | e           | e       |                   | [a-c]      |    |              |          | regex error  |
+| StrInsOpts          | string        | c           | e       | a,b,c,d,e         | [a-c]      |    | c            | true     |              |
+| StrInsNotOptsVal    | string        | c           | e       | a,b,d,e           | [a-c]      |    | c            | true     |              |
+| StrInsNotOptsInv    | string        | c           | e       | a,b,d,e           | [a-b]      |    |              |          | regex error  |
+| StrInsNotOpts       | string        | c           | e       | a,b,d,e           |            |    | c            | true     |              |
+| StrInsNotOpts/NoDef | string        | c           |         | a,b,d,e           |            |    | c            | false    |              |
 `)
 
 	type row struct {
@@ -832,6 +858,12 @@ func TestParameterValidationEnforcement(t *testing.T) {
 					t.Setenv(provider.ParameterEnvironmentVariable("parameter"), row.InputValue)
 				}
 
+				if row.Error != nil {
+					if row.OutputValue != "" {
+						t.Errorf("output value %q should not be set if error is set", row.OutputValue)
+					}
+				}
+
 				var cfg strings.Builder
 				cfg.WriteString("data \"coder_parameter\" \"parameter\" {\n")
 				cfg.WriteString("\tname = \"parameter\"\n")
@@ -896,7 +928,7 @@ func TestParameterValidationEnforcement(t *testing.T) {
 							for key, expected := range map[string]string{
 								"optional": strconv.FormatBool(row.Optional),
 							} {
-								require.Equal(t, expected, param.Primary.Attributes[key])
+								require.Equal(t, expected, param.Primary.Attributes[key], "optional")
 							}
 
 							return nil
