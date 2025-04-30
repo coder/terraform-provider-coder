@@ -2,7 +2,9 @@
 |----------------------|---------------|-----------|---------|-------------------|------------|----|--------|----------|--------------|
 |                      | Empty Vals    |           |         |                   |            |    |        |          |              |
 | Empty                | string,number |           |         |                   |            |    | ""     | false    |              |
+| EmptyDupeOps         | string,number |           |         | 1,1,1             |            |    |        |          | unique       |
 | EmptyList            | list(string)  |           |         |                   |            |    | ""     | false    |              |
+| EmptyListDupeOpts    | list(string)  |           |         | ["a"],["a"]       |            |    |        |          | unique       |
 | EmptyMulti           | tag-select    |           |         |                   |            |    | ""     | false    |              |
 | EmptyOpts            | string,number |           |         | 1,2,3             |            |    | ""     | false    |              |
 | EmptyRegex           | string        |           |         |                   | world      |    |        |          | regex error  |
@@ -18,6 +20,8 @@
 | NumDefOpts           | number        |           | 5       | 1,3,5,7           | 2-6        |    | 5      | true     |              |
 | NumDefNotOpts        | number        |           | 5       | 1,3,7,9           | 2-6        |    |        |          | valid option |
 | NumDefInvOpt         | number        |           | 5       | 1,3,5,7           | 6-10       |    |        |          | 6 < 5 < 10   |
+| NumDefNotNum         | number        |           | a       |                   |            |    |        |          | a number     |
+| NumDefOptsNotNum     | number        |           | 1       | 1,a,2             |            |    |        |          | a number     |
 |                      |               |           |         |                   |            |    |        |          |              |
 | StrDef               | string        |           | hello   |                   |            |    | hello  | true     |              |
 | StrDefInv            | string        |           | hello   |                   | world      |    |        |          | regex error  |
@@ -36,6 +40,8 @@
 |                      |               |           |         |                   |            |    |        |          |              |
 |                      | Input Vals    |           |         |                   |            |    |        |          |              |
 | NumIns               | number        | 3         |         |                   |            |    | 3      | false    |              |
+| NumInsNotNum         | number        | a         |         |                   |            |    | a      | false    |              |
+| NumInsNotNumInv      | number        | a         |         |                   | 1-3        |    |        |          | 1 < a < 3    |
 | NumInsDef            | number        | 3         | 5       |                   |            |    | 3      | true     |              |
 | NumIns/DefInv        | number        | 3         | 5       |                   | 1-3        |    | 3      | true     |              |
 | NumIns=DefInv        | number        | 5         | 5       |                   | 1-3        |    |        |          | 1 < 5 < 3    |
@@ -46,6 +52,7 @@
 | NumInsNotOpts/NoDef  | number        | 3         |         | 1,2,4,5           |            |    | 3      | false    |              |
 |                      |               |           |         |                   |            |    |        |          |              |
 | StrIns               | string        | c         |         |                   |            |    | c      | false    |              |
+| StrInsDupeOpts       | string        | c         |         | a,b,c,c           |            |    |        |          | unique       |
 | StrInsDef            | string        | c         | e       |                   |            |    | c      | true     |              |
 | StrIns/DefInv        | string        | c         | e       |                   | [a-c]      |    | c      | true     |              |
 | StrIns=DefInv        | string        | e         | e       |                   | [a-c]      |    |        |          | regex error  |
@@ -58,6 +65,7 @@
 |                      |               |           |         |                   |            |    |        |          |              |
 |                      | list(string)  |           |         |                   |            |    |        |          |              |
 | LStrIns              | list(string)  | ["c"]     |         |                   |            |    | ["c"]  | false    |              |
+| LStrInsNotList       | list(string)  | c         |         |                   |            |    | c      | false    |              |
 | LStrInsDef           | list(string)  | ["c"]     | ["e"]   |                   |            |    | ["c"]  | true     |              |
 | LStrIns/DefInv       | list(string)  | ["c"]     | ["e"]   |                   | [a-c]      |    |        |          | regex cannot |
 | LStrInsOpts          | list(string)  | ["c"]     | ["e"]   | ["c"],["d"],["e"] |            |    | ["c"]  | true     |              |
@@ -65,6 +73,7 @@
 | LStrInsNotOpts/NoDef | list(string)  | ["c"]     |         | ["d"],["e"]       |            |    | ["c"]  | false    |              |
 |                      |               |           |         |                   |            |    |        |          |              |
 | MulInsOpts           | multi-select  | ["c"]     | ["e"]   | c,d,e             |            |    | ["c"]  | true     |              |
+| MulInsNotListOpts    | multi-select  | c         | ["e"]   | c,d,e             |            |    | c      | true     |              |
 | MulInsNotOpts        | multi-select  | ["c"]     | ["e"]   | d,e               |            |    | ["c"]  | true     |              |
 | MulInsNotOpts/NoDef  | multi-select  | ["c"]     |         | d,e               |            |    | ["c"]  | false    |              |
 | MulInsInvOpts        | multi-select  | ["c"]     | ["e"]   | c,d,e             | [a-c]      |    |        |          | regex cannot |
