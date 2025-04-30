@@ -3,6 +3,7 @@ package provider_test
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -686,180 +687,224 @@ data "coder_parameter" "region" {
 	}
 }
 
+// TestParameterValidationEnforcement tests various parameter states and the
+// validation enforcement that should be applied to them. The table is described
+// by a markdown table. This is done so that the test cases can be more easily
+// edited and read.
+//
+// Copy and paste the table to https://www.tablesgenerator.com/markdown_tables for easier editing
+//
 //nolint:paralleltest,tparallel // Parameters load values from env vars
 func TestParameterValidationEnforcement(t *testing.T) {
-	for _, tc := range []struct {
+	table := strings.TrimSpace(`
+| Name          | Type          | Input Value | Default | Options           | Validation | -> | Output Value | Optional | Error        |
+|---------------|---------------|-------------|---------|-------------------|------------|----|--------------|----------|--------------|
+|               | Empty Vals    |             |         |                   |            |    |              |          |              |
+| Emty          | string,number |             |         |                   |            |    | ""           | false    |              |
+| EmtyOpts      | string,number |             |         | 1,2,3             |            |    | ""           | false    |              |
+| EmtyRegex     | string        |             |         |                   | world      |    |              |          | regex error  |
+| EmtyMin       | number        |             |         |                   | 1-10       |    |              |          | 1 <  < 10    |
+| EmtyMinOpt    | number        |             |         | 1,2,3             | 2-5        |    |              |          | 2 <  < 5     |
+| EmtyRegexOpt  | string        |             |         | "hello","goodbye" | goodbye    |    |              |          | regex error  |
+| EmtyRegexOk   | string        |             |         |                   | .*         |    | ""           | false    |              |
+|               |               |             |         |                   |            |    |              |          |              |
+|               | Default Set   | No inputs   |         |                   |            |    |              |          |              |
+| NumDef        | number        |             | 5       |                   |            |    | 5            | true     |              |
+| NumDefVal     | number        |             | 5       |                   | 3-7        |    | 5            | true     |              |
+| NumDefInv     | number        |             | 5       |                   | 10-        |    | 5            |          | 10 < 5 < 0   |
+| NumDefOpts    | number        |             | 5       | 1,3,5,7           | 2-6        |    | 5            | true     |              |
+| NumDefNotOpts | number        |             | 5       | 1,3,7,9           | 2-6        |    |              |          | valid option |
+|               |               |             |         |                   |            |    |              |          |              |
+| StrDef        | string        |             | hello   |                   |            |    | hello        | true     |              |
+| StrDefInv     | string        |             | hello   |                   | world      |    |              |          | regex error  |
+| StrDefOpts    | string        |             | a       | a,b,c             |            |    | a            | true     |              |
+| StrDefNotOpts | string        |             | a       | b,c,d             |            |    |              |          | valid option |
+| StrDefOpts    | string        |             | a       | a,b,c,d,e,f       | [a-c]      |    | a            | true     |              |
+|               |               |             |         |                   |            |    |              |          |              |
+|               | Input Vals    |             |         |                   |            |    |              |          |              |
+| NumIns        | number        | 3           | 5       |                   |            |    | 3            | true     |              |
+|               |               |             |         |                   |            |    |              |          |              |
+|               |               |             |         |                   |            |    |              |          |              |
+`)
+
+	type row struct {
 		Name        string
-		Config      string
-		Value       string
-		ExpectError *regexp.Regexp
-		Check       func(state *terraform.ResourceState)
-	}{
-		// Empty
-		{
-			Name: "EmptyString",
-			Config: `
-			data "coder_parameter" "parameter" {
-				name = "parameter"
-				type = "string"
+		Types       []string
+		InputValue  string
+		Default     string
+		Options     []string
+		Validation  *provider.Validation
+		OutputValue string
+		Optional    bool
+		Error       *regexp.Regexp
+	}
+
+	rows := make([]row, 0)
+	lines := strings.Split(table, "\n")
+	validMinMax := regexp.MustCompile("^[0-9]*-[0-9]*$")
+	for _, line := range lines[2:] {
+		columns := strings.Split(line, "|")
+		columns = columns[1 : len(columns)-1]
+		for i := range columns {
+			// Trim the whitespace from all columns
+			columns[i] = strings.TrimSpace(columns[i])
+		}
+
+		if columns[0] == "" {
+			continue // Skip rows with empty names
+		}
+
+		optional, err := strconv.ParseBool(columns[8])
+		if columns[8] != "" {
+			// Value does not matter if not specified
+			require.NoError(t, err)
+		}
+
+		var rerr *regexp.Regexp
+		if columns[9] != "" {
+			rerr, err = regexp.Compile(columns[9])
+			if err != nil {
+				t.Fatalf("failed to parse error column %q: %v", columns[9], err)
 			}
-`,
-			ExpectError: nil,
-			Check: func(state *terraform.ResourceState) {
-				attrs := state.Primary.Attributes
-				for key, value := range map[string]interface{}{
-					"default":  "",
-					"value":    "",
-					"optional": "false",
-				} {
-					require.Equal(t, value, attrs[key])
+		}
+		var options []string
+		if columns[4] != "" {
+			options = strings.Split(columns[4], ",")
+		}
+
+		var validation *provider.Validation
+		if columns[5] != "" {
+			// Min-Max validation should look like:
+			//	1-10    :: min=1, max=10
+			//	-10     :: max=10
+			//	1-      :: min=1
+			if validMinMax.MatchString(columns[5]) {
+				parts := strings.Split(columns[5], "-")
+				min, _ := strconv.ParseInt(parts[0], 10, 64)
+				max, _ := strconv.ParseInt(parts[1], 10, 64)
+				validation = &provider.Validation{
+					Min:         int(min),
+					MinDisabled: parts[0] == "",
+					Max:         int(max),
+					MaxDisabled: parts[1] == "",
+					Monotonic:   "",
+					Regex:       "",
+					Error:       "{min} < {value} < {max}",
 				}
-			},
-		},
-		{
-			Name: "EmptyNumber",
-			Config: `
-			data "coder_parameter" "parameter" {
-				name = "parameter"
-				type = "number"
-			}
-`,
-			ExpectError: nil,
-			Check: func(state *terraform.ResourceState) {
-				attrs := state.Primary.Attributes
-				for key, value := range map[string]interface{}{
-					"default":  "",
-					"value":    "",
-					"optional": "false",
-				} {
-					require.Equal(t, value, attrs[key])
-				}
-			},
-		},
-		// EmptyWithOption
-		{
-			Name: "EmptyWithOption",
-			Config: `
-			data "coder_parameter" "parameter" {
-				name = "parameter"
-				type = "number"
-				
-				option {	
-					name = "option"
-					value = "5"	
-				}
-			}
-`,
-			ExpectError: nil,
-			Check: func(state *terraform.ResourceState) {
-				attrs := state.Primary.Attributes
-				for key, value := range map[string]interface{}{
-					"default":  "",
-					"value":    "",
-					"optional": "false",
-				} {
-					require.Equal(t, value, attrs[key])
-				}
-			},
-		},
-		// DefaultSet
-		{
-			Name: "DefaultSet",
-			Config: `
-			data "coder_parameter" "parameter" {
-				name = "parameter"
-				type = "number"
-				default = "5"
-			}
-`,
-			ExpectError: nil,
-			Check: func(state *terraform.ResourceState) {
-				attrs := state.Primary.Attributes
-				for key, value := range map[string]interface{}{
-					"default":  "5",
-					"value":    "5",
-					"optional": "true",
-				} {
-					require.Equal(t, value, attrs[key])
-				}
-			},
-		},
-		{
-			Name: "DefaultSetInOption",
-			Config: `
-			data "coder_parameter" "parameter" {
-				name = "parameter"
-				type = "number"
-				default = "5"
-				option {	
-					name = "option"
-					value = "5"	
+			} else {
+				validation = &provider.Validation{
+					Min:         0,
+					MinDisabled: true,
+					Max:         0,
+					MaxDisabled: true,
+					Monotonic:   "",
+					Regex:       columns[5],
+					Error:       "regex error",
 				}
 			}
-`,
-			ExpectError: nil,
-			Check: func(state *terraform.ResourceState) {
-				attrs := state.Primary.Attributes
-				for key, value := range map[string]interface{}{
-					"default":  "5",
-					"value":    "5",
-					"optional": "true",
-				} {
-					require.Equal(t, value, attrs[key])
-				}
-			},
-		},
-		{
-			Name: "DefaultSetOutOption",
-			Config: `
-			data "coder_parameter" "parameter" {
-				name = "parameter"
-				type = "number"
-				default = "2"
-				option {	
-					name = "option"
-					value = "5"	
-				}
-			}
-`,
-			ExpectError: nil,
-			Check: func(state *terraform.ResourceState) {
-				attrs := state.Primary.Attributes
-				for key, value := range map[string]interface{}{
-					"default":  "5",
-					"value":    "5",
-					"optional": "true",
-				} {
-					require.Equal(t, value, attrs[key])
-				}
-			},
-		},
-	} {
-		tc := tc
-		//nolint:paralleltest,tparallel // Parameters load values from env vars
-		t.Run(tc.Name, func(t *testing.T) {
-			if tc.Value != "" {
-				t.Setenv(provider.ParameterEnvironmentVariable("parameter"), tc.Value)
-			}
-			resource.Test(t, resource.TestCase{
-				ProviderFactories: coderFactory(),
-				IsUnitTest:        true,
-				Steps: []resource.TestStep{{
-					Config:      tc.Config,
-					ExpectError: tc.ExpectError,
-					Check: func(state *terraform.State) error {
-						require.Len(t, state.Modules, 1)
-						require.Len(t, state.Modules[0].Resources, 1)
-						param := state.Modules[0].Resources["data.coder_parameter.parameter"]
-						require.NotNil(t, param)
-						if tc.Check != nil {
-							tc.Check(param)
-						}
-						return nil
-					},
-				}},
-			})
+		}
+
+		rows = append(rows, row{
+			Name:        columns[0],
+			Types:       strings.Split(columns[1], ","),
+			InputValue:  columns[2],
+			Default:     columns[3],
+			Options:     options,
+			Validation:  validation,
+			OutputValue: columns[7],
+			Optional:    optional,
+			Error:       rerr,
 		})
+	}
+
+	stringLiteral := func(s string) string {
+		if s == "" {
+			return `""`
+		}
+		return fmt.Sprintf("%q", s)
+	}
+
+	for rowIndex, row := range rows {
+		for _, rt := range row.Types {
+			//nolint:paralleltest,tparallel // Parameters load values from env vars
+			t.Run(fmt.Sprintf("%d|%s:%s", rowIndex, row.Name, rt), func(t *testing.T) {
+				if row.InputValue != "" {
+					t.Setenv(provider.ParameterEnvironmentVariable("parameter"), row.InputValue)
+				}
+
+				var cfg strings.Builder
+				cfg.WriteString("data \"coder_parameter\" \"parameter\" {\n")
+				cfg.WriteString("\tname = \"parameter\"\n")
+				cfg.WriteString(fmt.Sprintf("\ttype = \"%s\"\n", rt))
+				if row.Default != "" {
+					cfg.WriteString(fmt.Sprintf("\tdefault = %s\n", stringLiteral(row.Default)))
+				}
+
+				for _, opt := range row.Options {
+					cfg.WriteString("\toption {\n")
+					cfg.WriteString(fmt.Sprintf("\t\tname = %s\n", stringLiteral(opt)))
+					cfg.WriteString(fmt.Sprintf("\t\tvalue = %s\n", stringLiteral(opt)))
+					cfg.WriteString("\t}\n")
+				}
+
+				if row.Validation != nil {
+					cfg.WriteString("\tvalidation {\n")
+					if !row.Validation.MinDisabled {
+						cfg.WriteString(fmt.Sprintf("\t\tmin = %d\n", row.Validation.Min))
+					}
+					if !row.Validation.MaxDisabled {
+						cfg.WriteString(fmt.Sprintf("\t\tmax = %d\n", row.Validation.Max))
+					}
+					if row.Validation.Monotonic != "" {
+						cfg.WriteString(fmt.Sprintf("\t\tmonotonic = \"%s\"\n", row.Validation.Monotonic))
+					}
+					if row.Validation.Regex != "" {
+						cfg.WriteString(fmt.Sprintf("\t\tregex = %q\n", row.Validation.Regex))
+					}
+					cfg.WriteString(fmt.Sprintf("\t\terror = %q\n", row.Validation.Error))
+					cfg.WriteString("\t}\n")
+				}
+
+				cfg.WriteString("}\n")
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      cfg.String(),
+						ExpectError: row.Error,
+						Check: func(state *terraform.State) error {
+							require.Len(t, state.Modules, 1)
+							require.Len(t, state.Modules[0].Resources, 1)
+							param := state.Modules[0].Resources["data.coder_parameter.parameter"]
+							require.NotNil(t, param)
+
+							if row.Default == "" {
+								_, ok := param.Primary.Attributes["default"]
+								require.False(t, ok, "default should not be set")
+							} else {
+								require.Equal(t, strings.Trim(row.Default, `"`), param.Primary.Attributes["default"])
+							}
+
+							if row.OutputValue == "" {
+								_, ok := param.Primary.Attributes["value"]
+								require.False(t, ok, "output value should not be set")
+							} else {
+								require.Equal(t, strings.Trim(row.OutputValue, `"`), param.Primary.Attributes["value"])
+							}
+
+							for key, expected := range map[string]string{
+								"optional": strconv.FormatBool(row.Optional),
+							} {
+								require.Equal(t, expected, param.Primary.Attributes[key])
+							}
+
+							return nil
+						},
+					}},
+				})
+			})
+		}
 	}
 }
 
