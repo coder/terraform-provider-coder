@@ -2,7 +2,9 @@ package provider_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -686,6 +688,217 @@ data "coder_parameter" "region" {
 	}
 }
 
+// TestParameterValidationEnforcement tests various parameter states and the
+// validation enforcement that should be applied to them. The table is described
+// by a markdown table. This is done so that the test cases can be more easily
+// edited and read.
+//
+// Copy and paste the table to https://www.tablesgenerator.com/markdown_tables for easier editing
+//
+//nolint:paralleltest,tparallel // Parameters load values from env vars
+func TestParameterValidationEnforcement(t *testing.T) {
+	// Some interesting observations:
+	// - Validation logic does not apply to the value of 'options'
+	//	- [NumDefInvOpt] So an invalid option can be present and selected, but would fail
+	// - Validation logic does not apply to the default if a value is given
+	//	- [NumIns/DefInv] So the default can be invalid if an input value is valid.
+	//	  The value is therefore not really optional, but it is marked as such.
+	// - [NumInsNotOptsVal | NumsInsNotOpts] values do not need to be in the option set?
+	table, err := os.ReadFile("testdata/parameter_table.md")
+	require.NoError(t, err)
+
+	type row struct {
+		Name        string
+		Types       []string
+		InputValue  string
+		Default     string
+		Options     []string
+		Validation  *provider.Validation
+		OutputValue string
+		Optional    bool
+		Error       *regexp.Regexp
+	}
+
+	rows := make([]row, 0)
+	lines := strings.Split(string(table), "\n")
+	validMinMax := regexp.MustCompile("^[0-9]*-[0-9]*$")
+	for _, line := range lines[2:] {
+		columns := strings.Split(line, "|")
+		columns = columns[1 : len(columns)-1]
+		for i := range columns {
+			// Trim the whitespace from all columns
+			columns[i] = strings.TrimSpace(columns[i])
+		}
+
+		if columns[0] == "" {
+			continue // Skip rows with empty names
+		}
+
+		optional, err := strconv.ParseBool(columns[8])
+		if columns[8] != "" {
+			// Value does not matter if not specified
+			require.NoError(t, err)
+		}
+
+		var rerr *regexp.Regexp
+		if columns[9] != "" {
+			rerr, err = regexp.Compile(columns[9])
+			if err != nil {
+				t.Fatalf("failed to parse error column %q: %v", columns[9], err)
+			}
+		}
+		var options []string
+		if columns[4] != "" {
+			options = strings.Split(columns[4], ",")
+		}
+
+		var validation *provider.Validation
+		if columns[5] != "" {
+			// Min-Max validation should look like:
+			//	1-10    :: min=1, max=10
+			//	-10     :: max=10
+			//	1-      :: min=1
+			if validMinMax.MatchString(columns[5]) {
+				parts := strings.Split(columns[5], "-")
+				min, _ := strconv.ParseInt(parts[0], 10, 64)
+				max, _ := strconv.ParseInt(parts[1], 10, 64)
+				validation = &provider.Validation{
+					Min:         int(min),
+					MinDisabled: parts[0] == "",
+					Max:         int(max),
+					MaxDisabled: parts[1] == "",
+					Monotonic:   "",
+					Regex:       "",
+					Error:       "{min} < {value} < {max}",
+				}
+			} else {
+				validation = &provider.Validation{
+					Min:         0,
+					MinDisabled: true,
+					Max:         0,
+					MaxDisabled: true,
+					Monotonic:   "",
+					Regex:       columns[5],
+					Error:       "regex error",
+				}
+			}
+		}
+
+		rows = append(rows, row{
+			Name:        columns[0],
+			Types:       strings.Split(columns[1], ","),
+			InputValue:  columns[2],
+			Default:     columns[3],
+			Options:     options,
+			Validation:  validation,
+			OutputValue: columns[7],
+			Optional:    optional,
+			Error:       rerr,
+		})
+	}
+
+	stringLiteral := func(s string) string {
+		if s == "" {
+			return `""`
+		}
+		return fmt.Sprintf("%q", s)
+	}
+
+	for rowIndex, row := range rows {
+		for _, rt := range row.Types {
+			//nolint:paralleltest,tparallel // Parameters load values from env vars
+			t.Run(fmt.Sprintf("%d|%s:%s", rowIndex, row.Name, rt), func(t *testing.T) {
+				if row.InputValue != "" {
+					t.Setenv(provider.ParameterEnvironmentVariable("parameter"), row.InputValue)
+				}
+
+				if row.Error != nil {
+					if row.OutputValue != "" {
+						t.Errorf("output value %q should not be set if error is set", row.OutputValue)
+					}
+				}
+
+				var cfg strings.Builder
+				cfg.WriteString("data \"coder_parameter\" \"parameter\" {\n")
+				cfg.WriteString("\tname = \"parameter\"\n")
+				if rt == "multi-select" || rt == "tag-select" {
+					cfg.WriteString(fmt.Sprintf("\ttype = \"%s\"\n", "list(string)"))
+					cfg.WriteString(fmt.Sprintf("\tform_type = \"%s\"\n", rt))
+				} else {
+					cfg.WriteString(fmt.Sprintf("\ttype = \"%s\"\n", rt))
+				}
+				if row.Default != "" {
+					cfg.WriteString(fmt.Sprintf("\tdefault = %s\n", stringLiteral(row.Default)))
+				}
+
+				for _, opt := range row.Options {
+					cfg.WriteString("\toption {\n")
+					cfg.WriteString(fmt.Sprintf("\t\tname = %s\n", stringLiteral(opt)))
+					cfg.WriteString(fmt.Sprintf("\t\tvalue = %s\n", stringLiteral(opt)))
+					cfg.WriteString("\t}\n")
+				}
+
+				if row.Validation != nil {
+					cfg.WriteString("\tvalidation {\n")
+					if !row.Validation.MinDisabled {
+						cfg.WriteString(fmt.Sprintf("\t\tmin = %d\n", row.Validation.Min))
+					}
+					if !row.Validation.MaxDisabled {
+						cfg.WriteString(fmt.Sprintf("\t\tmax = %d\n", row.Validation.Max))
+					}
+					if row.Validation.Monotonic != "" {
+						cfg.WriteString(fmt.Sprintf("\t\tmonotonic = \"%s\"\n", row.Validation.Monotonic))
+					}
+					if row.Validation.Regex != "" {
+						cfg.WriteString(fmt.Sprintf("\t\tregex = %q\n", row.Validation.Regex))
+					}
+					cfg.WriteString(fmt.Sprintf("\t\terror = %q\n", row.Validation.Error))
+					cfg.WriteString("\t}\n")
+				}
+
+				cfg.WriteString("}\n")
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      cfg.String(),
+						ExpectError: row.Error,
+						Check: func(state *terraform.State) error {
+							require.Len(t, state.Modules, 1)
+							require.Len(t, state.Modules[0].Resources, 1)
+							param := state.Modules[0].Resources["data.coder_parameter.parameter"]
+							require.NotNil(t, param)
+
+							if row.Default == "" {
+								_, ok := param.Primary.Attributes["default"]
+								require.False(t, ok, "default should not be set")
+							} else {
+								require.Equal(t, strings.Trim(row.Default, `"`), param.Primary.Attributes["default"])
+							}
+
+							if row.OutputValue == "" {
+								_, ok := param.Primary.Attributes["value"]
+								require.False(t, ok, "output value should not be set")
+							} else {
+								require.Equal(t, strings.Trim(row.OutputValue, `"`), param.Primary.Attributes["value"])
+							}
+
+							for key, expected := range map[string]string{
+								"optional": strconv.FormatBool(row.Optional),
+							} {
+								require.Equal(t, expected, param.Primary.Attributes[key], "optional")
+							}
+
+							return nil
+						},
+					}},
+				})
+			})
+		}
+	}
+}
+
 func TestValueValidatesType(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
@@ -779,6 +992,25 @@ func TestValueValidatesType(t *testing.T) {
 		Min:       0,
 		Max:       2,
 		Monotonic: "decreasing",
+	}, {
+		Name:        "ValidListOfStrings",
+		Type:        "list(string)",
+		Value:       `["first","second","third"]`,
+		MinDisabled: true,
+		MaxDisabled: true,
+	}, {
+		Name:        "InvalidListOfStrings",
+		Type:        "list(string)",
+		Value:       `["first","second","third"`,
+		MinDisabled: true,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("is not valid list of strings"),
+	}, {
+		Name:        "EmptyListOfStrings",
+		Type:        "list(string)",
+		Value:       `[]`,
+		MinDisabled: true,
+		MaxDisabled: true,
 	}, {
 		Name:        "ValidListOfStrings",
 		Type:        "list(string)",
