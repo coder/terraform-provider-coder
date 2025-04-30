@@ -689,7 +689,166 @@ data "coder_parameter" "region" {
 	}
 }
 
-<<<<<<< HEAD
+func TestParameterValidation(t *testing.T) {
+	t.Parallel()
+	opts := func(vals ...string) []provider.Option {
+		options := make([]provider.Option, 0, len(vals))
+		for _, val := range vals {
+			options = append(options, provider.Option{
+				Name:  val,
+				Value: val,
+			})
+		}
+		return options
+	}
+
+	for _, tc := range []struct {
+		Name        string
+		Parameter   provider.Parameter
+		Value       string
+		ExpectError *regexp.Regexp
+	}{
+		{
+			Name: "ValidStringParameter",
+			Parameter: provider.Parameter{
+				Type: "string",
+			},
+			Value: "alpha",
+		},
+		// Test invalid states
+		{
+			Name: "InvalidFormType",
+			Parameter: provider.Parameter{
+				Type:     "string",
+				Option:   opts("alpha", "bravo", "charlie"),
+				FormType: provider.ParameterFormTypeSlider,
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Invalid form_type for parameter"),
+		},
+		{
+			Name: "NotInOptions",
+			Parameter: provider.Parameter{
+				Type:   "string",
+				Option: opts("alpha", "bravo", "charlie"),
+			},
+			Value:       "delta", // not in option set
+			ExpectError: regexp.MustCompile("Value must be a valid option"),
+		},
+		{
+			Name: "NumberNotInOptions",
+			Parameter: provider.Parameter{
+				Type:   "number",
+				Option: opts("1", "2", "3"),
+			},
+			Value:       "0", // not in option set
+			ExpectError: regexp.MustCompile("Value must be a valid option"),
+		},
+		{
+			Name: "NonUniqueOptionNames",
+			Parameter: provider.Parameter{
+				Type:   "string",
+				Option: opts("alpha", "alpha"),
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Option names must be unique"),
+		},
+		{
+			Name: "NonUniqueOptionValues",
+			Parameter: provider.Parameter{
+				Type: "string",
+				Option: []provider.Option{
+					{Name: "Alpha", Value: "alpha"},
+					{Name: "AlphaAgain", Value: "alpha"},
+				},
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Option values must be unique"),
+		},
+		{
+			Name: "IncorrectValueTypeOption",
+			Parameter: provider.Parameter{
+				Type:   "number",
+				Option: opts("not-a-number"),
+			},
+			Value:       "5",
+			ExpectError: regexp.MustCompile("is not a number"),
+		},
+		{
+			Name: "IncorrectValueType",
+			Parameter: provider.Parameter{
+				Type: "number",
+			},
+			Value:       "not-a-number",
+			ExpectError: regexp.MustCompile("Parameter value is not of type \"number\""),
+		},
+		{
+			Name: "NotListStringDefault",
+			Parameter: provider.Parameter{
+				Type:    "list(string)",
+				Default: "not-a-list",
+			},
+			ExpectError: regexp.MustCompile("not a valid list of strings"),
+		},
+		{
+			Name: "NotListStringDefault",
+			Parameter: provider.Parameter{
+				Type: "list(string)",
+			},
+			Value:       "not-a-list",
+			ExpectError: regexp.MustCompile("not a valid list of strings"),
+		},
+		{
+			Name: "DefaultListStringNotInOptions",
+			Parameter: provider.Parameter{
+				Type:     "list(string)",
+				Default:  `["red", "yellow", "black"]`,
+				Option:   opts("red", "blue", "green"),
+				FormType: provider.ParameterFormTypeMultiSelect,
+			},
+			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
+		},
+		{
+			Name: "ListStringNotInOptions",
+			Parameter: provider.Parameter{
+				Type:     "list(string)",
+				Default:  `["red"]`,
+				Option:   opts("red", "blue", "green"),
+				FormType: provider.ParameterFormTypeMultiSelect,
+			},
+			Value:       `["red", "yellow", "black"]`,
+			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
+		},
+		{
+			Name: "InvalidMiniumum",
+			Parameter: provider.Parameter{
+				Type:    "number",
+				Default: "5",
+				Validation: []provider.Validation{{
+					Min:   10,
+					Error: "must be greater than 10",
+				}},
+			},
+			ExpectError: regexp.MustCompile("must be greater than 10"),
+		},
+	} {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			diags := tc.Parameter.Valid(tc.Value)
+			if tc.ExpectError != nil {
+				require.True(t, diags.HasError())
+				errMsg := fmt.Sprintf("%+v", diags[0]) // close enough
+				require.Truef(t, tc.ExpectError.MatchString(errMsg), "got: %s", errMsg)
+			} else {
+				if !assert.False(t, diags.HasError()) {
+					t.Logf("got: %+v", diags[0])
+				}
+			}
+		})
+	}
+}
+
 // TestParameterValidationEnforcement tests various parameter states and the
 // validation enforcement that should be applied to them. The table is described
 // by a markdown table. This is done so that the test cases can be more easily
@@ -898,165 +1057,6 @@ func TestParameterValidationEnforcement(t *testing.T) {
 				})
 			})
 		}
-=======
-func TestParameterValidation(t *testing.T) {
-	t.Parallel()
-	opts := func(vals ...string) []provider.Option {
-		options := make([]provider.Option, 0, len(vals))
-		for _, val := range vals {
-			options = append(options, provider.Option{
-				Name:  val,
-				Value: val,
-			})
-		}
-		return options
-	}
-
-	for _, tc := range []struct {
-		Name        string
-		Parameter   provider.Parameter
-		Value       string
-		ExpectError *regexp.Regexp
-	}{
-		{
-			Name: "ValidStringParameter",
-			Parameter: provider.Parameter{
-				Type: "string",
-			},
-			Value: "alpha",
-		},
-		// Test invalid states
-		{
-			Name: "InvalidFormType",
-			Parameter: provider.Parameter{
-				Type:     "string",
-				Option:   opts("alpha", "bravo", "charlie"),
-				FormType: provider.ParameterFormTypeSlider,
-			},
-			Value:       "alpha",
-			ExpectError: regexp.MustCompile("Invalid form_type for parameter"),
-		},
-		{
-			Name: "NotInOptions",
-			Parameter: provider.Parameter{
-				Type:   "string",
-				Option: opts("alpha", "bravo", "charlie"),
-			},
-			Value:       "delta", // not in option set
-			ExpectError: regexp.MustCompile("Value must be a valid option"),
-		},
-		{
-			Name: "NumberNotInOptions",
-			Parameter: provider.Parameter{
-				Type:   "number",
-				Option: opts("1", "2", "3"),
-			},
-			Value:       "0", // not in option set
-			ExpectError: regexp.MustCompile("Value must be a valid option"),
-		},
-		{
-			Name: "NonUniqueOptionNames",
-			Parameter: provider.Parameter{
-				Type:   "string",
-				Option: opts("alpha", "alpha"),
-			},
-			Value:       "alpha",
-			ExpectError: regexp.MustCompile("Option names must be unique"),
-		},
-		{
-			Name: "NonUniqueOptionValues",
-			Parameter: provider.Parameter{
-				Type: "string",
-				Option: []provider.Option{
-					{Name: "Alpha", Value: "alpha"},
-					{Name: "AlphaAgain", Value: "alpha"},
-				},
-			},
-			Value:       "alpha",
-			ExpectError: regexp.MustCompile("Option values must be unique"),
-		},
-		{
-			Name: "IncorrectValueTypeOption",
-			Parameter: provider.Parameter{
-				Type:   "number",
-				Option: opts("not-a-number"),
-			},
-			Value:       "5",
-			ExpectError: regexp.MustCompile("is not a number"),
-		},
-		{
-			Name: "IncorrectValueType",
-			Parameter: provider.Parameter{
-				Type: "number",
-			},
-			Value:       "not-a-number",
-			ExpectError: regexp.MustCompile("Parameter value is not of type \"number\""),
-		},
-		{
-			Name: "NotListStringDefault",
-			Parameter: provider.Parameter{
-				Type:    "list(string)",
-				Default: "not-a-list",
-			},
-			ExpectError: regexp.MustCompile("not a valid list of strings"),
-		},
-		{
-			Name: "NotListStringDefault",
-			Parameter: provider.Parameter{
-				Type: "list(string)",
-			},
-			Value:       "not-a-list",
-			ExpectError: regexp.MustCompile("not a valid list of strings"),
-		},
-		{
-			Name: "DefaultListStringNotInOptions",
-			Parameter: provider.Parameter{
-				Type:     "list(string)",
-				Default:  `["red", "yellow", "black"]`,
-				Option:   opts("red", "blue", "green"),
-				FormType: provider.ParameterFormTypeMultiSelect,
-			},
-			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
-		},
-		{
-			Name: "ListStringNotInOptions",
-			Parameter: provider.Parameter{
-				Type:     "list(string)",
-				Default:  `["red"]`,
-				Option:   opts("red", "blue", "green"),
-				FormType: provider.ParameterFormTypeMultiSelect,
-			},
-			Value:       `["red", "yellow", "black"]`,
-			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
-		},
-		{
-			Name: "InvalidMiniumum",
-			Parameter: provider.Parameter{
-				Type:    "number",
-				Default: "5",
-				Validation: []provider.Validation{{
-					Min:   10,
-					Error: "must be greater than 10",
-				}},
-			},
-			ExpectError: regexp.MustCompile("must be greater than 10"),
-		},
-	} {
-		tc := tc
-		t.Run(tc.Name, func(t *testing.T) {
-			t.Parallel()
-			diags := tc.Parameter.Valid(tc.Value)
-			if tc.ExpectError != nil {
-				require.True(t, diags.HasError())
-				errMsg := fmt.Sprintf("%+v", diags[0]) // close enough
-				require.Truef(t, tc.ExpectError.MatchString(errMsg), "got: %s", errMsg)
-			} else {
-				if !assert.False(t, diags.HasError()) {
-					t.Logf("got: %+v", diags[0])
-				}
-			}
-		})
->>>>>>> c640b02 (begin adding invalid unit tests)
 	}
 }
 
