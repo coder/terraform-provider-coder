@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -703,55 +704,8 @@ func TestParameterValidationEnforcement(t *testing.T) {
 	//	- [NumIns/DefInv] So the default can be invalid if an input value is valid.
 	//	  The value is therefore not really optional, but it is marked as such.
 	// - [NumInsNotOptsVal | NumsInsNotOpts] values do not need to be in the option set?
-
-	table := strings.TrimSpace(`
-| Name                | Type          | Input Value | Default | Options           | Validation | -> | Output Value | Optional | Error        |
-|---------------------|---------------|-------------|---------|-------------------|------------|----|--------------|----------|--------------|
-|                     | Empty Vals    |             |         |                   |            |    |              |          |              |
-| Emty                | string,number |             |         |                   |            |    | ""           | false    |              |
-| EmtyOpts            | string,number |             |         | 1,2,3             |            |    | ""           | false    |              |
-| EmtyRegex           | string        |             |         |                   | world      |    |              |          | regex error  |
-| EmtyMin             | number        |             |         |                   | 1-10       |    |              |          | 1 <  < 10    |
-| EmtyMinOpt          | number        |             |         | 1,2,3             | 2-5        |    |              |          | 2 <  < 5     |
-| EmtyRegexOpt        | string        |             |         | "hello","goodbye" | goodbye    |    |              |          | regex error  |
-| EmtyRegexOk         | string        |             |         |                   | .*         |    | ""           | false    |              |
-|                     |               |             |         |                   |            |    |              |          |              |
-|                     | Default Set   | No inputs   |         |                   |            |    |              |          |              |
-| NumDef              | number        |             | 5       |                   |            |    | 5            | true     |              |
-| NumDefVal           | number        |             | 5       |                   | 3-7        |    | 5            | true     |              |
-| NumDefInv           | number        |             | 5       |                   | 10-        |    |              |          | 10 < 5 < 0   |
-| NumDefOpts          | number        |             | 5       | 1,3,5,7           | 2-6        |    | 5            | true     |              |
-| NumDefNotOpts       | number        |             | 5       | 1,3,7,9           | 2-6        |    |              |          | valid option |
-| NumDefInvOpt        | number        |             | 5       | 1,3,5,7           | 6-10       |    |              |          | 6 < 5 < 10   |
-|                     |               |             |         |                   |            |    |              |          |              |
-| StrDef              | string        |             | hello   |                   |            |    | hello        | true     |              |
-| StrDefInv           | string        |             | hello   |                   | world      |    |              |          | regex error  |
-| StrDefOpts          | string        |             | a       | a,b,c             |            |    | a            | true     |              |
-| StrDefNotOpts       | string        |             | a       | b,c,d             |            |    |              |          | valid option |
-| StrDefOpts          | string        |             | a       | a,b,c,d,e,f       | [a-c]      |    | a            | true     |              |
-| StrDefInvOpt        | string        |             | d       | a,b,c,d,e,f       | [a-c]      |    |              |          | regex error  |
-|                     |               |             |         |                   |            |    |              |          |              |
-|                     | Input Vals    |             |         |                   |            |    |              |          |              |
-| NumIns              | number        | 3           |         |                   |            |    | 3            | false    |              |
-| NumInsDef           | number        | 3           | 5       |                   |            |    | 3            | true     |              |
-| NumIns/DefInv       | number        | 3           | 5       |                   | 1-3        |    | 3            | true     |              |
-| NumIns=DefInv       | number        | 5           | 5       |                   | 1-3        |    |              |          | 1 < 5 < 3    |
-| NumInsOpts          | number        | 3           | 5       | 1,2,3,4,5         | 1-3        |    | 3            | true     |              |
-| NumInsNotOptsVal    | number        | 3           | 5       | 1,2,4,5           | 1-3        |    | 3            | true     |              |
-| NumInsNotOptsInv    | number        | 3           | 5       | 1,2,4,5           | 1-2        |    |              | true     | 1 < 3 < 2    |
-| NumInsNotOpts       | number        | 3           | 5       | 1,2,4,5           |            |    | 3            | true     |              |
-| NumInsNotOpts/NoDef | number        | 3           |         | 1,2,4,5           |            |    | 3            | false    |              |
-|                     |               |             |         |                   |            |    |              |          |              |
-| StrIns              | string        | c           |         |                   |            |    | c            | false    |              |
-| StrInsDef           | string        | c           | e       |                   |            |    | c            | true     |              |
-| StrIns/DefInv       | string        | c           | e       |                   | [a-c]      |    | c            | true     |              |
-| NumIns=DefInv       | string        | e           | e       |                   | [a-c]      |    |              |          | regex error  |
-| StrInsOpts          | string        | c           | e       | a,b,c,d,e         | [a-c]      |    | c            | true     |              |
-| StrInsNotOptsVal    | string        | c           | e       | a,b,d,e           | [a-c]      |    | c            | true     |              |
-| StrInsNotOptsInv    | string        | c           | e       | a,b,d,e           | [a-b]      |    |              |          | regex error  |
-| StrInsNotOpts       | string        | c           | e       | a,b,d,e           |            |    | c            | true     |              |
-| StrInsNotOpts/NoDef | string        | c           |         | a,b,d,e           |            |    | c            | false    |              |
-`)
+	table, err := os.ReadFile("testdata/parameter_table.md")
+	require.NoError(t, err)
 
 	type row struct {
 		Name        string
@@ -766,7 +720,7 @@ func TestParameterValidationEnforcement(t *testing.T) {
 	}
 
 	rows := make([]row, 0)
-	lines := strings.Split(table, "\n")
+	lines := strings.Split(string(table), "\n")
 	validMinMax := regexp.MustCompile("^[0-9]*-[0-9]*$")
 	for _, line := range lines[2:] {
 		columns := strings.Split(line, "|")
@@ -867,7 +821,12 @@ func TestParameterValidationEnforcement(t *testing.T) {
 				var cfg strings.Builder
 				cfg.WriteString("data \"coder_parameter\" \"parameter\" {\n")
 				cfg.WriteString("\tname = \"parameter\"\n")
-				cfg.WriteString(fmt.Sprintf("\ttype = \"%s\"\n", rt))
+				if rt == "multi-select" || rt == "tag-select" {
+					cfg.WriteString(fmt.Sprintf("\ttype = \"%s\"\n", "list(string)"))
+					cfg.WriteString(fmt.Sprintf("\tform_type = \"%s\"\n", rt))
+				} else {
+					cfg.WriteString(fmt.Sprintf("\ttype = \"%s\"\n", rt))
+				}
 				if row.Default != "" {
 					cfg.WriteString(fmt.Sprintf("\tdefault = %s\n", stringLiteral(row.Default)))
 				}
