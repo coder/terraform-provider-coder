@@ -142,21 +142,24 @@ func parameterDataSource() *schema.Resource {
 			// 'parameter.FormType' value to the new value. This is to handle default cases,
 			// since the default logic is more advanced than the sdk provider schema
 			// supports.
-			_, newFT, err := ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
-			if err == nil {
-				// If there is an error, parameter.Valid will catch it.
-				parameter.FormType = newFT
-
-				// Set the form_type back in case the value was changed.
-				// Eg via a default. If a user does not specify, a default value
-				// is used and saved.
-				rd.Set("form_type", parameter.FormType)
-			}
+			//_, newFT, err := ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
+			//if err == nil {
+			//	// If there is an error, parameter.Valid will catch it.
+			//	parameter.FormType = newFT
+			//
+			//	// Set the form_type back in case the value was changed.
+			//	// Eg via a default. If a user does not specify, a default value
+			//	// is used and saved.
+			//	rd.Set("form_type", parameter.FormType)
+			//}
 
 			diags := parameter.Valid(value)
 			if diags.HasError() {
 				return diags
 			}
+
+			// Set the form_type as it could have changed in the validation.
+			rd.Set("form_type", parameter.FormType)
 
 			return nil
 		},
@@ -393,6 +396,11 @@ func valueIsType(typ OptionType, value string) error {
 	default:
 		return fmt.Errorf("invalid type %q", typ)
 	}
+	return nil
+}
+
+func (v *Parameter) RelaxedValidation(value string) diag.Diagnostics {
+
 	return nil
 }
 
