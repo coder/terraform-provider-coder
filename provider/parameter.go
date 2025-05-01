@@ -24,6 +24,7 @@ import (
 type ValidationMode string
 
 const (
+	ValidationModeEnvVar = "CODER_VALIDATION_MODE"
 	// ValidationModeDefault is used for creating a workspace. It validates the final
 	// value used for a parameter. Some allowances for invalid options are tolerated,
 	// as unused options do not affect the final parameter value. The default value
@@ -59,7 +60,6 @@ type Validation struct {
 }
 
 const (
-	ValidationModeEnvVar          = "CODER_VALIDATION_MODE"
 	ValidationMonotonicIncreasing = "increasing"
 	ValidationMonotonicDecreasing = "decreasing"
 )
