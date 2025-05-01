@@ -410,6 +410,16 @@ func valueIsType(typ OptionType, value string) error {
 }
 
 func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diagnostics) {
+	if mode != ValidationModeDefault && mode != ValidationModeTemplateImport {
+		return "", diag.Diagnostics{
+			{
+				Severity: diag.Error,
+				Summary:  "Invalid validation mode",
+				Detail:   fmt.Sprintf("validation mode %q is not supported, use %q, or %q", mode, ValidationModeDefault, ValidationModeTemplateImport),
+			},
+		}
+	}
+
 	var err error
 	var optionType OptionType
 
@@ -462,30 +472,6 @@ func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diag
 		d := v.validValue(*v.Default, optionType, optionValues, defaultValuePath)
 		if d.HasError() {
 			return "", d
-		}
-	}
-
-	// TODO: Move this into 'Parameter.validValue'. It exists as another check outside because
-	// the current behavior is to always apply this validation, regardless if the param is set or not.
-	// Other validations are only applied if the parameter is set.
-	// This behavior should be standardized.
-	if len(v.Validation) == 1 {
-		empty := ""
-		validVal := value
-		if value == nil {
-			validVal = &empty
-		}
-		validCheck := &v.Validation[0]
-		err := validCheck.Valid(v.Type, *validVal)
-		if err != nil {
-			return "", diag.Diagnostics{
-				{
-					Severity:      diag.Error,
-					Summary:       fmt.Sprintf("Invalid parameter %s according to 'validation' block", strings.ToLower(v.Name)),
-					Detail:        err.Error(),
-					AttributePath: cty.Path{},
-				},
-			}
 		}
 	}
 

@@ -9,8 +9,8 @@
 | EmptyOpts            | string,number |           |         | 1,2,3             |            |    | ""     | false    |                 |               |
 | EmptyRegex           | string        |           |         |                   | world      |    |        |          | regex error     | =             |
 | EmptyMin             | number        |           |         |                   | 1-10       |    |        |          | 1 <  < 10       | =             |
-| EmptyMinOpt          | number        |           |         | 1,2,3             | 2-5        |    |        |          | 2 <  < 5        | 2 < 1 < 5     |
-| EmptyRegexOpt        | string        |           |         | "hello","goodbye" | goodbye    |    |        |          | regex error     | =             |
+| EmptyMinOpt          | number        |           |         | 1,2,3             | 2-5        |    |        |          | valid option    | 2 < 1 < 5     |
+| EmptyRegexOpt        | string        |           |         | "hello","goodbye" | goodbye    |    |        |          | valid option    | regex error   |
 | EmptyRegexOk         | string        |           |         |                   | .*         |    | ""     | false    |                 |               |
 |                      |               |           |         |                   |            |    |        |          |                 |               |
 |                      | Default Set   | No inputs |         |                   |            |    |        |          |                 |               |
@@ -48,7 +48,7 @@
 | NumIns=DefInv        | number        | 5         | 5       |                   | 1-3        |    |        |          | 1 < 5 < 3       | =             |
 | NumInsOpts           | number        | 3         | 5       | 1,2,3,4,5         | 1-3        |    | 3      | true     |                 | 1 < 5 < 3     |
 | NumInsNotOptsVal     | number        | 3         | 5       | 1,2,4,5           | 1-3        |    |        |          | valid option    | 1 < 4 < 3     |
-| NumInsNotOptsInv     | number        | 3         | 5       | 1,2,4,5           | 1-2        |    |        | true     | 1 < 3 < 2       | 1 < 4 < 2     |
+| NumInsNotOptsInv     | number        | 3         | 5       | 1,2,4,5           | 1-2        |    |        | true     | valid option    | 1 < 4 < 2     |
 | NumInsNotOpts        | number        | 3         | 5       | 1,2,4,5           |            |    |        |          | valid option    | =             |
 | NumInsNotOpts/NoDef  | number        | 3         |         | 1,2,4,5           |            |    |        |          | valid option    | =             |
 |                      |               |           |         |                   |            |    |        |          |                 |               |
@@ -59,7 +59,7 @@
 | StrIns=DefInv        | string        | e         | e       |                   | [a-c]      |    |        |          | regex error     | =             |
 | StrInsOpts           | string        | c         | e       | a,b,c,d,e         | [a-c]      |    | c      | true     |                 | value "d"     |
 | StrInsNotOptsVal     | string        | c         | e       | a,b,d,e           | [a-c]      |    |        |          | valid option    | value "d"     |
-| StrInsNotOptsInv     | string        | c         | e       | a,b,d,e           | [a-b]      |    |        |          | regex error     | =             |
+| StrInsNotOptsInv     | string        | c         | e       | a,b,d,e           | [a-b]      |    |        |          | valid option    | regex error   |
 | StrInsNotOpts        | string        | c         | e       | a,b,d,e           |            |    |        |          | valid option    | =             |
 | StrInsNotOpts/NoDef  | string        | c         |         | a,b,d,e           |            |    |        |          | valid option    | =             |
 | StrInsBadVal         | string        | c         |         | a,b,c,d,e         | 1-10       |    |        |          | min cannot      | =             |
