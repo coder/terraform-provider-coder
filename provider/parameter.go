@@ -24,9 +24,14 @@ import (
 type ValidationMode string
 
 const (
-	// ValidationModeDefault is used for creating a workspace. It validates the
-	// final value used for a parameter.
-	ValidationModeDefault        ValidationMode = ""
+	// ValidationModeDefault is used for creating a workspace. It validates the final
+	// value used for a parameter. Some allowances for invalid options are tolerated,
+	// as unused options do not affect the final parameter value. The default value
+	// is also ignored, assuming a value is provided.
+	ValidationModeDefault ValidationMode = ""
+	// ValidationModeTemplateImport tolerates empty values, as the value might not be
+	// available at import. It does not tolerate an invalid default or invalid option
+	// values.
 	ValidationModeTemplateImport ValidationMode = "template-import"
 )
 
@@ -412,6 +417,14 @@ func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diag
 	if input == nil {
 		value = v.Default
 	}
+
+	// TODO: When empty values want to be rejected, uncomment this.
+	//   coder/coder should update to use template import mode first,
+	//   before this is uncommented.
+	//if value == nil && mode == ValidationModeDefault {
+	//	var empty string
+	//	value = &empty
+	//}
 
 	// optionType might differ from parameter.Type. This is ok, and parameter.Type
 	// should be used for the value type, and optionType for options.
