@@ -786,7 +786,7 @@ func TestParameterValidation(t *testing.T) {
 			Name: "NotListStringDefault",
 			Parameter: provider.Parameter{
 				Type:    "list(string)",
-				Default: "not-a-list",
+				Default: ptr("not-a-list"),
 			},
 			ExpectError: regexp.MustCompile("not a valid list of strings"),
 		},
@@ -802,7 +802,7 @@ func TestParameterValidation(t *testing.T) {
 			Name: "DefaultListStringNotInOptions",
 			Parameter: provider.Parameter{
 				Type:     "list(string)",
-				Default:  `["red", "yellow", "black"]`,
+				Default:  ptr(`["red", "yellow", "black"]`),
 				Option:   opts("red", "blue", "green"),
 				FormType: provider.ParameterFormTypeMultiSelect,
 			},
@@ -813,7 +813,7 @@ func TestParameterValidation(t *testing.T) {
 			Name: "ListStringNotInOptions",
 			Parameter: provider.Parameter{
 				Type:     "list(string)",
-				Default:  `["red"]`,
+				Default:  ptr(`["red"]`),
 				Option:   opts("red", "blue", "green"),
 				FormType: provider.ParameterFormTypeMultiSelect,
 			},
@@ -824,7 +824,7 @@ func TestParameterValidation(t *testing.T) {
 			Name: "InvalidMiniumum",
 			Parameter: provider.Parameter{
 				Type:    "number",
-				Default: "5",
+				Default: ptr("5"),
 				Validation: []provider.Validation{{
 					Min:   10,
 					Error: "must be greater than 10",
@@ -837,7 +837,7 @@ func TestParameterValidation(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			value := &tc.Value
-			diags := tc.Parameter.Valid(value)
+			_, diags := tc.Parameter.Valid(value, provider.ValidationModeDefault)
 			if tc.ExpectError != nil {
 				require.True(t, diags.HasError())
 				errMsg := fmt.Sprintf("%+v", diags[0]) // close enough
@@ -1254,4 +1254,8 @@ func TestParameterWithManyOptions(t *testing.T) {
 			},
 		}},
 	})
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

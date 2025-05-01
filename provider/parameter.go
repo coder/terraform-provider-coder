@@ -21,6 +21,15 @@ import (
 	"golang.org/x/xerrors"
 )
 
+type ValidationMode string
+
+const (
+	// ValidationModeDefault is used for creating a workspace. It validates the
+	// final value used for a parameter.
+	ValidationModeDefault        ValidationMode = ""
+	ValidationModeTemplateImport ValidationMode = "template-import"
+)
+
 var (
 	defaultValuePath = cty.Path{cty.GetAttrStep{Name: "default"}}
 )
@@ -56,7 +65,7 @@ type Parameter struct {
 	Type        OptionType
 	FormType    ParameterFormType
 	Mutable     bool
-	Default     string
+	Default     *string
 	Icon        string
 	Option      []Option
 	Validation  []Validation
@@ -105,10 +114,16 @@ func parameterDataSource() *schema.Resource {
 				Type:        rd.Get("type"),
 				FormType:    rd.Get("form_type"),
 				Mutable:     rd.Get("mutable"),
-				Default:     rd.Get("default"),
-				Icon:        rd.Get("icon"),
-				Option:      rd.Get("option"),
-				Validation:  fixedValidation,
+				Default: func() *string {
+					if rd.GetRawConfig().AsValueMap()["default"].IsNull() {
+						return nil
+					}
+					val, _ := rd.Get("default").(string)
+					return &val
+				}(),
+				Icon:       rd.Get("icon"),
+				Option:     rd.Get("option"),
+				Validation: fixedValidation,
 				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
@@ -124,25 +139,6 @@ func parameterDataSource() *schema.Resource {
 				return diag.Errorf("decode parameter: %s", err)
 			}
 
-			var value *string
-			if !rd.GetRawConfig().AsValueMap()["default"].IsNull() {
-				value = &parameter.Default
-			}
-
-			envValue, ok := os.LookupEnv(ParameterEnvironmentVariable(parameter.Name))
-			if ok {
-				value = &envValue
-			}
-
-			if value != nil {
-				rd.Set("value", value)
-			} else {
-				// Maintaining backwards compatibility. The previous behavior was
-				// to write back an empty string.
-				// TODO: Should an empty string exist if no value is set?
-				rd.Set("value", "")
-			}
-
 			if !parameter.Mutable && parameter.Ephemeral {
 				return diag.Errorf("parameter can't be immutable and ephemeral")
 			}
@@ -151,10 +147,17 @@ func parameterDataSource() *schema.Resource {
 				return diag.Errorf("ephemeral parameter requires the default property")
 			}
 
-			diags := parameter.Valid(value)
+			var input *string
+			envValue, ok := os.LookupEnv(ParameterEnvironmentVariable(parameter.Name))
+			if ok {
+				input = &envValue
+			}
+
+			value, diags := parameter.Valid(input, ValidationModeDefault)
 			if diags.HasError() {
 				return diags
 			}
+			rd.Set("value", value)
 
 			// Set the form_type as it could have changed in the validation.
 			rd.Set("form_type", parameter.FormType)
@@ -397,15 +400,20 @@ func valueIsType(typ OptionType, value string) error {
 	return nil
 }
 
-func (v *Parameter) Valid(value *string) diag.Diagnostics {
+func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diagnostics) {
 	var err error
 	var optionType OptionType
+
+	value := input
+	if input == nil {
+		value = v.Default
+	}
 
 	// optionType might differ from parameter.Type. This is ok, and parameter.Type
 	// should be used for the value type, and optionType for options.
 	optionType, v.FormType, err = ValidateFormType(v.Type, len(v.Option), v.FormType)
 	if err != nil {
-		return diag.Diagnostics{
+		return "", diag.Diagnostics{
 			{
 				Severity:      diag.Error,
 				Summary:       "Invalid form_type for parameter",
@@ -417,28 +425,28 @@ func (v *Parameter) Valid(value *string) diag.Diagnostics {
 
 	optionValues, diags := v.ValidOptions(optionType)
 	if diags.HasError() {
-		return diags
+		return "", diags
 	}
 
-	// TODO: The default value should also be validated
-	//if v.Default != "" {
-	//	err := valueIsType(v.Type, v.Default)
-	//	if err != nil {
-	//		return diag.Diagnostics{
-	//			{
-	//				Severity:      diag.Error,
-	//				Summary:       fmt.Sprintf("Default value is not of type %q", v.Type),
-	//				Detail:        err.Error(),
-	//				AttributePath: defaultValuePath,
-	//			},
-	//		}
-	//	}
-	//
-	//	d := v.validValue(v.Default, optionType, optionValues, defaultValuePath)
-	//	if d.HasError() {
-	//		return d
-	//	}
-	//}
+	if mode == ValidationModeTemplateImport && v.Default != nil {
+		// Template import should validate the default value.
+		err := valueIsType(v.Type, *v.Default)
+		if err != nil {
+			return "", diag.Diagnostics{
+				{
+					Severity:      diag.Error,
+					Summary:       fmt.Sprintf("Default value is not of type %q", v.Type),
+					Detail:        err.Error(),
+					AttributePath: defaultValuePath,
+				},
+			}
+		}
+
+		d := v.validValue(*v.Default, optionType, optionValues, defaultValuePath)
+		if d.HasError() {
+			return "", d
+		}
+	}
 
 	// TODO: Move this into 'Parameter.validValue'. It exists as another check outside because
 	// the current behavior is to always apply this validation, regardless if the param is set or not.
@@ -453,7 +461,7 @@ func (v *Parameter) Valid(value *string) diag.Diagnostics {
 		validCheck := &v.Validation[0]
 		err := validCheck.Valid(v.Type, *validVal)
 		if err != nil {
-			return diag.Diagnostics{
+			return "", diag.Diagnostics{
 				{
 					Severity:      diag.Error,
 					Summary:       fmt.Sprintf("Invalid parameter %s according to 'validation' block", strings.ToLower(v.Name)),
@@ -464,17 +472,26 @@ func (v *Parameter) Valid(value *string) diag.Diagnostics {
 		}
 	}
 
+	// TODO: This is a bit of a hack. The current behavior states if validation
+	//   is given, then apply validation to unset values.
+	//   This should be removed, and all values should be validated. Meaning
+	//   value == nil should not be accepted in the first place.
+	if len(v.Validation) > 0 && value == nil {
+		empty := ""
+		value = &empty
+	}
+
 	// Value is only validated if it is set. If it is unset, validation
 	// is skipped.
 	if value != nil {
 		d := v.validValue(*value, optionType, optionValues, cty.Path{})
 		if d.HasError() {
-			return d
+			return "", d
 		}
 
 		err = valueIsType(v.Type, *value)
 		if err != nil {
-			return diag.Diagnostics{
+			return "", diag.Diagnostics{
 				{
 					Severity: diag.Error,
 					Summary:  fmt.Sprintf("Parameter value is not of type %q", v.Type),
@@ -484,7 +501,12 @@ func (v *Parameter) Valid(value *string) diag.Diagnostics {
 		}
 	}
 
-	return nil
+	if value == nil {
+		// The previous behavior is to always write an empty string
+		return "", nil
+	}
+
+	return *value, nil
 }
 
 func (v *Parameter) ValidOptions(optionType OptionType) (map[string]struct{}, diag.Diagnostics) {
@@ -594,6 +616,21 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 						AttributePath: path,
 					},
 				}
+			}
+		}
+	}
+
+	if len(v.Validation) == 1 {
+		validCheck := &v.Validation[0]
+		err := validCheck.Valid(v.Type, value)
+		if err != nil {
+			return diag.Diagnostics{
+				{
+					Severity:      diag.Error,
+					Summary:       fmt.Sprintf("Invalid parameter %s according to 'validation' block", strings.ToLower(v.Name)),
+					Detail:        err.Error(),
+					AttributePath: cty.Path{},
+				},
 			}
 		}
 	}
