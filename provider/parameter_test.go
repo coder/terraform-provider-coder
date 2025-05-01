@@ -866,10 +866,6 @@ func TestParameterValidationEnforcement(t *testing.T) {
 	// - Validation logic does not apply to the default if a value is given
 	//	- [NumIns/DefInv] So the default can be invalid if an input value is valid.
 	//	  The value is therefore not really optional, but it is marked as such.
-	// - [NumInsNotOptsVal | NumsInsNotOpts] values do not need to be in the option set?
-	// - [NumInsNotNum] number params do not require the value to be a number
-	// - [LStrInsNotList] list(string) do not require the value to be a list(string)
-	//	- Same with [MulInsNotListOpts]
 	table, err := os.ReadFile("testdata/parameter_table.md")
 	require.NoError(t, err)
 
