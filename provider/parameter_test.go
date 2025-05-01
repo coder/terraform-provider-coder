@@ -878,7 +878,8 @@ func TestParameterValidationEnforcement(t *testing.T) {
 		Validation  *provider.Validation
 		OutputValue string
 		Optional    bool
-		Error       *regexp.Regexp
+		CreateError *regexp.Regexp
+		ImportError *regexp.Regexp
 	}
 
 	rows := make([]row, 0)
@@ -909,6 +910,19 @@ func TestParameterValidationEnforcement(t *testing.T) {
 				t.Fatalf("failed to parse error column %q: %v", columns[9], err)
 			}
 		}
+
+		var imerr *regexp.Regexp
+		if columns[10] != "" {
+			if columns[10] == "=" {
+				imerr = rerr
+			} else {
+				imerr, err = regexp.Compile(columns[10])
+				if err != nil {
+					t.Fatalf("failed to parse error column %q: %v", columns[10], err)
+				}
+			}
+		}
+
 		var options []string
 		if columns[4] != "" {
 			options = strings.Split(columns[4], ",")
@@ -955,7 +969,8 @@ func TestParameterValidationEnforcement(t *testing.T) {
 			Validation:  validation,
 			OutputValue: columns[7],
 			Optional:    optional,
-			Error:       rerr,
+			CreateError: rerr,
+			ImportError: imerr,
 		})
 	}
 
@@ -974,9 +989,9 @@ func TestParameterValidationEnforcement(t *testing.T) {
 					t.Setenv(provider.ParameterEnvironmentVariable("parameter"), row.InputValue)
 				}
 
-				if row.Error != nil {
+				if row.CreateError != nil && row.ImportError != nil {
 					if row.OutputValue != "" {
-						t.Errorf("output value %q should not be set if error is set", row.OutputValue)
+						t.Errorf("output value %q should not be set if both errors are set", row.OutputValue)
 					}
 				}
 
@@ -1020,42 +1035,56 @@ func TestParameterValidationEnforcement(t *testing.T) {
 
 				cfg.WriteString("}\n")
 
-				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
-					Steps: []resource.TestStep{{
-						Config:      cfg.String(),
-						ExpectError: row.Error,
-						Check: func(state *terraform.State) error {
-							require.Len(t, state.Modules, 1)
-							require.Len(t, state.Modules[0].Resources, 1)
-							param := state.Modules[0].Resources["data.coder_parameter.parameter"]
-							require.NotNil(t, param)
+				for _, mode := range []provider.ValidationMode{provider.ValidationModeDefault, provider.ValidationModeTemplateImport} {
+					name := string(mode)
+					if mode == provider.ValidationModeDefault {
+						name = "create"
+					}
+					t.Run(name, func(t *testing.T) {
+						t.Setenv("CODER_VALIDATION_MODE", string(mode))
+						rerr := row.CreateError
+						if mode == provider.ValidationModeTemplateImport {
+							rerr = row.ImportError
+						}
 
-							if row.Default == "" {
-								_, ok := param.Primary.Attributes["default"]
-								require.False(t, ok, "default should not be set")
-							} else {
-								require.Equal(t, strings.Trim(row.Default, `"`), param.Primary.Attributes["default"])
-							}
+						resource.Test(t, resource.TestCase{
+							ProviderFactories: coderFactory(),
+							IsUnitTest:        true,
+							Steps: []resource.TestStep{{
+								Config:      cfg.String(),
+								ExpectError: rerr,
+								Check: func(state *terraform.State) error {
+									require.Len(t, state.Modules, 1)
+									require.Len(t, state.Modules[0].Resources, 1)
+									param := state.Modules[0].Resources["data.coder_parameter.parameter"]
+									require.NotNil(t, param)
 
-							if row.OutputValue == "" {
-								_, ok := param.Primary.Attributes["value"]
-								require.False(t, ok, "output value should not be set")
-							} else {
-								require.Equal(t, strings.Trim(row.OutputValue, `"`), param.Primary.Attributes["value"])
-							}
+									if row.Default == "" {
+										_, ok := param.Primary.Attributes["default"]
+										require.False(t, ok, "default should not be set")
+									} else {
+										require.Equal(t, strings.Trim(row.Default, `"`), param.Primary.Attributes["default"])
+									}
 
-							for key, expected := range map[string]string{
-								"optional": strconv.FormatBool(row.Optional),
-							} {
-								require.Equal(t, expected, param.Primary.Attributes[key], "optional")
-							}
+									if row.OutputValue == "" {
+										_, ok := param.Primary.Attributes["value"]
+										require.False(t, ok, "output value should not be set")
+									} else {
+										require.Equal(t, strings.Trim(row.OutputValue, `"`), param.Primary.Attributes["value"])
+									}
 
-							return nil
-						},
-					}},
-				})
+									for key, expected := range map[string]string{
+										"optional": strconv.FormatBool(row.Optional),
+									} {
+										require.Equal(t, expected, param.Primary.Attributes[key], "optional")
+									}
+
+									return nil
+								},
+							}},
+						})
+					})
+				}
 			})
 		}
 	}

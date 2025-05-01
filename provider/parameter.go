@@ -54,6 +54,7 @@ type Validation struct {
 }
 
 const (
+	ValidationModeEnvVar          = "CODER_VALIDATION_MODE"
 	ValidationMonotonicIncreasing = "increasing"
 	ValidationMonotonicDecreasing = "decreasing"
 )
@@ -153,10 +154,13 @@ func parameterDataSource() *schema.Resource {
 				input = &envValue
 			}
 
-			value, diags := parameter.Valid(input, ValidationModeDefault)
+			mode := os.Getenv(ValidationModeEnvVar)
+			value, diags := parameter.Valid(input, ValidationMode(mode))
 			if diags.HasError() {
 				return diags
 			}
+
+			// Always set back the value, as it can be sourced from the default
 			rd.Set("value", value)
 
 			// Set the form_type as it could have changed in the validation.
@@ -423,7 +427,7 @@ func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diag
 		}
 	}
 
-	optionValues, diags := v.ValidOptions(optionType)
+	optionValues, diags := v.ValidOptions(optionType, mode)
 	if diags.HasError() {
 		return "", diags
 	}
@@ -509,7 +513,7 @@ func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diag
 	return *value, nil
 }
 
-func (v *Parameter) ValidOptions(optionType OptionType) (map[string]struct{}, diag.Diagnostics) {
+func (v *Parameter) ValidOptions(optionType OptionType, mode ValidationMode) (map[string]struct{}, diag.Diagnostics) {
 	optionNames := map[string]struct{}{}
 	optionValues := map[string]struct{}{}
 
@@ -545,8 +549,15 @@ func (v *Parameter) ValidOptions(optionType OptionType) (map[string]struct{}, di
 		optionValues[option.Value] = struct{}{}
 		optionNames[option.Name] = struct{}{}
 
-		// TODO: Option values should also be validated.
-		// v.validValue(option.Value, optionType, nil, cty.Path{})
+		if mode == ValidationModeTemplateImport {
+			opDiags := v.validValue(option.Value, optionType, nil, cty.Path{})
+			if opDiags.HasError() {
+				for i := range opDiags {
+					opDiags[i].Summary = fmt.Sprintf("Option %q: %s", option.Name, opDiags[i].Summary)
+				}
+				diags = append(diags, opDiags...)
+			}
+		}
 	}
 
 	if diags.HasError() {
@@ -627,9 +638,9 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 			return diag.Diagnostics{
 				{
 					Severity:      diag.Error,
-					Summary:       fmt.Sprintf("Invalid parameter %s according to 'validation' block", strings.ToLower(v.Name)),
+					Summary:       fmt.Sprintf("Invalid parameter %s according to 'validation' block", strings.ToLower(name)),
 					Detail:        err.Error(),
-					AttributePath: cty.Path{},
+					AttributePath: path,
 				},
 			}
 		}
