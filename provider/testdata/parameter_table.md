@@ -1,4 +1,4 @@
-| Name                 | Type          | Input     | Default | Options           | Validation | -> | Output | Optional | Error        |
+| Name                 | Type          | Input     | Default | Options           | Validation | -> | Output | Optional | ErrorCreate  |
 |----------------------|---------------|-----------|---------|-------------------|------------|----|--------|----------|--------------|
 |                      | Empty Vals    |           |         |                   |            |    |        |          |              |
 | Empty                | string,number |           |         |                   |            |    | ""     | false    |              |
@@ -40,6 +40,7 @@
 |                      |               |           |         |                   |            |    |        |          |              |
 |                      | Input Vals    |           |         |                   |            |    |        |          |              |
 | NumIns               | number        | 3         |         |                   |            |    | 3      | false    |              |
+| NumInsOptsNaN        | number        | 3         | 5       | a,1,2,3,4,5       | 1-3        |    |        |          | a number     |
 | NumInsNotNum         | number        | a         |         |                   |            |    | a      | false    |              |
 | NumInsNotNumInv      | number        | a         |         |                   | 1-3        |    |        |          | 1 < a < 3    |
 | NumInsDef            | number        | 3         | 5       |                   |            |    | 3      | true     |              |
