@@ -85,6 +85,7 @@ func TestParameter(t *testing.T) {
 			data "coder_parameter" "region" {
 				name = "Region"
 				type = "number"
+				default = 1
 				option {
 					name = "1"
 					value = "1"
@@ -102,6 +103,7 @@ func TestParameter(t *testing.T) {
 			data "coder_parameter" "region" {
 				name = "Region"
 				type = "string"
+				default = "1"
 				option {
 					name = "1"
 					value = "1"
