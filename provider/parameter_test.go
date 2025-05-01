@@ -806,6 +806,7 @@ func TestParameterValidation(t *testing.T) {
 				Option:   opts("red", "blue", "green"),
 				FormType: provider.ParameterFormTypeMultiSelect,
 			},
+			Value:       `["red", "yellow", "black"]`,
 			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
 		},
 		{
@@ -835,7 +836,8 @@ func TestParameterValidation(t *testing.T) {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
-			diags := tc.Parameter.Valid(&tc.Value)
+			value := &tc.Value
+			diags := tc.Parameter.Valid(value)
 			if tc.ExpectError != nil {
 				require.True(t, diags.HasError())
 				errMsg := fmt.Sprintf("%+v", diags[0]) // close enough
