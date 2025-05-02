@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"path/filepath"
 	"reflect"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -22,10 +25,12 @@ func agentResource() *schema.Resource {
 		SchemaVersion: 1,
 
 		Description: "Use this resource to associate an agent.",
-		CreateContext: func(_ context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
-			// This should be a real authentication token!
-			resourceData.SetId(uuid.NewString())
-			err := resourceData.Set("token", uuid.NewString())
+		CreateContext: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+			agentID := uuid.NewString()
+			resourceData.SetId(agentID)
+
+			token := agentAuthToken(ctx, "")
+			err := resourceData.Set("token", token)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -48,10 +53,12 @@ func agentResource() *schema.Resource {
 			return updateInitScript(resourceData, i)
 		},
 		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
-			err := resourceData.Set("token", uuid.NewString())
+			token := agentAuthToken(ctx, "")
+			err := resourceData.Set("token", token)
 			if err != nil {
 				return diag.FromErr(err)
 			}
+
 			if _, ok := resourceData.GetOk("display_apps"); !ok {
 				err = resourceData.Set("display_apps", []interface{}{
 					map[string]bool{
@@ -468,4 +475,38 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+func agentAuthToken(ctx context.Context, agentID string) string {
+	existingToken := helpers.OptionalEnv(RunningAgentTokenEnvironmentVariable(agentID))
+	if existingToken == "" {
+		// Most of the time, we will generate a new token for the agent.
+		// In the case of a prebuilt workspace being claimed, we will override with
+		// an existing token provided below.
+		token := uuid.NewString()
+		return token
+	}
+
+	// An existing token was provided for this agent. That means that this
+	// is a prebuilt workspace in the process of being claimed.
+	// We should reuse the token.
+	tflog.Info(ctx, "using provided agent token for prebuild", map[string]interface{}{
+		"agent_id": agentID,
+	})
+	return existingToken
+}
+
+// RunningAgentTokenEnvironmentVariable returns the name of an environment variable
+// that contains the token to use for the running agent. This is used for prebuilds,
+// where we want to reuse the same token for the next iteration of a workspace agent
+// before and after the workspace was claimed by a user.
+//
+// By reusing an existing token, we can avoid the need to change a value that may have been
+// used immutably. Thus, allowing us to avoid reprovisioning resources that may take a long time
+// to replace.
+//
+// agentID is unused for now, but will be used as soon as we support multiple agents.
+func RunningAgentTokenEnvironmentVariable(agentID string) string {
+	sum := sha256.Sum256([]byte(agentID))
+	return "CODER_RUNNING_WORKSPACE_AGENT_TOKEN_" + hex.EncodeToString(sum[:])
 }
