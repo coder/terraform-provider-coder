@@ -30,9 +30,10 @@ const (
 	// as unused options do not affect the final parameter value. The default value
 	// is also ignored, assuming a value is provided.
 	ValidationModeDefault ValidationMode = ""
-	// ValidationModeTemplateImport tolerates empty values, as the value might not be
-	// available at import. It does not tolerate an invalid default or invalid option
-	// values.
+	// ValidationModeTemplateImport tolerates empty values as long as no 'validation'
+	// block is specified. This allows for importing a template without having to
+	// specify a value for every parameter. It does not tolerate an invalid default
+	// or invalid option values.
 	ValidationModeTemplateImport ValidationMode = "template-import"
 )
 
@@ -428,14 +429,6 @@ func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diag
 		value = v.Default
 	}
 
-	// TODO: When empty values want to be rejected, uncomment this.
-	//   coder/coder should update to use template import mode first,
-	//   before this is uncommented.
-	//if value == nil && mode == ValidationModeDefault {
-	//	var empty string
-	//	value = &empty
-	//}
-
 	// optionType might differ from parameter.Type. This is ok, and parameter.Type
 	// should be used for the value type, and optionType for options.
 	optionType, v.FormType, err = ValidateFormType(v.Type, len(v.Option), v.FormType)
@@ -477,39 +470,36 @@ func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diag
 
 	// TODO: This is a bit of a hack. The current behavior states if validation
 	//   is given, then apply validation to unset values.
-	//   This should be removed, and all values should be validated. Meaning
 	//   value == nil should not be accepted in the first place.
-	if len(v.Validation) > 0 && value == nil {
-		empty := ""
-		value = &empty
-	}
-
-	// Value is only validated if it is set. If it is unset, validation
-	// is skipped.
-	if value != nil {
-		d := v.validValue(*value, optionType, optionValues, cty.Path{})
-		if d.HasError() {
-			return "", d
-		}
-
-		err = valueIsType(v.Type, *value)
-		if err != nil {
-			return "", diag.Diagnostics{
-				{
-					Severity: diag.Error,
-					Summary:  fmt.Sprintf("Parameter value is not of type %q", v.Type),
-					Detail:   err.Error(),
-				},
-			}
-		}
-	}
-
-	if value == nil {
-		// The previous behavior is to always write an empty string
+	//   To fix this, value should be coerced to an empty string
+	//   if it is nil. Then let the validation logic always apply.
+	if len(v.Validation) == 0 && value == nil {
 		return "", nil
 	}
 
-	return *value, nil
+	// forcedValue ensures the value is not-nil.
+	var forcedValue string
+	if value != nil {
+		forcedValue = *value
+	}
+
+	d := v.validValue(forcedValue, optionType, optionValues, cty.Path{})
+	if d.HasError() {
+		return "", d
+	}
+
+	err = valueIsType(v.Type, forcedValue)
+	if err != nil {
+		return "", diag.Diagnostics{
+			{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Parameter value is not of type %q", v.Type),
+				Detail:   err.Error(),
+			},
+		}
+	}
+
+	return forcedValue, nil
 }
 
 func (v *Parameter) ValidOptions(optionType OptionType, mode ValidationMode) (map[string]struct{}, diag.Diagnostics) {
