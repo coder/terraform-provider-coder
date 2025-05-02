@@ -161,7 +161,7 @@ func parameterDataSource() *schema.Resource {
 			}
 
 			mode := os.Getenv(ValidationModeEnvVar)
-			value, diags := parameter.Valid(input, ValidationMode(mode))
+			value, diags := parameter.ValidateInput(input, ValidationMode(mode))
 			if diags.HasError() {
 				return diags
 			}
@@ -410,7 +410,7 @@ func valueIsType(typ OptionType, value string) error {
 	return nil
 }
 
-func (v *Parameter) Valid(input *string, mode ValidationMode) (string, diag.Diagnostics) {
+func (v *Parameter) ValidateInput(input *string, mode ValidationMode) (string, diag.Diagnostics) {
 	if mode != ValidationModeDefault && mode != ValidationModeTemplateImport {
 		return "", diag.Diagnostics{
 			{

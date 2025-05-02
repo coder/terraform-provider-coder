@@ -839,7 +839,7 @@ func TestParameterValidation(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			value := &tc.Value
-			_, diags := tc.Parameter.Valid(value, provider.ValidationModeDefault)
+			_, diags := tc.Parameter.ValidateInput(value, provider.ValidationModeDefault)
 			if tc.ExpectError != nil {
 				require.True(t, diags.HasError())
 				errMsg := fmt.Sprintf("%+v", diags[0]) // close enough
