@@ -21,22 +21,6 @@ import (
 	"golang.org/x/xerrors"
 )
 
-type ValidationMode string
-
-const (
-	ValidationModeEnvVar = "CODER_VALIDATION_MODE"
-	// ValidationModeDefault is used for creating a workspace. It validates the final
-	// value used for a parameter. Some allowances for invalid options are tolerated,
-	// as unused options do not affect the final parameter value. The default value
-	// is also ignored, assuming a value is provided.
-	ValidationModeDefault ValidationMode = ""
-	// ValidationModeTemplateImport tolerates empty values as long as no 'validation'
-	// block is specified. This allows for importing a template without having to
-	// specify a value for every parameter. It does not tolerate an invalid default
-	// or invalid option values.
-	ValidationModeTemplateImport ValidationMode = "template-import"
-)
-
 var (
 	defaultValuePath = cty.Path{cty.GetAttrStep{Name: "default"}}
 )
@@ -160,8 +144,7 @@ func parameterDataSource() *schema.Resource {
 				input = &envValue
 			}
 
-			mode := os.Getenv(ValidationModeEnvVar)
-			value, diags := parameter.ValidateInput(input, ValidationMode(mode))
+			value, diags := parameter.ValidateInput(input)
 			if diags.HasError() {
 				return diags
 			}
@@ -410,17 +393,7 @@ func valueIsType(typ OptionType, value string) error {
 	return nil
 }
 
-func (v *Parameter) ValidateInput(input *string, mode ValidationMode) (string, diag.Diagnostics) {
-	if mode != ValidationModeDefault && mode != ValidationModeTemplateImport {
-		return "", diag.Diagnostics{
-			{
-				Severity: diag.Error,
-				Summary:  "Invalid validation mode",
-				Detail:   fmt.Sprintf("validation mode %q is not supported, use %q, or %q", mode, ValidationModeDefault, ValidationModeTemplateImport),
-			},
-		}
-	}
-
+func (v *Parameter) ValidateInput(input *string) (string, diag.Diagnostics) {
 	var err error
 	var optionType OptionType
 
@@ -443,29 +416,9 @@ func (v *Parameter) ValidateInput(input *string, mode ValidationMode) (string, d
 		}
 	}
 
-	optionValues, diags := v.ValidOptions(optionType, mode)
+	optionValues, diags := v.ValidOptions(optionType)
 	if diags.HasError() {
 		return "", diags
-	}
-
-	if mode == ValidationModeTemplateImport && v.Default != nil {
-		// Template import should validate the default value.
-		err := valueIsType(v.Type, *v.Default)
-		if err != nil {
-			return "", diag.Diagnostics{
-				{
-					Severity:      diag.Error,
-					Summary:       fmt.Sprintf("Default value is not of type %q", v.Type),
-					Detail:        err.Error(),
-					AttributePath: defaultValuePath,
-				},
-			}
-		}
-
-		d := v.validValue(*v.Default, optionType, optionValues, defaultValuePath)
-		if d.HasError() {
-			return "", d
-		}
 	}
 
 	// TODO: This is a bit of a hack. The current behavior states if validation
@@ -502,7 +455,7 @@ func (v *Parameter) ValidateInput(input *string, mode ValidationMode) (string, d
 	return forcedValue, nil
 }
 
-func (v *Parameter) ValidOptions(optionType OptionType, mode ValidationMode) (map[string]struct{}, diag.Diagnostics) {
+func (v *Parameter) ValidOptions(optionType OptionType) (map[string]struct{}, diag.Diagnostics) {
 	optionNames := map[string]struct{}{}
 	optionValues := map[string]struct{}{}
 
@@ -538,18 +491,10 @@ func (v *Parameter) ValidOptions(optionType OptionType, mode ValidationMode) (ma
 		optionValues[option.Value] = struct{}{}
 		optionNames[option.Name] = struct{}{}
 
-		if mode == ValidationModeTemplateImport {
-			opDiags := v.validValue(option.Value, optionType, nil, cty.Path{})
-			if opDiags.HasError() {
-				for i := range opDiags {
-					opDiags[i].Summary = fmt.Sprintf("Option %q: %s", option.Name, opDiags[i].Summary)
-				}
-				diags = append(diags, opDiags...)
-			}
-		}
+		// Option values are assumed to be valid. Do not call validValue on them.
 	}
 
-	if diags.HasError() {
+	if diags != nil && diags.HasError() {
 		return nil, diags
 	}
 	return optionValues, nil
