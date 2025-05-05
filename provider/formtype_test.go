@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -53,7 +54,7 @@ func TestValidateFormType(t *testing.T) {
 	// formTypesChecked keeps track of all checks run. It will be used to
 	// ensure all combinations of form_type and option_type are tested.
 	// All untested options are assumed to throw an error.
-	formTypesChecked := make(map[string]struct{})
+	var formTypesChecked sync.Map
 
 	expectType := func(expected provider.ParameterFormType, opts formTypeCheck) formTypeTestCase {
 		ftname := opts.formType
@@ -240,12 +241,12 @@ func TestValidateFormType(t *testing.T) {
 		for _, c := range cases {
 			t.Run(c.name, func(t *testing.T) {
 				t.Parallel()
-				if _, ok := formTypesChecked[c.config.String()]; ok {
+				if _, ok := formTypesChecked.Load(c.config.String()); ok {
 					t.Log("Duplicated form type check, delete this extra test case")
 					t.Fatalf("form type %q already checked", c.config.String())
 				}
 
-				formTypesChecked[c.config.String()] = struct{}{}
+				formTypesChecked.Store(c.config.String(), struct{}{})
 				formTypeTest(t, c)
 			})
 		}
@@ -282,7 +283,7 @@ func TestValidateFormType(t *testing.T) {
 		}
 
 		for _, check := range requiredChecks {
-			if _, alreadyChecked := formTypesChecked[check.String()]; alreadyChecked {
+			if _, alreadyChecked := formTypesChecked.Load(check.String()); alreadyChecked {
 				continue
 			}
 
