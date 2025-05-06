@@ -36,3 +36,6 @@ website/vendor
 
 # Binary
 terraform-provider-coder
+
+# direnv
+.direnv
