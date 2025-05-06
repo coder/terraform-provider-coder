@@ -881,6 +881,7 @@ func TestParameterValidationEnforcement(t *testing.T) {
 		OutputValue string
 		Optional    bool
 		CreateError *regexp.Regexp
+		Previous    *string
 	}
 
 	rows := make([]row, 0)
@@ -898,41 +899,44 @@ func TestParameterValidationEnforcement(t *testing.T) {
 			continue // Skip rows with empty names
 		}
 
-		optional, err := strconv.ParseBool(columns[8])
-		if columns[8] != "" {
+		cname, ctype, cprev, cinput, cdefault, coptions, cvalidation, _, coutput, coptional, cerr :=
+			columns[0], columns[1], columns[2], columns[3], columns[4], columns[5], columns[6], columns[7], columns[8], columns[9], columns[10]
+
+		optional, err := strconv.ParseBool(coptional)
+		if coptional != "" {
 			// Value does not matter if not specified
 			require.NoError(t, err)
 		}
 
 		var rerr *regexp.Regexp
-		if columns[9] != "" {
-			rerr, err = regexp.Compile(columns[9])
+		if cerr != "" {
+			rerr, err = regexp.Compile(cerr)
 			if err != nil {
-				t.Fatalf("failed to parse error column %q: %v", columns[9], err)
+				t.Fatalf("failed to parse error column %q: %v", cerr, err)
 			}
 		}
 
 		var options []string
-		if columns[4] != "" {
-			options = strings.Split(columns[4], ",")
+		if coptions != "" {
+			options = strings.Split(coptions, ",")
 		}
 
 		var validation *provider.Validation
-		if columns[5] != "" {
+		if cvalidation != "" {
 			switch {
-			case columns[5] == provider.ValidationMonotonicIncreasing || columns[5] == provider.ValidationMonotonicDecreasing:
+			case cvalidation == provider.ValidationMonotonicIncreasing || cvalidation == provider.ValidationMonotonicDecreasing:
 				validation = &provider.Validation{
 					MinDisabled: true,
 					MaxDisabled: true,
-					Monotonic:   columns[5],
+					Monotonic:   cvalidation,
 					Error:       "monotonicity",
 				}
-			case validMinMax.MatchString(columns[5]):
+			case validMinMax.MatchString(cvalidation):
 				// Min-Max validation should look like:
 				//	1-10    :: min=1, max=10
 				//	-10     :: max=10
 				//	1-      :: min=1
-				parts := strings.Split(columns[5], "-")
+				parts := strings.Split(cvalidation, "-")
 				min, _ := strconv.ParseInt(parts[0], 10, 64)
 				max, _ := strconv.ParseInt(parts[1], 10, 64)
 				validation = &provider.Validation{
@@ -951,22 +955,30 @@ func TestParameterValidationEnforcement(t *testing.T) {
 					Max:         0,
 					MaxDisabled: true,
 					Monotonic:   "",
-					Regex:       columns[5],
+					Regex:       cvalidation,
 					Error:       "regex error",
 				}
 			}
 		}
 
+		var prev *string
+		if cprev != "" {
+			prev = ptr(cprev)
+			if cprev == `""` {
+				prev = ptr("")
+			}
+		}
 		rows = append(rows, row{
-			Name:        columns[0],
-			Types:       strings.Split(columns[1], ","),
-			InputValue:  columns[2],
-			Default:     columns[3],
+			Name:        cname,
+			Types:       strings.Split(ctype, ","),
+			InputValue:  cinput,
+			Default:     cdefault,
 			Options:     options,
 			Validation:  validation,
-			OutputValue: columns[7],
+			OutputValue: coutput,
 			Optional:    optional,
 			CreateError: rerr,
+			Previous:    prev,
 		})
 	}
 
@@ -983,6 +995,9 @@ func TestParameterValidationEnforcement(t *testing.T) {
 			t.Run(fmt.Sprintf("%d|%s:%s", rowIndex, row.Name, rt), func(t *testing.T) {
 				if row.InputValue != "" {
 					t.Setenv(provider.ParameterEnvironmentVariable("parameter"), row.InputValue)
+				}
+				if row.Previous != nil {
+					t.Setenv(provider.ParameterEnvironmentVariablePrevious("parameter"), *row.Previous)
 				}
 
 				if row.CreateError != nil && row.OutputValue != "" {
