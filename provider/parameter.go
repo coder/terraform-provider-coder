@@ -144,7 +144,13 @@ func parameterDataSource() *schema.Resource {
 				input = &envValue
 			}
 
-			value, diags := parameter.ValidateInput(input)
+			var previous *string
+			envPreviousValue, ok := os.LookupEnv(ParameterEnvironmentVariablePrevious(parameter.Name))
+			if ok {
+				previous = &envPreviousValue
+			}
+
+			value, diags := parameter.ValidateInput(input, previous)
 			if diags.HasError() {
 				return diags
 			}
@@ -395,7 +401,7 @@ func valueIsType(typ OptionType, value string) error {
 	return nil
 }
 
-func (v *Parameter) ValidateInput(input *string) (string, diag.Diagnostics) {
+func (v *Parameter) ValidateInput(input *string, previous *string) (string, diag.Diagnostics) {
 	var err error
 	var optionType OptionType
 
@@ -442,7 +448,7 @@ func (v *Parameter) ValidateInput(input *string) (string, diag.Diagnostics) {
 		forcedValue = *value
 	}
 
-	d := v.validValue(forcedValue, optionType, optionValues, valuePath)
+	d := v.validValue(forcedValue, previous, optionType, optionValues, valuePath)
 	if d.HasError() {
 		return "", d
 	}
@@ -506,7 +512,7 @@ func (v *Parameter) ValidOptions(optionType OptionType) (map[string]struct{}, di
 	return optionValues, nil
 }
 
-func (v *Parameter) validValue(value string, optionType OptionType, optionValues map[string]struct{}, path cty.Path) diag.Diagnostics {
+func (v *Parameter) validValue(value string, previous *string, optionType OptionType, optionValues map[string]struct{}, path cty.Path) diag.Diagnostics {
 	// name is used for constructing more precise error messages.
 	name := "Value"
 	if path.Equals(defaultValuePath) {
@@ -573,7 +579,7 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 
 	if len(v.Validation) == 1 {
 		validCheck := &v.Validation[0]
-		err := validCheck.Valid(v.Type, value)
+		err := validCheck.Valid(v.Type, value, previous)
 		if err != nil {
 			return diag.Diagnostics{
 				{
@@ -589,7 +595,7 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 	return nil
 }
 
-func (v *Validation) Valid(typ OptionType, value string) error {
+func (v *Validation) Valid(typ OptionType, value string, previous *string) error {
 	if typ != OptionTypeNumber {
 		if !v.MinDisabled {
 			return fmt.Errorf("a min cannot be specified for a %s type", typ)
@@ -639,6 +645,28 @@ func (v *Validation) Valid(typ OptionType, value string) error {
 		if v.Monotonic != "" && v.Monotonic != ValidationMonotonicIncreasing && v.Monotonic != ValidationMonotonicDecreasing {
 			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
 		}
+
+		switch v.Monotonic {
+		case "":
+			// No monotonicity check
+		case ValidationMonotonicIncreasing, ValidationMonotonicDecreasing:
+			if previous != nil { // Only check if previous value exists
+				previousNum, err := strconv.Atoi(*previous)
+				if err != nil {
+					return fmt.Errorf("previous value %q is not a number", *previous)
+				}
+
+				if v.Monotonic == ValidationMonotonicIncreasing && !(num >= previousNum) {
+					return fmt.Errorf("parameter value '%d' must be equal or greater than previous value: %d", num, previousNum)
+				}
+
+				if v.Monotonic == ValidationMonotonicDecreasing && !(num <= previousNum) {
+					return fmt.Errorf("parameter value '%d' must be equal or lower than previous value: %d", num, previousNum)
+				}
+			}
+		default:
+			return fmt.Errorf("number monotonicity can be either %q or %q", ValidationMonotonicIncreasing, ValidationMonotonicDecreasing)
+		}
 	case OptionTypeListString:
 		var listOfStrings []string
 		err := json.Unmarshal([]byte(value), &listOfStrings)
@@ -664,6 +692,15 @@ func valueIsListString(value string) ([]string, error) {
 func ParameterEnvironmentVariable(name string) string {
 	sum := sha256.Sum256([]byte(name))
 	return "CODER_PARAMETER_" + hex.EncodeToString(sum[:])
+}
+
+// ParameterEnvironmentVariablePrevious returns the environment variable to
+// specify for a parameter's previous value. This is used for workspace
+// subsequent builds after the first. Primarily to validate monotonicity in the
+// `validation` block.
+func ParameterEnvironmentVariablePrevious(name string) string {
+	sum := sha256.Sum256([]byte(name))
+	return "CODER_PARAMETER_PREVIOUS_" + hex.EncodeToString(sum[:])
 }
 
 func takeFirstError(errs ...error) error {

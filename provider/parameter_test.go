@@ -839,7 +839,7 @@ func TestParameterValidation(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			value := &tc.Value
-			_, diags := tc.Parameter.ValidateInput(value)
+			_, diags := tc.Parameter.ValidateInput(value, nil)
 			if tc.ExpectError != nil {
 				require.True(t, diags.HasError())
 				errMsg := fmt.Sprintf("%+v", diags[0]) // close enough
@@ -919,11 +919,19 @@ func TestParameterValidationEnforcement(t *testing.T) {
 
 		var validation *provider.Validation
 		if columns[5] != "" {
-			// Min-Max validation should look like:
-			//	1-10    :: min=1, max=10
-			//	-10     :: max=10
-			//	1-      :: min=1
-			if validMinMax.MatchString(columns[5]) {
+			switch {
+			case columns[5] == provider.ValidationMonotonicIncreasing || columns[5] == provider.ValidationMonotonicDecreasing:
+				validation = &provider.Validation{
+					MinDisabled: true,
+					MaxDisabled: true,
+					Monotonic:   columns[5],
+					Error:       "monotonicity",
+				}
+			case validMinMax.MatchString(columns[5]):
+				// Min-Max validation should look like:
+				//	1-10    :: min=1, max=10
+				//	-10     :: max=10
+				//	1-      :: min=1
 				parts := strings.Split(columns[5], "-")
 				min, _ := strconv.ParseInt(parts[0], 10, 64)
 				max, _ := strconv.ParseInt(parts[1], 10, 64)
@@ -936,7 +944,7 @@ func TestParameterValidationEnforcement(t *testing.T) {
 					Regex:       "",
 					Error:       "{min} < {value} < {max}",
 				}
-			} else {
+			default:
 				validation = &provider.Validation{
 					Min:         0,
 					MinDisabled: true,
@@ -1067,6 +1075,7 @@ func TestValueValidatesType(t *testing.T) {
 		Name                     string
 		Type                     provider.OptionType
 		Value                    string
+		Previous                 *string
 		Regex                    string
 		RegexError               string
 		Min                      int
@@ -1155,6 +1164,56 @@ func TestValueValidatesType(t *testing.T) {
 		Max:       2,
 		Monotonic: "decreasing",
 	}, {
+		Name:        "IncreasingMonotonicityEqual",
+		Type:        "number",
+		Previous:    ptr("1"),
+		Value:       "1",
+		Monotonic:   "increasing",
+		MinDisabled: true,
+		MaxDisabled: true,
+	}, {
+		Name:        "DecreasingMonotonicityEqual",
+		Type:        "number",
+		Value:       "1",
+		Previous:    ptr("1"),
+		Monotonic:   "decreasing",
+		MinDisabled: true,
+		MaxDisabled: true,
+	}, {
+		Name:        "IncreasingMonotonicityGreater",
+		Type:        "number",
+		Previous:    ptr("0"),
+		Value:       "1",
+		Monotonic:   "increasing",
+		MinDisabled: true,
+		MaxDisabled: true,
+	}, {
+		Name:        "DecreasingMonotonicityGreater",
+		Type:        "number",
+		Value:       "1",
+		Previous:    ptr("0"),
+		Monotonic:   "decreasing",
+		MinDisabled: true,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("must be equal or"),
+	}, {
+		Name:        "IncreasingMonotonicityLesser",
+		Type:        "number",
+		Previous:    ptr("2"),
+		Value:       "1",
+		Monotonic:   "increasing",
+		MinDisabled: true,
+		MaxDisabled: true,
+		Error:       regexp.MustCompile("must be equal or"),
+	}, {
+		Name:        "DecreasingMonotonicityLesser",
+		Type:        "number",
+		Value:       "1",
+		Previous:    ptr("2"),
+		Monotonic:   "decreasing",
+		MinDisabled: true,
+		MaxDisabled: true,
+	}, {
 		Name:        "ValidListOfStrings",
 		Type:        "list(string)",
 		Value:       `["first","second","third"]`,
@@ -1205,7 +1264,7 @@ func TestValueValidatesType(t *testing.T) {
 				Regex:       tc.Regex,
 				Error:       tc.RegexError,
 			}
-			err := v.Valid(tc.Type, tc.Value)
+			err := v.Valid(tc.Type, tc.Value, tc.Previous)
 			if tc.Error != nil {
 				require.Error(t, err)
 				require.True(t, tc.Error.MatchString(err.Error()), "got: %s", err.Error())
