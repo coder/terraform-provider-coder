@@ -525,7 +525,7 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 						Severity:      diag.Error,
 						Summary:       "When using list(string) type, value must be a json encoded list of strings",
 						Detail:        err.Error(),
-						AttributePath: defaultValuePath,
+						AttributePath: path,
 					},
 				}
 			}
@@ -548,7 +548,7 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 							"%s %q is not a valid option, values %q are missing from the options",
 							name, value, strings.Join(missing, ", "),
 						),
-						AttributePath: defaultValuePath,
+						AttributePath: path,
 					},
 				}
 			}
