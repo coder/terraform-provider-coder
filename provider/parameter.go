@@ -152,7 +152,9 @@ func parameterDataSource() *schema.Resource {
 			// Always set back the value, as it can be sourced from the default
 			rd.Set("value", value)
 
-			// Set the form_type as it could have changed in the validation.
+			// Set the form_type, as if it was unset, a default form_type will be updated on
+			// the parameter struct. Always set back the updated form_type to be more
+			// specific than the default empty string.
 			rd.Set("form_type", parameter.FormType)
 
 			return nil
@@ -397,9 +399,13 @@ func (v *Parameter) ValidateInput(input *string) (string, diag.Diagnostics) {
 	var err error
 	var optionType OptionType
 
+	valuePath := cty.Path{}
 	value := input
 	if input == nil {
 		value = v.Default
+		if v.Default != nil {
+			valuePath = defaultValuePath
+		}
 	}
 
 	// optionType might differ from parameter.Type. This is ok, and parameter.Type
@@ -436,7 +442,7 @@ func (v *Parameter) ValidateInput(input *string) (string, diag.Diagnostics) {
 		forcedValue = *value
 	}
 
-	d := v.validValue(forcedValue, optionType, optionValues, cty.Path{})
+	d := v.validValue(forcedValue, optionType, optionValues, valuePath)
 	if d.HasError() {
 		return "", d
 	}
@@ -511,7 +517,7 @@ func (v *Parameter) validValue(value string, optionType OptionType, optionValues
 	if len(optionValues) > 0 {
 		if v.Type == OptionTypeListString && optionType == OptionTypeString {
 			// If the type is list(string) and optionType is string, we have
-			// to ensure all elements of the default exist as options.
+			// to ensure all elements of the value exist as options.
 			listValues, err := valueIsListString(value)
 			if err != nil {
 				return diag.Diagnostics{
