@@ -21,6 +21,10 @@ import (
 	"golang.org/x/xerrors"
 )
 
+var (
+	defaultValuePath = cty.Path{cty.GetAttrStep{Name: "default"}}
+)
+
 type Option struct {
 	Name        string
 	Description string
@@ -46,14 +50,13 @@ const (
 )
 
 type Parameter struct {
-	Value       string
 	Name        string
 	DisplayName string `mapstructure:"display_name"`
 	Description string
 	Type        OptionType
 	FormType    ParameterFormType
 	Mutable     bool
-	Default     string
+	Default     *string
 	Icon        string
 	Option      []Option
 	Validation  []Validation
@@ -82,7 +85,6 @@ func parameterDataSource() *schema.Resource {
 
 			var parameter Parameter
 			err = mapstructure.Decode(struct {
-				Value       interface{}
 				Name        interface{}
 				DisplayName interface{}
 				Description interface{}
@@ -97,17 +99,22 @@ func parameterDataSource() *schema.Resource {
 				Order       interface{}
 				Ephemeral   interface{}
 			}{
-				Value:       rd.Get("value"),
 				Name:        rd.Get("name"),
 				DisplayName: rd.Get("display_name"),
 				Description: rd.Get("description"),
 				Type:        rd.Get("type"),
 				FormType:    rd.Get("form_type"),
 				Mutable:     rd.Get("mutable"),
-				Default:     rd.Get("default"),
-				Icon:        rd.Get("icon"),
-				Option:      rd.Get("option"),
-				Validation:  fixedValidation,
+				Default: func() *string {
+					if rd.GetRawConfig().AsValueMap()["default"].IsNull() {
+						return nil
+					}
+					val, _ := rd.Get("default").(string)
+					return &val
+				}(),
+				Icon:       rd.Get("icon"),
+				Option:     rd.Get("option"),
+				Validation: fixedValidation,
 				Optional: func() bool {
 					// This hack allows for checking if the "default" field is present in the .tf file.
 					// If "default" is missing or is "null", then it means that this field is required,
@@ -122,19 +129,6 @@ func parameterDataSource() *schema.Resource {
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
 			}
-			var value string
-			if parameter.Default != "" {
-				err := valueIsType(parameter.Type, parameter.Default, cty.Path{cty.GetAttrStep{Name: "default"}})
-				if err != nil {
-					return err
-				}
-				value = parameter.Default
-			}
-			envValue, ok := os.LookupEnv(ParameterEnvironmentVariable(parameter.Name))
-			if ok {
-				value = envValue
-			}
-			rd.Set("value", value)
 
 			if !parameter.Mutable && parameter.Ephemeral {
 				return diag.Errorf("parameter can't be immutable and ephemeral")
@@ -144,37 +138,24 @@ func parameterDataSource() *schema.Resource {
 				return diag.Errorf("ephemeral parameter requires the default property")
 			}
 
-			// TODO: Should we move this into the Valid() function on
-			//  Parameter?
-			if len(parameter.Validation) == 1 {
-				validation := &parameter.Validation[0]
-				err = validation.Valid(parameter.Type, value)
-				if err != nil {
-					return diag.FromErr(err)
-				}
+			var input *string
+			envValue, ok := os.LookupEnv(ParameterEnvironmentVariable(parameter.Name))
+			if ok {
+				input = &envValue
 			}
 
-			// Validate options
-			_, parameter.FormType, err = ValidateFormType(parameter.Type, len(parameter.Option), parameter.FormType)
-			if err != nil {
-				return diag.Diagnostics{
-					{
-						Severity:      diag.Error,
-						Summary:       "Invalid form_type for parameter",
-						Detail:        err.Error(),
-						AttributePath: cty.Path{cty.GetAttrStep{Name: "form_type"}},
-					},
-				}
-			}
-			// Set the form_type back in case the value was changed.
-			// Eg via a default. If a user does not specify, a default value
-			// is used and saved.
-			rd.Set("form_type", parameter.FormType)
-
-			diags := parameter.Valid()
+			value, diags := parameter.ValidateInput(input)
 			if diags.HasError() {
 				return diags
 			}
+
+			// Always set back the value, as it can be sourced from the default
+			rd.Set("value", value)
+
+			// Set the form_type, as if it was unset, a default form_type will be updated on
+			// the parameter struct. Always set back the updated form_type to be more
+			// specific than the default empty string.
+			rd.Set("form_type", parameter.FormType)
 
 			return nil
 		},
@@ -389,37 +370,49 @@ func fixValidationResourceData(rawConfig cty.Value, validation interface{}) (int
 	return vArr, nil
 }
 
-func valueIsType(typ OptionType, value string, attrPath cty.Path) diag.Diagnostics {
+func valueIsType(typ OptionType, value string) error {
 	switch typ {
 	case OptionTypeNumber:
 		_, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return diag.Errorf("%q is not a number", value)
+			return fmt.Errorf("%q is not a number", value)
 		}
 	case OptionTypeBoolean:
 		_, err := strconv.ParseBool(value)
 		if err != nil {
-			return diag.Errorf("%q is not a bool", value)
+			return fmt.Errorf("%q is not a bool", value)
 		}
 	case OptionTypeListString:
-		_, diags := valueIsListString(value, attrPath)
-		if diags.HasError() {
-			return diags
+		_, err := valueIsListString(value)
+		if err != nil {
+			return err
 		}
 	case OptionTypeString:
 		// Anything is a string!
 	default:
-		return diag.Errorf("invalid type %q", typ)
+		return fmt.Errorf("invalid type %q", typ)
 	}
 	return nil
 }
 
-func (v *Parameter) Valid() diag.Diagnostics {
+func (v *Parameter) ValidateInput(input *string) (string, diag.Diagnostics) {
+	var err error
+	var optionType OptionType
+
+	valuePath := cty.Path{}
+	value := input
+	if input == nil {
+		value = v.Default
+		if v.Default != nil {
+			valuePath = defaultValuePath
+		}
+	}
+
 	// optionType might differ from parameter.Type. This is ok, and parameter.Type
 	// should be used for the value type, and optionType for options.
-	optionType, _, err := ValidateFormType(v.Type, len(v.Option), v.FormType)
+	optionType, v.FormType, err = ValidateFormType(v.Type, len(v.Option), v.FormType)
 	if err != nil {
-		return diag.Diagnostics{
+		return "", diag.Diagnostics{
 			{
 				Severity:      diag.Error,
 				Summary:       "Invalid form_type for parameter",
@@ -429,53 +422,120 @@ func (v *Parameter) Valid() diag.Diagnostics {
 		}
 	}
 
-	optionNames := map[string]any{}
-	optionValues := map[string]any{}
-	if len(v.Option) > 0 {
-		for _, option := range v.Option {
-			_, exists := optionNames[option.Name]
-			if exists {
-				return diag.Diagnostics{{
-					Severity: diag.Error,
-					Summary:  "Option names must be unique.",
-					Detail:   fmt.Sprintf("multiple options found with the same name %q", option.Name),
-				},
-				}
-			}
-			_, exists = optionValues[option.Value]
-			if exists {
-				return diag.Diagnostics{
-					{
-						Severity: diag.Error,
-						Summary:  "Option values must be unique.",
-						Detail:   fmt.Sprintf("multiple options found with the same value %q", option.Value),
-					},
-				}
-			}
-			diags := valueIsType(optionType, option.Value, cty.Path{})
-			if diags.HasError() {
-				return diags
-			}
-			optionValues[option.Value] = nil
-			optionNames[option.Name] = nil
+	optionValues, diags := v.ValidOptions(optionType)
+	if diags.HasError() {
+		return "", diags
+	}
+
+	// TODO: This is a bit of a hack. The current behavior states if validation
+	//   is given, then apply validation to unset values.
+	//   value == nil should not be accepted in the first place.
+	//   To fix this, value should be coerced to an empty string
+	//   if it is nil. Then let the validation logic always apply.
+	if len(v.Validation) == 0 && value == nil {
+		return "", nil
+	}
+
+	// forcedValue ensures the value is not-nil.
+	var forcedValue string
+	if value != nil {
+		forcedValue = *value
+	}
+
+	d := v.validValue(forcedValue, optionType, optionValues, valuePath)
+	if d.HasError() {
+		return "", d
+	}
+
+	err = valueIsType(v.Type, forcedValue)
+	if err != nil {
+		return "", diag.Diagnostics{
+			{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Parameter value is not of type %q", v.Type),
+				Detail:   err.Error(),
+			},
 		}
 	}
 
-	if v.Default != "" && len(v.Option) > 0 {
+	return forcedValue, nil
+}
+
+func (v *Parameter) ValidOptions(optionType OptionType) (map[string]struct{}, diag.Diagnostics) {
+	optionNames := map[string]struct{}{}
+	optionValues := map[string]struct{}{}
+
+	var diags diag.Diagnostics
+	for _, option := range v.Option {
+		_, exists := optionNames[option.Name]
+		if exists {
+			return nil, diag.Diagnostics{{
+				Severity: diag.Error,
+				Summary:  "Option names must be unique.",
+				Detail:   fmt.Sprintf("multiple options found with the same name %q", option.Name),
+			}}
+		}
+
+		_, exists = optionValues[option.Value]
+		if exists {
+			return nil, diag.Diagnostics{{
+				Severity: diag.Error,
+				Summary:  "Option values must be unique.",
+				Detail:   fmt.Sprintf("multiple options found with the same value %q", option.Value),
+			}}
+		}
+
+		err := valueIsType(optionType, option.Value)
+		if err != nil {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  fmt.Sprintf("Option %q with value=%q is not of type %q", option.Name, option.Value, optionType),
+				Detail:   err.Error(),
+			})
+			continue
+		}
+		optionValues[option.Value] = struct{}{}
+		optionNames[option.Name] = struct{}{}
+
+		// Option values are assumed to be valid. Do not call validValue on them.
+	}
+
+	if diags != nil && diags.HasError() {
+		return nil, diags
+	}
+	return optionValues, nil
+}
+
+func (v *Parameter) validValue(value string, optionType OptionType, optionValues map[string]struct{}, path cty.Path) diag.Diagnostics {
+	// name is used for constructing more precise error messages.
+	name := "Value"
+	if path.Equals(defaultValuePath) {
+		name = "Default value"
+	}
+
+	// First validate if the value is a valid option
+	if len(optionValues) > 0 {
 		if v.Type == OptionTypeListString && optionType == OptionTypeString {
 			// If the type is list(string) and optionType is string, we have
-			// to ensure all elements of the default exist as options.
-			defaultValues, diags := valueIsListString(v.Default, cty.Path{cty.GetAttrStep{Name: "default"}})
-			if diags.HasError() {
-				return diags
+			// to ensure all elements of the value exist as options.
+			listValues, err := valueIsListString(value)
+			if err != nil {
+				return diag.Diagnostics{
+					{
+						Severity:      diag.Error,
+						Summary:       "When using list(string) type, value must be a json encoded list of strings",
+						Detail:        err.Error(),
+						AttributePath: path,
+					},
+				}
 			}
 
 			// missing is used to construct a more helpful error message
 			var missing []string
-			for _, defaultValue := range defaultValues {
-				_, defaultIsValid := optionValues[defaultValue]
-				if !defaultIsValid {
-					missing = append(missing, defaultValue)
+			for _, listValue := range listValues {
+				_, isValid := optionValues[listValue]
+				if !isValid {
+					missing = append(missing, listValue)
 				}
 			}
 
@@ -483,26 +543,45 @@ func (v *Parameter) Valid() diag.Diagnostics {
 				return diag.Diagnostics{
 					{
 						Severity: diag.Error,
-						Summary:  "Default values must be a valid option",
+						Summary:  fmt.Sprintf("%ss must be a valid option", name),
 						Detail: fmt.Sprintf(
-							"default value %q is not a valid option, values %q are missing from the options",
-							v.Default, strings.Join(missing, ", "),
+							"%s %q is not a valid option, values %q are missing from the options",
+							name, value, strings.Join(missing, ", "),
 						),
-						AttributePath: cty.Path{cty.GetAttrStep{Name: "default"}},
+						AttributePath: path,
 					},
 				}
 			}
 		} else {
-			_, defaultIsValid := optionValues[v.Default]
-			if !defaultIsValid {
+			_, isValid := optionValues[value]
+			if !isValid {
+				extra := ""
+				if value == "" {
+					extra = ". The value is empty, did you forget to set it with a default or from user input?"
+				}
 				return diag.Diagnostics{
 					{
 						Severity:      diag.Error,
-						Summary:       "Default value must be a valid option",
-						Detail:        fmt.Sprintf("the value %q must be defined as one of options", v.Default),
-						AttributePath: cty.Path{cty.GetAttrStep{Name: "default"}},
+						Summary:       fmt.Sprintf("%s must be a valid option%s", name, extra),
+						Detail:        fmt.Sprintf("the value %q must be defined as one of options", value),
+						AttributePath: path,
 					},
 				}
+			}
+		}
+	}
+
+	if len(v.Validation) == 1 {
+		validCheck := &v.Validation[0]
+		err := validCheck.Valid(v.Type, value)
+		if err != nil {
+			return diag.Diagnostics{
+				{
+					Severity:      diag.Error,
+					Summary:       fmt.Sprintf("Invalid parameter %s according to 'validation' block", strings.ToLower(name)),
+					Detail:        err.Error(),
+					AttributePath: path,
+				},
 			}
 		}
 	}
@@ -570,18 +649,11 @@ func (v *Validation) Valid(typ OptionType, value string) error {
 	return nil
 }
 
-func valueIsListString(value string, path cty.Path) ([]string, diag.Diagnostics) {
+func valueIsListString(value string) ([]string, error) {
 	var items []string
 	err := json.Unmarshal([]byte(value), &items)
 	if err != nil {
-		return nil, diag.Diagnostics{
-			{
-				Severity:      diag.Error,
-				Summary:       "When using list(string) type, value must be a json encoded list of strings",
-				Detail:        fmt.Sprintf("value %q is not a valid list of strings", value),
-				AttributePath: path,
-			},
-		}
+		return nil, fmt.Errorf("value %q is not a valid list of strings", value)
 	}
 	return items, nil
 }

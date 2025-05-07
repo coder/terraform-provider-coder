@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/coder/terraform-provider-coder/v2/provider"
@@ -84,6 +85,7 @@ func TestParameter(t *testing.T) {
 			data "coder_parameter" "region" {
 				name = "Region"
 				type = "number"
+				default = 1
 				option {
 					name = "1"
 					value = "1"
@@ -101,6 +103,7 @@ func TestParameter(t *testing.T) {
 			data "coder_parameter" "region" {
 				name = "Region"
 				type = "string"
+				default = "1"
 				option {
 					name = "1"
 					value = "1"
@@ -688,6 +691,168 @@ data "coder_parameter" "region" {
 	}
 }
 
+func TestParameterValidation(t *testing.T) {
+	t.Parallel()
+	opts := func(vals ...string) []provider.Option {
+		options := make([]provider.Option, 0, len(vals))
+		for _, val := range vals {
+			options = append(options, provider.Option{
+				Name:  val,
+				Value: val,
+			})
+		}
+		return options
+	}
+
+	for _, tc := range []struct {
+		Name        string
+		Parameter   provider.Parameter
+		Value       string
+		ExpectError *regexp.Regexp
+	}{
+		{
+			Name: "ValidStringParameter",
+			Parameter: provider.Parameter{
+				Type: "string",
+			},
+			Value: "alpha",
+		},
+		// Test invalid states
+		{
+			Name: "InvalidFormType",
+			Parameter: provider.Parameter{
+				Type:     "string",
+				Option:   opts("alpha", "bravo", "charlie"),
+				FormType: provider.ParameterFormTypeSlider,
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Invalid form_type for parameter"),
+		},
+		{
+			Name: "NotInOptions",
+			Parameter: provider.Parameter{
+				Type:   "string",
+				Option: opts("alpha", "bravo", "charlie"),
+			},
+			Value:       "delta", // not in option set
+			ExpectError: regexp.MustCompile("Value must be a valid option"),
+		},
+		{
+			Name: "NumberNotInOptions",
+			Parameter: provider.Parameter{
+				Type:   "number",
+				Option: opts("1", "2", "3"),
+			},
+			Value:       "0", // not in option set
+			ExpectError: regexp.MustCompile("Value must be a valid option"),
+		},
+		{
+			Name: "NonUniqueOptionNames",
+			Parameter: provider.Parameter{
+				Type:   "string",
+				Option: opts("alpha", "alpha"),
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Option names must be unique"),
+		},
+		{
+			Name: "NonUniqueOptionValues",
+			Parameter: provider.Parameter{
+				Type: "string",
+				Option: []provider.Option{
+					{Name: "Alpha", Value: "alpha"},
+					{Name: "AlphaAgain", Value: "alpha"},
+				},
+			},
+			Value:       "alpha",
+			ExpectError: regexp.MustCompile("Option values must be unique"),
+		},
+		{
+			Name: "IncorrectValueTypeOption",
+			Parameter: provider.Parameter{
+				Type:   "number",
+				Option: opts("not-a-number"),
+			},
+			Value:       "5",
+			ExpectError: regexp.MustCompile("is not a number"),
+		},
+		{
+			Name: "IncorrectValueType",
+			Parameter: provider.Parameter{
+				Type: "number",
+			},
+			Value:       "not-a-number",
+			ExpectError: regexp.MustCompile("Parameter value is not of type \"number\""),
+		},
+		{
+			Name: "NotListStringDefault",
+			Parameter: provider.Parameter{
+				Type:    "list(string)",
+				Default: ptr("not-a-list"),
+			},
+			ExpectError: regexp.MustCompile("not a valid list of strings"),
+		},
+		{
+			Name: "NotListStringDefault",
+			Parameter: provider.Parameter{
+				Type: "list(string)",
+			},
+			Value:       "not-a-list",
+			ExpectError: regexp.MustCompile("not a valid list of strings"),
+		},
+		{
+			Name: "DefaultListStringNotInOptions",
+			Parameter: provider.Parameter{
+				Type:     "list(string)",
+				Default:  ptr(`["red", "yellow", "black"]`),
+				Option:   opts("red", "blue", "green"),
+				FormType: provider.ParameterFormTypeMultiSelect,
+			},
+			Value:       `["red", "yellow", "black"]`,
+			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
+		},
+		{
+			Name: "ListStringNotInOptions",
+			Parameter: provider.Parameter{
+				Type:     "list(string)",
+				Default:  ptr(`["red"]`),
+				Option:   opts("red", "blue", "green"),
+				FormType: provider.ParameterFormTypeMultiSelect,
+			},
+			Value:       `["red", "yellow", "black"]`,
+			ExpectError: regexp.MustCompile("is not a valid option, values \"yellow, black\" are missing from the options"),
+		},
+		{
+			Name: "InvalidMiniumum",
+			Parameter: provider.Parameter{
+				Type:    "number",
+				Default: ptr("5"),
+				Validation: []provider.Validation{{
+					Min:   10,
+					Error: "must be greater than 10",
+				}},
+			},
+			ExpectError: regexp.MustCompile("must be greater than 10"),
+		},
+	} {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			t.Parallel()
+			value := &tc.Value
+			_, diags := tc.Parameter.ValidateInput(value)
+			if tc.ExpectError != nil {
+				require.True(t, diags.HasError())
+				errMsg := fmt.Sprintf("%+v", diags[0]) // close enough
+				require.Truef(t, tc.ExpectError.MatchString(errMsg), "got: %s", errMsg)
+			} else {
+				if !assert.False(t, diags.HasError()) {
+					t.Logf("got: %+v", diags[0])
+				}
+			}
+		})
+	}
+}
+
 // TestParameterValidationEnforcement tests various parameter states and the
 // validation enforcement that should be applied to them. The table is described
 // by a markdown table. This is done so that the test cases can be more easily
@@ -703,10 +868,6 @@ func TestParameterValidationEnforcement(t *testing.T) {
 	// - Validation logic does not apply to the default if a value is given
 	//	- [NumIns/DefInv] So the default can be invalid if an input value is valid.
 	//	  The value is therefore not really optional, but it is marked as such.
-	// - [NumInsNotOptsVal | NumsInsNotOpts] values do not need to be in the option set?
-	// - [NumInsNotNum] number params do not require the value to be a number
-	// - [LStrInsNotList] list(string) do not require the value to be a list(string)
-	//	- Same with [MulInsNotListOpts]
 	table, err := os.ReadFile("testdata/parameter_table.md")
 	require.NoError(t, err)
 
@@ -719,7 +880,7 @@ func TestParameterValidationEnforcement(t *testing.T) {
 		Validation  *provider.Validation
 		OutputValue string
 		Optional    bool
-		Error       *regexp.Regexp
+		CreateError *regexp.Regexp
 	}
 
 	rows := make([]row, 0)
@@ -750,6 +911,7 @@ func TestParameterValidationEnforcement(t *testing.T) {
 				t.Fatalf("failed to parse error column %q: %v", columns[9], err)
 			}
 		}
+
 		var options []string
 		if columns[4] != "" {
 			options = strings.Split(columns[4], ",")
@@ -796,7 +958,7 @@ func TestParameterValidationEnforcement(t *testing.T) {
 			Validation:  validation,
 			OutputValue: columns[7],
 			Optional:    optional,
-			Error:       rerr,
+			CreateError: rerr,
 		})
 	}
 
@@ -815,10 +977,8 @@ func TestParameterValidationEnforcement(t *testing.T) {
 					t.Setenv(provider.ParameterEnvironmentVariable("parameter"), row.InputValue)
 				}
 
-				if row.Error != nil {
-					if row.OutputValue != "" {
-						t.Errorf("output value %q should not be set if error is set", row.OutputValue)
-					}
+				if row.CreateError != nil && row.OutputValue != "" {
+					t.Errorf("output value %q should not be set if both errors are set", row.OutputValue)
 				}
 
 				var cfg strings.Builder
@@ -860,13 +1020,12 @@ func TestParameterValidationEnforcement(t *testing.T) {
 				}
 
 				cfg.WriteString("}\n")
-
 				resource.Test(t, resource.TestCase{
 					ProviderFactories: coderFactory(),
 					IsUnitTest:        true,
 					Steps: []resource.TestStep{{
 						Config:      cfg.String(),
-						ExpectError: row.Error,
+						ExpectError: row.CreateError,
 						Check: func(state *terraform.State) error {
 							require.Len(t, state.Modules, 1)
 							require.Len(t, state.Modules[0].Resources, 1)
@@ -1095,4 +1254,8 @@ func TestParameterWithManyOptions(t *testing.T) {
 			},
 		}},
 	})
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }
