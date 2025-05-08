@@ -28,6 +28,8 @@
 | NumDefDecBad         | number        | 4        |           | 5       |                   | decreasing |    |        |          | lower           |
 | NumDefDecEq          | number        | 5        |           | 5       |                   | decreasing |    | 5      | true     |                 |
 | NumDefIncEq          | number        | 5        |           | 5       |                   | increasing |    | 5      | true     |                 |
+| NumDefIncNaN         | number        | a        |           | 5       |                   | increasing |    | 5      | true     |                 |
+| NumDefDecNaN         | number        | b        |           | 5       |                   | decreasing |    | 5      | true     |                 |
 |                      |               |          |           |         |                   |            |    |        |          |                 |
 | StrDef               | string        |          |           | hello   |                   |            |    | hello  | true     |                 |
 | StrMonotonicity      | string        |          |           | hello   |                   | increasing |    |        |          | monotonic       |

@@ -653,7 +653,13 @@ func (v *Validation) Valid(typ OptionType, value string, previous *string) error
 			if previous != nil { // Only check if previous value exists
 				previousNum, err := strconv.Atoi(*previous)
 				if err != nil {
-					return fmt.Errorf("previous value %q is not a number", *previous)
+					// Do not throw an error for the previous value not being a number. Throwing an
+					// error here would cause an unrepairable state for the user. This is
+					// unfortunate, but there is not much we can do at this point.
+					// TODO: Maybe we should enforce this, and have the calling coderd
+					//  do something to resolve it. Such as doing this check before calling
+					//  terraform apply.
+					break
 				}
 
 				if v.Monotonic == ValidationMonotonicIncreasing && !(num >= previousNum) {
