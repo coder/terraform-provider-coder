@@ -99,7 +99,7 @@ var formTypeTruthTable = map[OptionType]map[bool][]ParameterFormType{
 		false: {ParameterFormTypeInput, ParameterFormTypeSlider},
 	},
 	OptionTypeBoolean: {
-		true:  {ParameterFormTypeRadio},
+		true:  {ParameterFormTypeRadio, ParameterFormTypeDropdown},
 		false: {ParameterFormTypeCheckbox, ParameterFormTypeSwitch},
 	},
 	OptionTypeListString: {
