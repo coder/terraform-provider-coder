@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -160,12 +161,12 @@ func workspaceDataSource() *schema.Resource {
 
 // isPrebuiltWorkspace returns true if the workspace is an unclaimed prebuilt workspace.
 func isPrebuiltWorkspace() bool {
-	return helpers.OptionalEnv(IsPrebuildEnvironmentVariable()) == "true"
+	return strings.EqualFold(helpers.OptionalEnv(IsPrebuildEnvironmentVariable()), "true")
 }
 
 // isPrebuiltWorkspaceClaim returns true if the workspace is a prebuilt workspace which has just been claimed.
 func isPrebuiltWorkspaceClaim() bool {
-	return helpers.OptionalEnv(IsPrebuildClaimEnvironmentVariable()) == "true"
+	return strings.EqualFold(helpers.OptionalEnv(IsPrebuildClaimEnvironmentVariable()), "true")
 }
 
 // IsPrebuildEnvironmentVariable returns the name of the environment variable that
