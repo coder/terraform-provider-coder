@@ -70,6 +70,7 @@ resource "docker_container" "workspace" {
 - `access_url` (String) The access URL of the Coder deployment provisioning this workspace.
 - `id` (String) UUID of the workspace.
 - `is_prebuild` (Boolean) Similar to `prebuild_count`, but a boolean value instead of a count. This is set to true if the workspace is a currently unassigned prebuild. Once the workspace is assigned, this value will be false.
+- `is_prebuild_claim` (Boolean) Indicates whether a prebuilt workspace has just been claimed and this is the first `apply` after that occurrence.
 - `name` (String) Name of the workspace.
 - `prebuild_count` (Number) A computed count, equal to 1 if the workspace is a currently unassigned prebuild. Use this to conditionally act on the status of a prebuild. Actions that do not require user identity can be taken when this value is set to 1. Actions that should only be taken once the workspace has been assigned to a user may be taken when this value is set to 0.
 - `start_count` (Number) A computed count based on `transition` state. If `start`, count will equal 1.

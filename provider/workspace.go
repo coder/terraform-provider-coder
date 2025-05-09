@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -30,9 +31,22 @@ func workspaceDataSource() *schema.Resource {
 			if isPrebuiltWorkspace() {
 				_ = rd.Set("prebuild_count", 1)
 				_ = rd.Set("is_prebuild", true)
+
+				// A claim can only take place AFTER a prebuild, so it's not logically consistent to have this set to any other value.
+				_ = rd.Set("is_prebuild_claim", false)
 			} else {
 				_ = rd.Set("prebuild_count", 0)
 				_ = rd.Set("is_prebuild", false)
+			}
+			if isPrebuiltWorkspaceClaim() {
+				// Indicate that a prebuild claim has taken place.
+				_ = rd.Set("is_prebuild_claim", true)
+
+				// A claim can only take place AFTER a prebuild, so it's not logically consistent to have these set to any other values.
+				_ = rd.Set("prebuild_count", 0)
+				_ = rd.Set("is_prebuild", false)
+			} else {
+				_ = rd.Set("is_prebuild_claim", false)
 			}
 
 			name := helpers.OptionalEnvOrDefault("CODER_WORKSPACE_NAME", "default")
@@ -116,6 +130,11 @@ func workspaceDataSource() *schema.Resource {
 				Computed:    true,
 				Description: "Similar to `prebuild_count`, but a boolean value instead of a count. This is set to true if the workspace is a currently unassigned prebuild. Once the workspace is assigned, this value will be false.",
 			},
+			"is_prebuild_claim": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "Indicates whether a prebuilt workspace has just been claimed and this is the first `apply` after that occurrence.",
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Computed:    true,
@@ -142,7 +161,12 @@ func workspaceDataSource() *schema.Resource {
 
 // isPrebuiltWorkspace returns true if the workspace is an unclaimed prebuilt workspace.
 func isPrebuiltWorkspace() bool {
-	return helpers.OptionalEnv(IsPrebuildEnvironmentVariable()) == "true"
+	return strings.EqualFold(helpers.OptionalEnv(IsPrebuildEnvironmentVariable()), "true")
+}
+
+// isPrebuiltWorkspaceClaim returns true if the workspace is a prebuilt workspace which has just been claimed.
+func isPrebuiltWorkspaceClaim() bool {
+	return strings.EqualFold(helpers.OptionalEnv(IsPrebuildClaimEnvironmentVariable()), "true")
 }
 
 // IsPrebuildEnvironmentVariable returns the name of the environment variable that
@@ -160,4 +184,22 @@ func isPrebuiltWorkspace() bool {
 // prebuilt but has since been claimed by a user.
 func IsPrebuildEnvironmentVariable() string {
 	return "CODER_WORKSPACE_IS_PREBUILD"
+}
+
+// IsPrebuildClaimEnvironmentVariable returns the name of the environment variable that
+// indicates whether the workspace is a prebuilt workspace which has just been claimed, and this is the first Terraform
+// apply after that occurrence.
+//
+// Knowing whether the workspace is a claimed prebuilt workspace allows template
+// authors to conditionally execute code in the template based on whether the workspace
+// has been assigned to a user or not. This allows identity specific configuration to
+// be applied only after the workspace is claimed, while the rest of the workspace can
+// be pre-configured.
+//
+// The value of this environment variable should be set to "true" if the workspace is prebuilt
+// and it has just been claimed by a user. Any other values, including "false"
+// and "" will be interpreted to mean that the workspace is not prebuilt, or was
+// prebuilt but has not been claimed by a user.
+func IsPrebuildClaimEnvironmentVariable() string {
+	return "CODER_WORKSPACE_IS_PREBUILD_CLAIM"
 }
