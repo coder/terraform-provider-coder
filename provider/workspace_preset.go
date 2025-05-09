@@ -28,7 +28,8 @@ func workspacePresetDataSource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are not defined by the preset will still be configurable when creating a workspace.",
+		Description: "Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.",
+
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			var preset WorkspacePreset
 			err := mapstructure.Decode(struct {
@@ -68,7 +69,7 @@ func workspacePresetDataSource() *schema.Resource {
 			},
 			"prebuilds": {
 				Type:        schema.TypeSet,
-				Description: "Prebuilt workspace configuration related to this workspace preset. Coder will build and maintain workspaces in reserve based on this configuration. When a user creates a new workspace using a preset, they will be assigned a prebuilt workspace, instead of waiting for a new workspace to build.",
+				Description: "Configuration for prebuilt workspaces associated with this preset. Coder will maintain a pool of standby workspaces based on this configuration. When a user creates a workspace using this preset, they are assigned a prebuilt workspace instead of waiting for a new one to build. See prebuilt workspace documentation [here](https://coder.com/docs/admin/templates/extending-templates/prebuilt-workspaces.md)",
 				Optional:    true,
 				MaxItems:    1,
 				Elem: &schema.Resource{

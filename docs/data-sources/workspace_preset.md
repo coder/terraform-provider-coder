@@ -3,12 +3,12 @@
 page_title: "coder_workspace_preset Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are not defined by the preset will still be configurable when creating a workspace.
+  Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.
 ---
 
 # coder_workspace_preset (Data Source)
 
-Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are not defined by the preset will still be configurable when creating a workspace.
+Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.
 
 ## Example Usage
 
@@ -39,7 +39,7 @@ data "coder_workspace_preset" "example" {
 ### Optional
 
 - `parameters` (Map of String) Workspace parameters that will be set by the workspace preset. For simple templates that only need prebuilds, you may define a preset with zero parameters. Because workspace parameters may change between Coder template versions, preset parameters are allowed to define values for parameters that do not exist in the current template version.
-- `prebuilds` (Block Set, Max: 1) Prebuilt workspace configuration related to this workspace preset. Coder will build and maintain workspaces in reserve based on this configuration. When a user creates a new workspace using a preset, they will be assigned a prebuilt workspace, instead of waiting for a new workspace to build. (see [below for nested schema](#nestedblock--prebuilds))
+- `prebuilds` (Block Set, Max: 1) Configuration for prebuilt workspaces associated with this preset. Coder will maintain a pool of standby workspaces based on this configuration. When a user creates a workspace using this preset, they are assigned a prebuilt workspace instead of waiting for a new one to build. See prebuilt workspace documentation [here](https://coder.com/docs/admin/templates/extending-templates/prebuilt-workspaces.md) (see [below for nested schema](#nestedblock--prebuilds))
 
 ### Read-Only
 
