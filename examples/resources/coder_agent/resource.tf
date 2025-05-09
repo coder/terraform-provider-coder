@@ -2,9 +2,10 @@ data "coder_workspace" "me" {
 }
 
 resource "coder_agent" "dev" {
-  os   = "linux"
-  arch = "amd64"
-  dir  = "/workspace"
+  os            = "linux"
+  arch          = "amd64"
+  dir           = "/workspace"
+  api_key_scope = "all"
   display_apps {
     vscode          = true
     vscode_insiders = false

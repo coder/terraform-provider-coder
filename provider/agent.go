@@ -80,6 +80,17 @@ func agentResource() *schema.Resource {
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
+			"api_key_scope": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "all",
+				ForceNew:    true,
+				Description: "Controls what API routes the agent token can access. Options: 'all' (full access) or 'no_user_data' (blocks /external-auth, /gitsshkey, and /gitauth routes)",
+				ValidateFunc: validation.StringInSlice([]string{
+					"all",
+					"no_user_data",
+				}, false),
+			},
 			"init_script": {
 				Type:        schema.TypeString,
 				Computed:    true,

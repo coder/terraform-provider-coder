@@ -709,5 +709,96 @@ func TestAgent_DisplayApps(t *testing.T) {
 			}},
 		})
 	})
+}
 
+// TestAgent_APIKeyScope tests valid states/transitions and invalid values for api_key_scope.
+func TestAgent_APIKeyScope(t *testing.T) {
+	t.Parallel()
+
+	t.Run("ValidTransitions", func(t *testing.T) {
+		t.Parallel()
+
+		resourceName := "coder_agent.test_scope_valid"
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{
+				// Step 1: Default value
+				{
+					Config: `
+						provider "coder" {
+							url = "https://example.com"
+						}
+						resource "coder_agent" "test_scope_valid" {
+							os   = "linux"
+							arch = "amd64"
+							# api_key_scope is omitted, should default to "default"
+						}
+					`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "api_key_scope", "all"),
+					),
+				},
+				// Step 2: Explicit "default"
+				{
+					Config: `
+						provider "coder" {
+							url = "https://example.com"
+						}
+						resource "coder_agent" "test_scope_valid" {
+							os              = "linux"
+							arch            = "amd64"
+							api_key_scope   = "all"
+						}
+					`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "api_key_scope", "all"),
+					),
+				},
+				// Step 3: Explicit "no_user_data"
+				{
+					Config: `
+						provider "coder" {
+							url = "https://example.com"
+						}
+						resource "coder_agent" "test_scope_valid" {
+							os              = "linux"
+							arch            = "amd64"
+							api_key_scope   = "no_user_data"
+						}
+					`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "api_key_scope", "no_user_data"),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("InvalidValue", func(t *testing.T) {
+		t.Parallel()
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{
+				// Step 1: Invalid value check
+				{
+					Config: `
+						provider "coder" {
+							url = "https://example.com"
+						}
+						resource "coder_agent" "test_scope_invalid" { // Use unique name
+							os              = "linux"
+							arch            = "amd64"
+							api_key_scope   = "invalid-scope"
+						}
+					`,
+					ExpectError: regexp.MustCompile(`expected api_key_scope to be one of \["all" "no_user_data"\], got invalid-scope`),
+					PlanOnly:    true,
+				},
+			},
+		})
+	})
 }
