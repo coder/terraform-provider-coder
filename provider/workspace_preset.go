@@ -69,7 +69,7 @@ func workspacePresetDataSource() *schema.Resource {
 			},
 			"prebuilds": {
 				Type:        schema.TypeSet,
-				Description: "Configuration for prebuilt workspaces associated with this preset. Coder will maintain a pool of standby workspaces based on this configuration. When a user creates a workspace using this preset, they are assigned a prebuilt instance instead of waiting for a new one to build. See prebuilt workspace documentation [here](https://coder.com/docs/admin/templates/extending-templates/prebuilt-workspaces.md)",
+				Description: "Configuration for prebuilt workspaces associated with this preset. Coder will maintain a pool of standby workspaces based on this configuration. When a user creates a workspace using this preset, they are assigned a prebuilt workspace instead of waiting for a new one to build. See prebuilt workspace documentation [here](https://coder.com/docs/admin/templates/extending-templates/prebuilt-workspaces.md)",
 				Optional:    true,
 				MaxItems:    1,
 				Elem: &schema.Resource{

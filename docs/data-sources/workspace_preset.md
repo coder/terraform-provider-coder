@@ -39,7 +39,7 @@ data "coder_workspace_preset" "example" {
 ### Optional
 
 - `parameters` (Map of String) Workspace parameters that will be set by the workspace preset. For simple templates that only need prebuilds, you may define a preset with zero parameters. Because workspace parameters may change between Coder template versions, preset parameters are allowed to define values for parameters that do not exist in the current template version.
-- `prebuilds` (Block Set, Max: 1) Configuration for prebuilt workspaces associated with this preset. Coder will maintain a pool of standby workspaces based on this configuration. When a user creates a workspace using this preset, they are assigned a prebuilt instance instead of waiting for a new one to build. See prebuilt workspace documentation [here](https://coder.com/docs/admin/templates/extending-templates/prebuilt-workspaces.md) (see [below for nested schema](#nestedblock--prebuilds))
+- `prebuilds` (Block Set, Max: 1) Configuration for prebuilt workspaces associated with this preset. Coder will maintain a pool of standby workspaces based on this configuration. When a user creates a workspace using this preset, they are assigned a prebuilt workspace instead of waiting for a new one to build. See prebuilt workspace documentation [here](https://coder.com/docs/admin/templates/extending-templates/prebuilt-workspaces.md) (see [below for nested schema](#nestedblock--prebuilds))
 
 ### Read-Only
 
