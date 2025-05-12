@@ -60,3 +60,5 @@ changelog:
   use: github-native
   sort: asc
   abbrev: 0
+git:
+  tag_sort: -version:creatordate # if two tags reference the same commit, pick the latest one; see https://github.com/goreleaser/goreleaser/issues/4209
