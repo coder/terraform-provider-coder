@@ -12,6 +12,8 @@
 | EmptyMinOpt          | number        |          |           |         | 1,2,3             | 2-5        |    |        |          | valid option    |
 | EmptyRegexOpt        | string        |          |           |         | "hello","goodbye" | goodbye    |    |        |          | valid option    |
 | EmptyRegexOk         | string        |          |           |         |                   | .*         |    | ""     | false    |                 |
+| EmptyInc             | number        | 4        |           |         |                   | increasing |    |        |          | monotonicity    |
+| EmptyDec             | number        | 4        |           |         |                   | decreasing |    |        |          | monotonicity    |
 |                      |               |          |           |         |                   |            |    |        |          |                 |
 |                      | Default Set   |          | No inputs |         |                   |            |    |        |          |                 |
 | NumDef               | number        |          |           | 5       |                   |            |    | 5      | true     |                 |
