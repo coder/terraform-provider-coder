@@ -194,6 +194,11 @@ func TestValidateFormType(t *testing.T) {
 			formType:   provider.ParameterFormTypeRadio,
 		}),
 		expectSameFormType(formTypeCheck{
+			options:    true,
+			optionType: provider.OptionTypeBoolean,
+			formType:   provider.ParameterFormTypeDropdown,
+		}),
+		expectSameFormType(formTypeCheck{
 			options:    false,
 			optionType: provider.OptionTypeBoolean,
 			formType:   provider.ParameterFormTypeSwitch,
