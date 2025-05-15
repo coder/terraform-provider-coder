@@ -258,6 +258,27 @@ func appResource() *schema.Resource {
 					return diag.Errorf(`invalid "coder_app" open_in value, must be one of "tab", "slim-window": %q`, valStr)
 				},
 			},
+			"cors_behavior": {
+				Type: schema.TypeString,
+				Description: "Determines the behavior of CORS headers for the app. Simple will allow apps to " +
+					"communicate with other workspaces owned by the same user.",
+				ForceNew: true,
+				Optional: true,
+				Default:  "simple",
+				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+					valStr, ok := val.(string)
+					if !ok {
+						return diag.Errorf("expected string, got %T", val)
+					}
+
+					switch valStr {
+					case "passthru", "simple":
+						return nil
+					}
+
+					return diag.Errorf(`invalid "cors_behavior" open_in value, must be one of "passthru", "simple": %q`, valStr)
+				},
+			},
 		},
 	}
 }
