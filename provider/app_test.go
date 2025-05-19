@@ -40,6 +40,7 @@ func TestApp(t *testing.T) {
 						interval = 5
 						threshold = 6
 					}
+					group = "Apps"
 					order = 4
 					hidden = false
 					open_in = "slim-window"
@@ -63,6 +64,7 @@ func TestApp(t *testing.T) {
 						"healthcheck.0.url",
 						"healthcheck.0.interval",
 						"healthcheck.0.threshold",
+						"group",
 						"order",
 						"hidden",
 						"open_in",
@@ -476,5 +478,4 @@ func TestApp(t *testing.T) {
 			})
 		}
 	})
-
 }
