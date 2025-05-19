@@ -86,10 +86,10 @@ func parameterDataSource() *schema.Resource {
 			var parameter Parameter
 			err = mapstructure.Decode(struct {
 				Name        interface{}
-				DisplayName interface{}
+				DisplayName interface{} `mapstructure:"display_name"`
 				Description interface{}
 				Type        interface{}
-				FormType    interface{}
+				FormType    interface{} `mapstructure:"form_type"`
 				Mutable     interface{}
 				Default     interface{}
 				Icon        interface{}
