@@ -54,7 +54,7 @@ type Parameter struct {
 	DisplayName string `mapstructure:"display_name"`
 	Description string
 	Type        OptionType
-	FormType    ParameterFormType
+	FormType    ParameterFormType `mapstructure:"form_type"`
 	Mutable     bool
 	Default     *string
 	Icon        string
@@ -86,10 +86,10 @@ func parameterDataSource() *schema.Resource {
 			var parameter Parameter
 			err = mapstructure.Decode(struct {
 				Name        interface{}
-				DisplayName interface{}
+				DisplayName interface{} `mapstructure:"display_name"`
 				Description interface{}
 				Type        interface{}
-				FormType    interface{}
+				FormType    interface{} `mapstructure:"form_type"`
 				Mutable     interface{}
 				Default     interface{}
 				Icon        interface{}
