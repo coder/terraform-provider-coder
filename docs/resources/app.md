@@ -63,6 +63,7 @@ resource "coder_app" "vim" {
 - `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either `command` or `url` may be specified, but not both.
 - `display_name` (String) A display name to identify the app. Defaults to the slug.
 - `external` (Boolean) Specifies whether `url` is opened on the client machine instead of proxied through the workspace.
+- `group` (String) The name of a group that this app belongs to.
 - `healthcheck` (Block Set, Max: 1) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
 - `hidden` (Boolean) Determines if the app is visible in the UI (minimum Coder version: v2.16).
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons here: https://github.com/coder/coder/tree/main/site/static/icon. Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
