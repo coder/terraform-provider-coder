@@ -51,7 +51,7 @@ to setup your local Terraform to use your local version rather than the registry
 5. All local Terraform runs will now use your local provider!
 6. **NOTE**: We vendor this provider into `github.com/coder/coder`, so if you're testing with a local clone, make sure to run the following in your local clone of `coder`:
    ```console
-   go mod edit -replace github.com/coder/terraform-provider-coder/v2=/path/to/terraform-provider-coder`
+   go mod edit -replace github.com/coder/terraform-provider-coder/v2=/path/to/terraform-provider-coder
    go mod tidy
    ```
    ⚠️ Be sure to include `/v2` in the module path as it needs to match the version declared in the provider’s `go.mod`.
