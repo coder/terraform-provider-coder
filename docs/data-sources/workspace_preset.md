@@ -51,3 +51,14 @@ data "coder_workspace_preset" "example" {
 Required:
 
 - `instances` (Number) The number of workspaces to keep in reserve for this preset.
+
+Optional:
+
+- `cache_invalidation` (Block Set, Max: 1) Configuration block that defines TTL (time-to-live) behavior for prebuilds. Use this to automatically invalidate and delete prebuilds after a certain period, ensuring they stay up-to-date. (see [below for nested schema](#nestedblock--prebuilds--cache_invalidation))
+
+<a id="nestedblock--prebuilds--cache_invalidation"></a>
+### Nested Schema for `prebuilds.cache_invalidation`
+
+Required:
+
+- `invalidate_after_secs` (Number) Time in seconds after which an unclaimed prebuild is considered expired and eligible for cleanup.

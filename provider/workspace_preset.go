@@ -21,7 +21,12 @@ type WorkspacePreset struct {
 }
 
 type WorkspacePrebuild struct {
-	Instances int `mapstructure:"instances"`
+	Instances         int                 `mapstructure:"instances"`
+	CacheInvalidation []CacheInvalidation `mapstructure:"cache_invalidation"`
+}
+
+type CacheInvalidation struct {
+	InvalidateAfterSecs int `mapstructure:"invalidate_after_secs"`
 }
 
 func workspacePresetDataSource() *schema.Resource {
@@ -80,6 +85,24 @@ func workspacePresetDataSource() *schema.Resource {
 							Required:     true,
 							ForceNew:     true,
 							ValidateFunc: validation.IntAtLeast(0),
+						},
+						"cache_invalidation": {
+							Type:        schema.TypeSet,
+							Description: "Configuration block that defines TTL (time-to-live) behavior for prebuilds. Use this to automatically invalidate and delete prebuilds after a certain period, ensuring they stay up-to-date.",
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"invalidate_after_secs": {
+										Type:        schema.TypeInt,
+										Description: "Time in seconds after which an unclaimed prebuild is considered expired and eligible for cleanup.",
+										Required:    true,
+										ForceNew:    true,
+										//Default:      86400, // TODO: Should we add a default value?
+										ValidateFunc: validation.IntAtLeast(0),
+									},
+								},
+							},
 						},
 					},
 				},

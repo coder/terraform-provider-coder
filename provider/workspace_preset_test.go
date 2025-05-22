@@ -144,6 +144,66 @@ func TestWorkspacePreset(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			Name: "Prebuilds is set with a cache_invalidation field without its required fields",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					cache_invalidation {}
+				}
+			}`,
+			ExpectError: regexp.MustCompile("The argument \"invalidate_after_secs\" is required, but no definition was found."),
+		},
+		{
+			Name: "Prebuilds is set with a cache_invalidation field with its required fields",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					cache_invalidation {
+						invalidate_after_secs = 86400
+					}
+				}
+			}`,
+			ExpectError: nil,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				resource := state.Modules[0].Resources["data.coder_workspace_preset.preset_1"]
+				require.NotNil(t, resource)
+				attrs := resource.Primary.Attributes
+				require.Equal(t, attrs["name"], "preset_1")
+				require.Equal(t, attrs["prebuilds.0.cache_invalidation.0.invalidate_after_secs"], "86400")
+				return nil
+			},
+		},
+		{
+			Name: "Prebuilds is set with a cache_invalidation field with its required fields and an unexpected argument",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					cache_invalidation {
+						invalidate_after_secs = 86400
+						invalid_argument = "test"
+					}
+				}
+			}`,
+			ExpectError: regexp.MustCompile("An argument named \"invalid_argument\" is not expected here."),
+		},
 	}
 
 	for _, testcase := range testcases {
