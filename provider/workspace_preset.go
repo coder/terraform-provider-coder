@@ -94,11 +94,10 @@ func workspacePresetDataSource() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"invalidate_after_secs": {
-										Type:        schema.TypeInt,
-										Description: "Time in seconds after which an unclaimed prebuild is considered expired and eligible for cleanup.",
-										Required:    true,
-										ForceNew:    true,
-										//Default:      86400, // TODO: Should we add a default value?
+										Type:         schema.TypeInt,
+										Description:  "Time in seconds after which an unclaimed prebuild is considered expired and eligible for cleanup.",
+										Required:     true,
+										ForceNew:     true,
 										ValidateFunc: validation.IntAtLeast(0),
 									},
 								},
