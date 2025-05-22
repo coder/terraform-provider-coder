@@ -28,7 +28,7 @@ data "coder_workspace_preset" "preset" {
   prebuilds {
     instances = 1
     cache_invalidation = {
-        invalidate_after_secs = 86400
+      invalidate_after_secs = 86400
     }
   }
 }
