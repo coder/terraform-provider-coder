@@ -157,6 +157,9 @@ func TestWorkspacePreset(t *testing.T) {
 					cache_invalidation {}
 				}
 			}`,
+			// Note: Match only the beginning of the error message to make the test more reliable.
+			// The full error message includes formatting differences like newlines, which could
+			// cause the test to fail unnecessarily.
 			ExpectError: regexp.MustCompile("The argument \"invalidate_after_secs\" is required,"),
 		},
 		{
@@ -209,7 +212,7 @@ func TestWorkspacePreset(t *testing.T) {
 	for _, testcase := range testcases {
 		t.Run(testcase.Name, func(t *testing.T) {
 			t.Parallel()
-			
+
 			resource.Test(t, resource.TestCase{
 				ProviderFactories: coderFactory(),
 				IsUnitTest:        true,
