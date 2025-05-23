@@ -55,7 +55,7 @@ locals {
     "workspace_preset.name" : data.coder_workspace_preset.preset.name,
     "workspace_preset.parameters.param" : data.coder_workspace_preset.preset.parameters.param,
     "workspace_preset.prebuilds.instances" : tostring(one(data.coder_workspace_preset.preset.prebuilds).instances),
-    "workspace_preset.prebuilds.cache_invalidation.invalidate_after_secs" : tostring(one(data.coder_workspace_preset.preset.prebuilds.cache_invalidation).invalidate_after_secs),
+    "workspace_preset.prebuilds.cache_invalidation.invalidate_after_secs" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).cache_invalidation).invalidate_after_secs),
   }
 }
 
