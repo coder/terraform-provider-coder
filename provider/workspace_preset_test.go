@@ -145,7 +145,7 @@ func TestWorkspacePreset(t *testing.T) {
 			},
 		},
 		{
-			Name: "Prebuilds is set with a cache_invalidation field without its required fields",
+			Name: "Prebuilds is set with a expiration_policy field without its required fields",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
@@ -154,16 +154,13 @@ func TestWorkspacePreset(t *testing.T) {
 				}
 				prebuilds {
 					instances = 1
-					cache_invalidation {}
+					expiration_policy {}
 				}
 			}`,
-			// Note: Match only the beginning of the error message to make the test more reliable.
-			// The full error message includes formatting differences like newlines, which could
-			// cause the test to fail unnecessarily.
-			ExpectError: regexp.MustCompile("The argument \"invalidate_after_secs\" is required,"),
+			ExpectError: regexp.MustCompile("The argument \"ttl\" is required, but no definition was found."),
 		},
 		{
-			Name: "Prebuilds is set with a cache_invalidation field with its required fields",
+			Name: "Prebuilds is set with a expiration_policy field with its required fields",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
@@ -172,8 +169,8 @@ func TestWorkspacePreset(t *testing.T) {
 				}
 				prebuilds {
 					instances = 1
-					cache_invalidation {
-						invalidate_after_secs = 86400
+					expiration_policy {
+						ttl = 86400
 					}
 				}
 			}`,
@@ -185,12 +182,12 @@ func TestWorkspacePreset(t *testing.T) {
 				require.NotNil(t, resource)
 				attrs := resource.Primary.Attributes
 				require.Equal(t, attrs["name"], "preset_1")
-				require.Equal(t, attrs["prebuilds.0.cache_invalidation.0.invalidate_after_secs"], "86400")
+				require.Equal(t, attrs["prebuilds.0.expiration_policy.0.ttl"], "86400")
 				return nil
 			},
 		},
 		{
-			Name: "Prebuilds block with cache_invalidation.invalidate_after_secs set to 15 days (exceeds 7 days limit)",
+			Name: "Prebuilds block with expiration_policy.ttl set to 2 years (exceeds 1 year limit)",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
@@ -199,15 +196,15 @@ func TestWorkspacePreset(t *testing.T) {
 				}
 				prebuilds {
 					instances = 1
-					cache_invalidation {
-						invalidate_after_secs = 1296000
+					expiration_policy {
+						ttl = 63072000
 					}
 				}
 			}`,
-			ExpectError: regexp.MustCompile(`expected prebuilds.0.cache_invalidation.0.invalidate_after_secs to be in the range \(0 - 604800\), got 1296000`),
+			ExpectError: regexp.MustCompile(`expected prebuilds.0.expiration_policy.0.ttl to be in the range \(0 - 31536000\), got 63072000`),
 		},
 		{
-			Name: "Prebuilds is set with a cache_invalidation field with its required fields and an unexpected argument",
+			Name: "Prebuilds is set with a expiration_policy field with its required fields and an unexpected argument",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
@@ -216,8 +213,8 @@ func TestWorkspacePreset(t *testing.T) {
 				}
 				prebuilds {
 					instances = 1
-					cache_invalidation {
-						invalidate_after_secs = 86400
+					expiration_policy {
+						ttl = 86400
 						invalid_argument = "test"
 					}
 				}
