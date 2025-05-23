@@ -51,3 +51,14 @@ data "coder_workspace_preset" "example" {
 Required:
 
 - `instances` (Number) The number of workspaces to keep in reserve for this preset.
+
+Optional:
+
+- `expiration_policy` (Block Set, Max: 1) Configuration block that defines TTL (time-to-live) behavior for prebuilds. Use this to automatically invalidate and delete prebuilds after a certain period, ensuring they stay up-to-date. (see [below for nested schema](#nestedblock--prebuilds--expiration_policy))
+
+<a id="nestedblock--prebuilds--expiration_policy"></a>
+### Nested Schema for `prebuilds.expiration_policy`
+
+Required:
+
+- `ttl` (Number) Time in seconds after which an unclaimed prebuild is considered expired and eligible for cleanup.

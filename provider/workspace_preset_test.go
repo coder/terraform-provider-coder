@@ -144,6 +144,83 @@ func TestWorkspacePreset(t *testing.T) {
 				return nil
 			},
 		},
+		{
+			Name: "Prebuilds is set with a expiration_policy field without its required fields",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					expiration_policy {}
+				}
+			}`,
+			ExpectError: regexp.MustCompile("The argument \"ttl\" is required, but no definition was found."),
+		},
+		{
+			Name: "Prebuilds is set with a expiration_policy field with its required fields",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					expiration_policy {
+						ttl = 86400
+					}
+				}
+			}`,
+			ExpectError: nil,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				resource := state.Modules[0].Resources["data.coder_workspace_preset.preset_1"]
+				require.NotNil(t, resource)
+				attrs := resource.Primary.Attributes
+				require.Equal(t, attrs["name"], "preset_1")
+				require.Equal(t, attrs["prebuilds.0.expiration_policy.0.ttl"], "86400")
+				return nil
+			},
+		},
+		{
+			Name: "Prebuilds block with expiration_policy.ttl set to 2 years (exceeds 1 year limit)",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					expiration_policy {
+						ttl = 63072000
+					}
+				}
+			}`,
+			ExpectError: regexp.MustCompile(`expected prebuilds.0.expiration_policy.0.ttl to be in the range \(0 - 31536000\), got 63072000`),
+		},
+		{
+			Name: "Prebuilds is set with a expiration_policy field with its required fields and an unexpected argument",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					expiration_policy {
+						ttl = 86400
+						invalid_argument = "test"
+					}
+				}
+			}`,
+			ExpectError: regexp.MustCompile("An argument named \"invalid_argument\" is not expected here."),
+		},
 	}
 
 	for _, testcase := range testcases {
