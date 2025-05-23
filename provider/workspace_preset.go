@@ -21,7 +21,12 @@ type WorkspacePreset struct {
 }
 
 type WorkspacePrebuild struct {
-	Instances         int                 `mapstructure:"instances"`
+	Instances int `mapstructure:"instances"`
+	// There should always be only one cache_invalidation block, but Terraform's type system
+	// still parses them as a slice, so we need to handle it as such. We could use
+	// an anonymous type and rd.Get to avoid a slice here, but that would not be possible
+	// for utilities that parse our terraform output using this type. To remain compatible
+	// with those cases, we use a slice here.
 	CacheInvalidation []CacheInvalidation `mapstructure:"cache_invalidation"`
 }
 
