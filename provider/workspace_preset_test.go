@@ -190,6 +190,23 @@ func TestWorkspacePreset(t *testing.T) {
 			},
 		},
 		{
+			Name: "Prebuilds block with cache_invalidation.invalidate_after_secs set to 15 days (exceeds 7 days limit)",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					cache_invalidation {
+						invalidate_after_secs = 1296000
+					}
+				}
+			}`,
+			ExpectError: regexp.MustCompile(`expected prebuilds.0.cache_invalidation.0.invalidate_after_secs to be in the range \(0 - 604800\), got 1296000`),
+		},
+		{
 			Name: "Prebuilds is set with a cache_invalidation field with its required fields and an unexpected argument",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
