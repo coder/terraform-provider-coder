@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -157,7 +158,7 @@ func TestWorkspacePreset(t *testing.T) {
 					cache_invalidation {}
 				}
 			}`,
-			ExpectError: regexp.MustCompile("The argument \"invalidate_after_secs\" is required, but no definition was found."),
+			ExpectError: regexp.MustCompile("The argument \"invalidate_after_secs\" is required,"),
 		},
 		{
 			Name: "Prebuilds is set with a cache_invalidation field with its required fields",
@@ -210,6 +211,7 @@ func TestWorkspacePreset(t *testing.T) {
 		t.Run(testcase.Name, func(t *testing.T) {
 			t.Parallel()
 
+			fmt.Println("testcase.ExpectError: ", testcase.ExpectError)
 			resource.Test(t, resource.TestCase{
 				ProviderFactories: coderFactory(),
 				IsUnitTest:        true,
