@@ -1,7 +1,6 @@
 package provider_test
 
 import (
-	"fmt"
 	"regexp"
 	"testing"
 
@@ -210,8 +209,7 @@ func TestWorkspacePreset(t *testing.T) {
 	for _, testcase := range testcases {
 		t.Run(testcase.Name, func(t *testing.T) {
 			t.Parallel()
-
-			fmt.Println("testcase.ExpectError: ", testcase.ExpectError)
+			
 			resource.Test(t, resource.TestCase{
 				ProviderFactories: coderFactory(),
 				IsUnitTest:        true,
