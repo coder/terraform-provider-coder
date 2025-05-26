@@ -103,8 +103,8 @@ func workspacePresetDataSource() *schema.Resource {
 										Description: "Time in seconds after which an unclaimed prebuild is considered expired and eligible for cleanup.",
 										Required:    true,
 										ForceNew:    true,
-										// Ensure TTL is between 0 and 31536000 seconds (1 year) to prevent stale prebuilds
-										ValidateFunc: validation.IntBetween(0, 31536000),
+										// Ensure TTL is between 3600 seconds (1 hour) and 31536000 seconds (1 year)
+										ValidateFunc: validation.IntBetween(3600, 31536000),
 									},
 								},
 							},

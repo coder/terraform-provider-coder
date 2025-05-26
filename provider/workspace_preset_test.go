@@ -187,6 +187,23 @@ func TestWorkspacePreset(t *testing.T) {
 			},
 		},
 		{
+			Name: "Prebuilds block with expiration_policy.ttl set to 30 minutes (below 1 hour limit)",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+				prebuilds {
+					instances = 1
+					expiration_policy {
+						ttl = 1800
+					}
+				}
+			}`,
+			ExpectError: regexp.MustCompile(`expected prebuilds.0.expiration_policy.0.ttl to be in the range \(3600 - 31536000\), got 1800`),
+		},
+		{
 			Name: "Prebuilds block with expiration_policy.ttl set to 2 years (exceeds 1 year limit)",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
@@ -201,7 +218,7 @@ func TestWorkspacePreset(t *testing.T) {
 					}
 				}
 			}`,
-			ExpectError: regexp.MustCompile(`expected prebuilds.0.expiration_policy.0.ttl to be in the range \(0 - 31536000\), got 63072000`),
+			ExpectError: regexp.MustCompile(`expected prebuilds.0.expiration_policy.0.ttl to be in the range \(3600 - 31536000\), got 63072000`),
 		},
 		{
 			Name: "Prebuilds is set with a expiration_policy field with its required fields and an unexpected argument",
