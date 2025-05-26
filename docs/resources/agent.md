@@ -72,7 +72,7 @@ resource "kubernetes_pod" "dev" {
 
 ### Optional
 
-- `api_key_scope` (String) Controls what API routes the agent token can access. Options: 'all' (full access) or 'no_user_data' (blocks /external-auth, /gitsshkey, and /gitauth routes)
+- `api_key_scope` (String) Controls what API routes the agent token can access. Options: `all` (full access) or `no_user_data` (blocks `/external-auth`, `/gitsshkey`, and `/gitauth` routes)
 - `auth` (String) The authentication type the agent will use. Must be one of: `"token"`, `"google-instance-identity"`, `"aws-instance-identity"`, `"azure-instance-identity"`.
 - `connection_timeout` (Number) Time in seconds until the agent is marked as timed out when a connection with the server cannot be established. A value of zero never marks the agent as timed out.
 - `dir` (String) The starting directory when a user creates a shell session. Defaults to `"$HOME"`.

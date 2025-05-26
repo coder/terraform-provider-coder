@@ -85,7 +85,7 @@ func agentResource() *schema.Resource {
 				Optional:    true,
 				Default:     "all",
 				ForceNew:    true,
-				Description: "Controls what API routes the agent token can access. Options: 'all' (full access) or 'no_user_data' (blocks /external-auth, /gitsshkey, and /gitauth routes)",
+				Description: "Controls what API routes the agent token can access. Options: `all` (full access) or `no_user_data` (blocks `/external-auth`, `/gitsshkey`, and `/gitauth` routes)",
 				ValidateFunc: validation.StringInSlice([]string{
 					"all",
 					"no_user_data",

@@ -13,7 +13,7 @@ func devcontainerResource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Define a Dev Container the agent should know of and attempt to autostart (minimum Coder version: v2.21).",
+		Description: "Define a Dev Container the agent should know of and attempt to autostart.\n\n-> This resource is only available in Coder v2.21 and later.",
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
