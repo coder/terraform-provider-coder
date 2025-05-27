@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -103,8 +104,17 @@ func workspacePresetDataSource() *schema.Resource {
 										Description: "Time in seconds after which an unclaimed prebuild is considered expired and eligible for cleanup.",
 										Required:    true,
 										ForceNew:    true,
-										// Ensure TTL is between 3600 seconds (1 hour) and 31536000 seconds (1 year)
-										ValidateFunc: validation.IntBetween(3600, 31536000),
+										// Ensure TTL is either 0 (to disable expiration) or between 3600 seconds (1 hour) and 31536000 seconds (1 year)
+										ValidateFunc: func(val interface{}, key string) ([]string, []error) {
+											v := val.(int)
+											if v == 0 {
+												return nil, nil
+											}
+											if v < 3600 || v > 31536000 {
+												return nil, []error{fmt.Errorf("%q must be 0 or between 3600 and 31536000, got %d", key, v)}
+											}
+											return nil, nil
+										},
 									},
 								},
 							},
