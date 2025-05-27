@@ -191,14 +191,14 @@ func parameterDataSource() *schema.Resource {
 				Default:      "string",
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice(toStrings(OptionTypes()), false),
-				Description:  "The type of this parameter. Must be one of: `\"number\"`, `\"string\"`, `\"bool\"`, or `\"list(string)\"`.",
+				Description:  fmt.Sprintf("The type of this parameter. Must be one of: `\"%s\"`.", strings.Join(toStrings(OptionTypes()), "\"`, `\"")),
 			},
 			"form_type": {
 				Type:         schema.TypeString,
 				Default:      ParameterFormTypeDefault,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice(toStrings(ParameterFormTypes()), false),
-				Description:  fmt.Sprintf("The type of this parameter. Must be one of: [%s].", strings.Join(toStrings(ParameterFormTypes()), ", ")),
+				Description:  fmt.Sprintf("The type of this parameter. Must be one of: `\"%s\"`.", strings.Join(toStrings(ParameterFormTypes()), "\"`, `\"")),
 			},
 			"styling": {
 				Type:    schema.TypeString,
@@ -286,22 +286,22 @@ func parameterDataSource() *schema.Resource {
 						"min": {
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "The minimum of a number parameter.",
+							Description: "The minimum value of a number parameter.",
 						},
 						"min_disabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Helper field to check if min is present",
+							Description: "Helper field to check if `min` is present",
 						},
 						"max": {
 							Type:        schema.TypeInt,
 							Optional:    true,
-							Description: "The maximum of a number parameter.",
+							Description: "The maximum value of a number parameter.",
 						},
 						"max_disabled": {
 							Type:        schema.TypeBool,
 							Computed:    true,
-							Description: "Helper field to check if max is present",
+							Description: "Helper field to check if `max` is present",
 						},
 						"monotonic": {
 							Type:        schema.TypeString,
@@ -317,7 +317,7 @@ func parameterDataSource() *schema.Resource {
 						"error": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Description: "An error message to display if the value breaks the validation rules. The following placeholders are supported: {max}, {min}, and {value}.",
+							Description: "An error message to display if the value breaks the validation rules. The following placeholders are supported: `{max}`, `{min}`, and `{value}`.",
 						},
 					},
 				},
