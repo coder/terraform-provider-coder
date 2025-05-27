@@ -23,14 +23,17 @@ var (
 	appSlugRegex = regexp.MustCompile(`^[a-z0-9](-?[a-z0-9])*$`)
 )
 
-const appDisplayNameMaxLength = 64 // database column limit
+const (
+	appDisplayNameMaxLength = 64 // database column limit
+	appGroupNameMaxLength   = 64
+)
 
 func appResource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
 		Description: "Use this resource to define shortcuts to access applications in a workspace.",
-		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i any) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
 
 			diags := diag.Diagnostics{}
@@ -63,10 +66,10 @@ func appResource() *schema.Resource {
 
 			return diags
 		},
-		ReadContext: func(c context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
+		ReadContext: func(c context.Context, resourceData *schema.ResourceData, i any) diag.Diagnostics {
 			return nil
 		},
-		DeleteContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+		DeleteContext: func(ctx context.Context, rd *schema.ResourceData, i any) diag.Diagnostics {
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
@@ -92,7 +95,7 @@ func appResource() *schema.Resource {
 					"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
 				ForceNew: true,
 				Optional: true,
-				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
+				ValidateFunc: func(i any, s string) ([]string, []error) {
 					_, err := url.Parse(s)
 					if err != nil {
 						return nil, []error{err}
@@ -108,7 +111,7 @@ func appResource() *schema.Resource {
 					"hyphen or contain two consecutive hyphens.",
 				ForceNew: true,
 				Required: true,
-				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+				ValidateDiagFunc: func(val any, c cty.Path) diag.Diagnostics {
 					valStr, ok := val.(string)
 					if !ok {
 						return diag.Errorf("expected string, got %T", val)
@@ -126,7 +129,7 @@ func appResource() *schema.Resource {
 				Description: "A display name to identify the app. Defaults to the slug.",
 				ForceNew:    true,
 				Optional:    true,
-				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+				ValidateDiagFunc: func(val any, c cty.Path) diag.Diagnostics {
 					valStr, ok := val.(string)
 					if !ok {
 						return diag.Errorf("expected string, got %T", val)
@@ -161,7 +164,7 @@ func appResource() *schema.Resource {
 				ForceNew: true,
 				Optional: true,
 				Default:  "owner",
-				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+				ValidateDiagFunc: func(val any, c cty.Path) diag.Diagnostics {
 					valStr, ok := val.(string)
 					if !ok {
 						return diag.Errorf("expected string, got %T", val)
@@ -228,6 +231,17 @@ func appResource() *schema.Resource {
 				Description: "The name of a group that this app belongs to.",
 				ForceNew:    true,
 				Optional:    true,
+				ValidateDiagFunc: func(val any, c cty.Path) diag.Diagnostics {
+					valStr, ok := val.(string)
+					if !ok {
+						return diag.Errorf("expected string, got %T", val)
+					}
+
+					if len(valStr) > appGroupNameMaxLength {
+						return diag.Errorf("group name is too long (max %d characters)", appGroupNameMaxLength)
+					}
+					return nil
+				},
 			},
 			"order": {
 				Type:        schema.TypeInt,
@@ -250,7 +264,7 @@ func appResource() *schema.Resource {
 				ForceNew: true,
 				Optional: true,
 				Default:  "slim-window",
-				ValidateDiagFunc: func(val interface{}, c cty.Path) diag.Diagnostics {
+				ValidateDiagFunc: func(val any, c cty.Path) diag.Diagnostics {
 					valStr, ok := val.(string)
 					if !ok {
 						return diag.Errorf("expected string, got %T", val)
