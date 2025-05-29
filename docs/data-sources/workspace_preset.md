@@ -54,7 +54,26 @@ Required:
 
 Optional:
 
+- `autoscaling` (Block List, Max: 1) Configuration block that defines autoscaling behavior for prebuilds. Use this to automatically adjust the number of prebuild instances based on a schedule. (see [below for nested schema](#nestedblock--prebuilds--autoscaling))
 - `expiration_policy` (Block Set, Max: 1) Configuration block that defines TTL (time-to-live) behavior for prebuilds. Use this to automatically invalidate and delete prebuilds after a certain period, ensuring they stay up-to-date. (see [below for nested schema](#nestedblock--prebuilds--expiration_policy))
+
+<a id="nestedblock--prebuilds--autoscaling"></a>
+### Nested Schema for `prebuilds.autoscaling`
+
+Required:
+
+- `schedule` (Block List, Min: 1) One or more schedule blocks that define when to scale the number of prebuild instances. (see [below for nested schema](#nestedblock--prebuilds--autoscaling--schedule))
+- `timezone` (String) The timezone to use for the autoscaling schedule (e.g., "UTC", "America/New_York").
+
+<a id="nestedblock--prebuilds--autoscaling--schedule"></a>
+### Nested Schema for `prebuilds.autoscaling.schedule`
+
+Required:
+
+- `cron` (String) A cron expression that defines when this schedule should be active. The cron expression must be in the format "* HOUR * * DAY-OF-WEEK" where HOUR is 0-23 and DAY-OF-WEEK is 0-6 (Sunday-Saturday). The minute, day-of-month, and month fields must be "*".
+- `instances` (Number) The number of prebuild instances to maintain during this schedule period.
+
+
 
 <a id="nestedblock--prebuilds--expiration_policy"></a>
 ### Nested Schema for `prebuilds.expiration_policy`

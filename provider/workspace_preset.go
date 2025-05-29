@@ -3,12 +3,17 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
+	rbcron "github.com/robfig/cron/v3"
 )
+
+var PrebuildsCRONParser = rbcron.NewParser(rbcron.Minute | rbcron.Hour | rbcron.Dom | rbcron.Month | rbcron.Dow)
 
 type WorkspacePreset struct {
 	Name       string            `mapstructure:"name"`
@@ -29,10 +34,21 @@ type WorkspacePrebuild struct {
 	// for utilities that parse our terraform output using this type. To remain compatible
 	// with those cases, we use a slice here.
 	ExpirationPolicy []ExpirationPolicy `mapstructure:"expiration_policy"`
+	Autoscaling      []Autoscaling      `mapstructure:"autoscaling"`
 }
 
 type ExpirationPolicy struct {
 	TTL int `mapstructure:"ttl"`
+}
+
+type Autoscaling struct {
+	Timezone string     `mapstructure:"timezone"`
+	Schedule []Schedule `mapstructure:"schedule"`
+}
+
+type Schedule struct {
+	Cron      string `mapstructure:"cron"`
+	Instances int    `mapstructure:"instances"`
 }
 
 func workspacePresetDataSource() *schema.Resource {
@@ -119,9 +135,82 @@ func workspacePresetDataSource() *schema.Resource {
 								},
 							},
 						},
+						"autoscaling": {
+							Type:        schema.TypeList,
+							Description: "Configuration block that defines autoscaling behavior for prebuilds. Use this to automatically adjust the number of prebuild instances based on a schedule.",
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"timezone": {
+										Type:        schema.TypeString,
+										Description: "The timezone to use for the autoscaling schedule (e.g., \"UTC\", \"America/New_York\").",
+										Required:    true,
+										ValidateFunc: func(val interface{}, key string) ([]string, []error) {
+											timezone := val.(string)
+
+											_, err := time.LoadLocation(timezone)
+											if err != nil {
+												return nil, []error{fmt.Errorf("failed to load location: %w", err)}
+											}
+
+											return nil, nil
+										},
+									},
+									"schedule": {
+										Type:        schema.TypeList,
+										Description: "One or more schedule blocks that define when to scale the number of prebuild instances.",
+										Required:    true,
+										MinItems:    1,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cron": {
+													Type:        schema.TypeString,
+													Description: "A cron expression that defines when this schedule should be active. The cron expression must be in the format \"* HOUR * * DAY-OF-WEEK\" where HOUR is 0-23 and DAY-OF-WEEK is 0-6 (Sunday-Saturday). The minute, day-of-month, and month fields must be \"*\".",
+													Required:    true,
+													ValidateFunc: func(val interface{}, key string) ([]string, []error) {
+														cronSpec := val.(string)
+
+														err := validatePrebuildsCronSpec(cronSpec)
+														if err != nil {
+															return nil, []error{fmt.Errorf("cron spec failed validation: %w", err)}
+														}
+
+														_, err = PrebuildsCRONParser.Parse(cronSpec)
+														if err != nil {
+															return nil, []error{fmt.Errorf("failed to parse cron spec: %w", err)}
+														}
+
+														return nil, nil
+													},
+												},
+												"instances": {
+													Type:        schema.TypeInt,
+													Description: "The number of prebuild instances to maintain during this schedule period.",
+													Required:    true,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
 		},
 	}
+}
+
+// validatePrebuildsCronSpec ensures that the minute, day-of-month and month options of spec are all set to *
+func validatePrebuildsCronSpec(spec string) error {
+	parts := strings.Fields(spec)
+	if len(parts) != 5 {
+		return fmt.Errorf("cron specification should consist of 5 fields")
+	}
+	if parts[0] != "*" || parts[2] != "*" || parts[3] != "*" {
+		return fmt.Errorf("minute, day-of-month and month should be *")
+	}
+
+	return nil
 }
