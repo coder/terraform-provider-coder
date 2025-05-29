@@ -29,10 +29,21 @@ type WorkspacePrebuild struct {
 	// for utilities that parse our terraform output using this type. To remain compatible
 	// with those cases, we use a slice here.
 	ExpirationPolicy []ExpirationPolicy `mapstructure:"expiration_policy"`
+	Autoscaling      []Autoscaling      `json:"autoscaling,omitempty"`
 }
 
 type ExpirationPolicy struct {
 	TTL int `mapstructure:"ttl"`
+}
+
+type Autoscaling struct {
+	Timezone string     `json:"timezone"`
+	Schedule []Schedule `json:"schedule"`
+}
+
+type Schedule struct {
+	Cron      string `json:"cron"`
+	Instances int    `json:"instances"`
 }
 
 func workspacePresetDataSource() *schema.Resource {
@@ -114,6 +125,36 @@ func workspacePresetDataSource() *schema.Resource {
 												return nil, []error{fmt.Errorf("%q must be 0 or between 3600 and 31536000, got %d", key, v)}
 											}
 											return nil, nil
+										},
+									},
+								},
+							},
+						},
+						"autoscaling": {
+							Type:     schema.TypeList,
+							Optional: true,
+							MaxItems: 1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"timezone": {
+										Type:     schema.TypeString,
+										Required: true,
+									},
+									"schedule": {
+										Type:     schema.TypeList,
+										Required: true,
+										MinItems: 1,
+										Elem: &schema.Resource{
+											Schema: map[string]*schema.Schema{
+												"cron": {
+													Type:     schema.TypeString,
+													Required: true,
+												},
+												"instances": {
+													Type:     schema.TypeInt,
+													Required: true,
+												},
+											},
 										},
 									},
 								},
