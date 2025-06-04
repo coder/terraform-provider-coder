@@ -32,7 +32,7 @@ resource "coder_script" "nightly_update" {
   agent_id     = coder_agent.dev.agent_id
   display_name = "Nightly update"
   icon         = "/icon/database.svg"
-  cron         = "0 0 22 * * *"  # Run at 22:00 (10 PM) every day
+  cron         = "0 0 22 * * *" # Run at 22:00 (10 PM) every day
   script       = <<EOF
     #!/bin/sh
     echo "Running nightly update"
