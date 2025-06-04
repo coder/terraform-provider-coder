@@ -99,7 +99,7 @@ func scriptResource() *schema.Resource {
 				ForceNew:    true,
 				Type:        schema.TypeString,
 				Optional:    true,
-				Description: "The cron schedule to run the script on. This is a cron expression.",
+				Description: "The cron schedule to run the script on. This uses a 6-field cron expression format: `seconds minutes hours day-of-month month day-of-week`. Note that this differs from the standard Unix 5-field format by including seconds as the first field. Examples: `\"0 0 22 * * *\"` (daily at 10 PM), `\"0 */5 * * * *\"` (every 5 minutes), `\"30 0 9 * * 1-5\"` (weekdays at 9:30 AM).",
 				ValidateFunc: func(i interface{}, _ string) ([]string, []error) {
 					v, ok := i.(string)
 					if !ok {
