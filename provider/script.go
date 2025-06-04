@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,6 +13,32 @@ import (
 )
 
 var ScriptCRONParser = cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
+
+// ValidateCronExpression validates a cron expression and provides helpful warnings for common mistakes
+func ValidateCronExpression(cronExpr string) (warnings []string, errors []error) {
+	// Check if it looks like a 5-field Unix cron expression
+	fields := strings.Fields(cronExpr)
+	if len(fields) == 5 {
+		// Try to parse as standard Unix cron (without seconds)
+		unixParser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
+		if _, err := unixParser.Parse(cronExpr); err == nil {
+			// It's a valid 5-field expression, provide a helpful warning
+			warnings = append(warnings, fmt.Sprintf(
+				"The cron expression '%s' appears to be in Unix 5-field format. "+
+					"Coder uses 6-field format (seconds minutes hours day month day-of-week). "+
+					"Consider prefixing with '0 ' to run at the start of each minute: '0 %s'",
+				cronExpr, cronExpr))
+		}
+	}
+
+	// Validate with the actual 6-field parser
+	_, err := ScriptCRONParser.Parse(cronExpr)
+	if err != nil {
+		errors = append(errors, fmt.Errorf("%s is not a valid cron expression: %w", cronExpr, err))
+	}
+
+	return warnings, errors
+}
 
 func scriptResource() *schema.Resource {
 	return &schema.Resource{
@@ -78,11 +105,7 @@ func scriptResource() *schema.Resource {
 					if !ok {
 						return []string{}, []error{fmt.Errorf("got type %T instead of string", i)}
 					}
-					_, err := ScriptCRONParser.Parse(v)
-					if err != nil {
-						return []string{}, []error{fmt.Errorf("%s is not a valid cron expression: %w", v, err)}
-					}
-					return nil, nil
+					return ValidateCronExpression(v)
 				},
 			},
 			"start_blocks_login": {
