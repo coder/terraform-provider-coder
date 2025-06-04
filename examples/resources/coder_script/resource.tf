@@ -40,6 +40,17 @@ resource "coder_script" "nightly_update" {
   EOF
 }
 
+resource "coder_script" "every_5_minutes" {
+  agent_id     = coder_agent.dev.agent_id
+  display_name = "Health check"
+  icon         = "/icon/heart.svg"
+  cron         = "0 */5 * * * *" # Run every 5 minutes
+  script       = <<EOF
+    #!/bin/sh
+    echo "Health check at $(date)"
+  EOF
+}
+
 resource "coder_script" "shutdown" {
   agent_id     = coder_agent.dev.id
   display_name = "Stop daemon server"
