@@ -43,15 +43,26 @@ resource "coder_script" "code-server" {
   })
 }
 
-resource "coder_script" "nightly_sleep_reminder" {
+resource "coder_script" "nightly_update" {
   agent_id     = coder_agent.dev.agent_id
   display_name = "Nightly update"
   icon         = "/icon/database.svg"
-  cron         = "0 22 * * *"
+  cron         = "0 0 22 * * *"  # Run at 22:00 (10 PM) every day
   script       = <<EOF
     #!/bin/sh
     echo "Running nightly update"
-    sudo apt-get install
+    sudo apt-get update
+  EOF
+}
+
+resource "coder_script" "every_5_minutes" {
+  agent_id     = coder_agent.dev.agent_id
+  display_name = "Health check"
+  icon         = "/icon/heart.svg"
+  cron         = "0 */5 * * * *"  # Run every 5 minutes
+  script       = <<EOF
+    #!/bin/sh
+    echo "Health check at $(date)"
   EOF
 }
 
@@ -78,7 +89,7 @@ resource "coder_script" "shutdown" {
 
 ### Optional
 
-- `cron` (String) The cron schedule to run the script on. This is a cron expression.
+- `cron` (String) The cron schedule to run the script on. This uses a 6-field cron expression format: `seconds minutes hours day-of-month month day-of-week`. Note that this differs from the standard Unix 5-field format by including seconds as the first field. Examples: `"0 0 22 * * *"` (daily at 10 PM), `"0 */5 * * * *"` (every 5 minutes), `"30 0 9 * * 1-5"` (weekdays at 9:30 AM).
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
 - `log_path` (String) The path of a file to write the logs to. If relative, it will be appended to tmp.
 - `run_on_start` (Boolean) This option defines whether or not the script should run when the agent starts. The script should exit when it is done to signal that the agent is ready.
