@@ -90,12 +90,17 @@ func TestIntegration(t *testing.T) {
 				// TODO (sasswart): the cli doesn't support presets yet.
 				// once it does, the value for workspace_parameter.value
 				// will be the preset value.
-				"workspace_parameter.value":                        `param value`,
-				"workspace_parameter.icon":                         `param icon`,
-				"workspace_preset.name":                            `preset`,
-				"workspace_preset.parameters.param":                `preset param value`,
-				"workspace_preset.prebuilds.instances":             `1`,
-				"workspace_preset.prebuilds.expiration_policy.ttl": `86400`,
+				"workspace_parameter.value":                                  `param value`,
+				"workspace_parameter.icon":                                   `param icon`,
+				"workspace_preset.name":                                      `preset`,
+				"workspace_preset.parameters.param":                          `preset param value`,
+				"workspace_preset.prebuilds.instances":                       `1`,
+				"workspace_preset.prebuilds.expiration_policy.ttl":           `86400`,
+				"workspace_preset.prebuilds.autoscaling.timezone":            `UTC`,
+				"workspace_preset.prebuilds.autoscaling.schedule0.cron":      `\* 8-18 \* \* 1-5`,
+				"workspace_preset.prebuilds.autoscaling.schedule0.instances": `3`,
+				"workspace_preset.prebuilds.autoscaling.schedule1.cron":      `\* 8-14 \* \* 6`,
+				"workspace_preset.prebuilds.autoscaling.schedule1.instances": `1`,
 			},
 		},
 		{
