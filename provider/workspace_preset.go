@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -66,6 +68,12 @@ func workspacePresetDataSource() *schema.Resource {
 			}, &preset)
 			if err != nil {
 				return diag.Errorf("decode workspace preset: %s", err)
+			}
+
+			// Validate schedule overlaps if autoscaling is configured
+			err = validateSchedules(rd)
+			if err != nil {
+				return diag.Errorf("schedules overlap with each other: %s", err)
 			}
 
 			rd.SetId(preset.Name)
@@ -210,6 +218,67 @@ func validatePrebuildsCronSpec(spec string) error {
 	}
 	if parts[0] != "*" || parts[2] != "*" || parts[3] != "*" {
 		return fmt.Errorf("minute, day-of-month and month should be *")
+	}
+
+	return nil
+}
+
+// validateSchedules checks if any of the configured autoscaling schedules overlap with each other.
+// It returns an error if overlaps are found, nil otherwise.
+func validateSchedules(rd *schema.ResourceData) error {
+	// TypeSet from schema definition
+	prebuilds := rd.Get("prebuilds").(*schema.Set)
+	if prebuilds.Len() == 0 {
+		return nil
+	}
+
+	// Each element of TypeSet with Elem: &schema.Resource{} should be map[string]interface{}
+	prebuild, ok := prebuilds.List()[0].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("invalid prebuild configuration: expected map[string]interface{}")
+	}
+
+	// TypeList from schema definition
+	autoscalingBlocks, ok := prebuild["autoscaling"].([]interface{})
+	if !ok {
+		return fmt.Errorf("invalid autoscaling configuration: expected []interface{}")
+	}
+	if len(autoscalingBlocks) == 0 {
+		return nil
+	}
+
+	// Each element of TypeList with Elem: &schema.Resource{} should be map[string]interface{}
+	autoscalingBlock, ok := autoscalingBlocks[0].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("invalid autoscaling configuration: expected map[string]interface{}")
+	}
+
+	// TypeList from schema definition
+	scheduleBlocks, ok := autoscalingBlock["schedule"].([]interface{})
+	if !ok {
+		return fmt.Errorf("invalid schedule configuration: expected []interface{}")
+	}
+	if len(scheduleBlocks) == 0 {
+		return nil
+	}
+
+	cronSpecs := make([]string, len(scheduleBlocks))
+	for i, scheduleBlock := range scheduleBlocks {
+		// Each element of TypeList with Elem: &schema.Resource{} should be map[string]interface{}
+		schedule, ok := scheduleBlock.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("invalid schedule configuration: expected map[string]interface{}")
+		}
+
+		// TypeString from schema definition
+		cronSpec := schedule["cron"].(string)
+
+		cronSpecs[i] = cronSpec
+	}
+
+	err := helpers.ValidateSchedules(cronSpecs)
+	if err != nil {
+		return err
 	}
 
 	return nil

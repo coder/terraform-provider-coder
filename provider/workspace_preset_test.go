@@ -508,6 +508,28 @@ func TestWorkspacePreset(t *testing.T) {
 			}`,
 			ExpectError: regexp.MustCompile(`failed to load location: unknown time zone InvalidLocation`),
 		},
+		{
+			Name: "Prebuilds is set with an autoscaling field, with 2 overlapping schedules",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				prebuilds {
+					instances = 1
+					autoscaling {
+						timezone = "UTC"
+					  	schedule {
+							cron = "* 8-18 * * 1-5"
+							instances = 3
+					  	}
+						schedule {
+							cron = "* 18-19 * * 5-6"
+							instances = 1
+						}
+					}
+				}
+			}`,
+			ExpectError: regexp.MustCompile(`schedules overlap with each other: schedules overlap: \* 8-18 \* \* 1-5 and \* 18-19 \* \* 5-6`),
+		},
 	}
 
 	for _, testcase := range testcases {
