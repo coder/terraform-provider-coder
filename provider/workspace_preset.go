@@ -210,14 +210,14 @@ func workspacePresetDataSource() *schema.Resource {
 	}
 }
 
-// validatePrebuildsCronSpec ensures that the minute, day-of-month and month options of spec are all set to *
+// validatePrebuildsCronSpec ensures that the minute field is set to *
 func validatePrebuildsCronSpec(spec string) error {
 	parts := strings.Fields(spec)
 	if len(parts) != 5 {
 		return fmt.Errorf("cron specification should consist of 5 fields")
 	}
-	if parts[0] != "*" || parts[2] != "*" || parts[3] != "*" {
-		return fmt.Errorf("minute, day-of-month and month should be *")
+	if parts[0] != "*" {
+		return fmt.Errorf("minute field should be *")
 	}
 
 	return nil

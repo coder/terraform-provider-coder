@@ -442,7 +442,7 @@ func TestWorkspacePreset(t *testing.T) {
 					}
 				}
 			}`,
-			ExpectError: regexp.MustCompile(`cron spec failed validation: minute, day-of-month and month should be *`),
+			ExpectError: regexp.MustCompile(`cron spec failed validation: minute field should be *`),
 		},
 		{
 			Name: "Prebuilds is set with an autoscaling.schedule field, but the cron hour field is invalid",
