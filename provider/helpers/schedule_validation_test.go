@@ -477,6 +477,24 @@ func TestSchedulesOverlap(t *testing.T) {
 			s2:        "* 9-18 * * 1-5",
 			expectErr: true,
 		},
+		{
+			name:      "Invalid field count - too few fields",
+			s1:        "* 9-18 * *",
+			s2:        "* 9-18 * * 1-5",
+			expectErr: true,
+		},
+		{
+			name:      "Invalid field count - too many fields",
+			s1:        "* 9-18 * * 1-5 *",
+			s2:        "* 9-18 * * 1-5",
+			expectErr: true,
+		},
+		{
+			name:      "Invalid field count - s2 has too few fields",
+			s1:        "* 9-18 * * 1-5",
+			s2:        "* 9-18 * *",
+			expectErr: true,
+		},
 	}
 
 	for _, testCase := range testCases {
