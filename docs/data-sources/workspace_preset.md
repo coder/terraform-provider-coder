@@ -63,7 +63,9 @@ Optional:
 Required:
 
 - `schedule` (Block List, Min: 1) One or more schedule blocks that define when to scale the number of prebuild instances. (see [below for nested schema](#nestedblock--prebuilds--autoscaling--schedule))
-- `timezone` (String) The timezone to use for the autoscaling schedule (e.g., "UTC", "America/New_York").
+- `timezone` (String) The timezone to use for the autoscaling schedule (e.g., "UTC", "America/New_York"). 
+Timezone must be a valid timezone in the IANA timezone database. 
+See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete list of valid timezone identifiers and https://www.iana.org/time-zones for the official IANA timezone database.
 
 <a id="nestedblock--prebuilds--autoscaling--schedule"></a>
 ### Nested Schema for `prebuilds.autoscaling.schedule`
