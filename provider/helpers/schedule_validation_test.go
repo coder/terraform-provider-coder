@@ -516,22 +516,20 @@ func TestSchedulesOverlap(t *testing.T) {
 func TestValidateSchedules(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name      string
-		schedules []string
-		expectErr bool
+		name           string
+		schedules      []string
+		expectedErrMsg string
 	}{
 		// Basic validation
 		{
 			name:      "Empty schedules",
 			schedules: []string{},
-			expectErr: false,
 		},
 		{
 			name: "Single valid schedule",
 			schedules: []string{
 				"* 9-18 * * 1-5",
 			},
-			expectErr: false,
 		},
 
 		// Non-overlapping schedules
@@ -541,7 +539,6 @@ func TestValidateSchedules(t *testing.T) {
 				"* 9-12 * * 1-5",
 				"* 13-18 * * 1-5",
 			},
-			expectErr: false,
 		},
 		{
 			name: "Multiple valid non-overlapping schedules",
@@ -549,7 +546,6 @@ func TestValidateSchedules(t *testing.T) {
 				"* 9-18 * * 1-5",
 				"* 9-13 * * 6,0",
 			},
-			expectErr: false,
 		},
 
 		// Overlapping schedules
@@ -559,7 +555,7 @@ func TestValidateSchedules(t *testing.T) {
 				"* 9-14 * * 1-5",
 				"* 12-18 * * 1-5",
 			},
-			expectErr: true,
+			expectedErrMsg: "schedules overlap: * 9-14 * * 1-5 and * 12-18 * * 1-5",
 		},
 		{
 			name: "Three schedules with only second and third overlapping",
@@ -568,7 +564,7 @@ func TestValidateSchedules(t *testing.T) {
 				"* 12-18 * * 1-5", // 12PM-6PM
 				"* 15-20 * * 1-5", // 3PM-8PM (overlaps with second)
 			},
-			expectErr: true,
+			expectedErrMsg: "schedules overlap: * 12-18 * * 1-5 and * 15-20 * * 1-5",
 		},
 	}
 
@@ -577,8 +573,9 @@ func TestValidateSchedules(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
 			err := helpers.ValidateSchedules(testCase.schedules)
-			if testCase.expectErr {
+			if testCase.expectedErrMsg != "" {
 				require.Error(t, err)
+				require.Contains(t, err.Error(), testCase.expectedErrMsg)
 			} else {
 				require.NoError(t, err)
 			}
