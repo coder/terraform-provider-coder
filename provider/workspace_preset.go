@@ -176,7 +176,7 @@ See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete 
 											Schema: map[string]*schema.Schema{
 												"cron": {
 													Type:        schema.TypeString,
-													Description: "A cron expression that defines when this schedule should be active. The cron expression must be in the format \"* HOUR * * DAY-OF-WEEK\" where HOUR is 0-23 and DAY-OF-WEEK is 0-6 (Sunday-Saturday). The minute, day-of-month, and month fields must be \"*\".",
+													Description: "A cron expression that defines when this schedule should be active. The cron expression must be in the format \"* HOUR DOM MONTH DAY-OF-WEEK\" where HOUR is 0-23, DOM (day-of-month) is 1-31, MONTH is 1-12, and DAY-OF-WEEK is 0-6 (Sunday-Saturday). The minute field must be \"*\" to ensure the schedule covers entire hours rather than specific minute intervals.",
 													Required:    true,
 													ValidateFunc: func(val interface{}, key string) ([]string, []error) {
 														cronSpec := val.(string)
