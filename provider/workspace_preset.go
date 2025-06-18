@@ -151,9 +151,11 @@ func workspacePresetDataSource() *schema.Resource {
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"timezone": {
-										Type:        schema.TypeString,
-										Description: "The timezone to use for the autoscaling schedule (e.g., \"UTC\", \"America/New_York\").",
-										Required:    true,
+										Type: schema.TypeString,
+										Description: `The timezone to use for the autoscaling schedule (e.g., "UTC", "America/New_York"). 
+Timezone must be a valid timezone in the IANA timezone database. 
+See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete list of valid timezone identifiers and https://www.iana.org/time-zones for the official IANA timezone database.`,
+										Required: true,
 										ValidateFunc: func(val interface{}, key string) ([]string, []error) {
 											timezone := val.(string)
 
