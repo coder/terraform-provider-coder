@@ -152,7 +152,7 @@ func workspacePresetDataSource() *schema.Resource {
 								Schema: map[string]*schema.Schema{
 									"timezone": {
 										Type: schema.TypeString,
-										Description: `The timezone to use for the scheduling schedule (e.g., "UTC", "America/New_York"). 
+										Description: `The timezone to use for the prebuild schedules (e.g., "UTC", "America/New_York"). 
 Timezone must be a valid timezone in the IANA timezone database. 
 See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete list of valid timezone identifiers and https://www.iana.org/time-zones for the official IANA timezone database.`,
 										Required: true,
@@ -213,7 +213,7 @@ See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete 
 }
 
 // validatePrebuildsCronSpec ensures that the minute field is set to *.
-// This is required because scheduling schedules represent continuous time ranges,
+// This is required because prebuild schedules represent continuous time ranges,
 // and we want the schedule to cover entire hours rather than specific minute intervals.
 func validatePrebuildsCronSpec(spec string) error {
 	parts := strings.Fields(spec)
@@ -227,7 +227,7 @@ func validatePrebuildsCronSpec(spec string) error {
 	return nil
 }
 
-// validateSchedules checks if any of the configured scheduling schedules overlap with each other.
+// validateSchedules checks if any of the configured prebuild schedules overlap with each other.
 // It returns an error if overlaps are found, nil otherwise.
 func validateSchedules(rd *schema.ResourceData) error {
 	// TypeSet from schema definition
