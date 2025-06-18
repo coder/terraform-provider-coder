@@ -55,6 +55,7 @@ Required:
 Optional:
 
 - `expiration_policy` (Block Set, Max: 1) Configuration block that defines TTL (time-to-live) behavior for prebuilds. Use this to automatically invalidate and delete prebuilds after a certain period, ensuring they stay up-to-date. (see [below for nested schema](#nestedblock--prebuilds--expiration_policy))
+- `scheduling` (Block List, Max: 1) Configuration block that defines scheduling behavior for prebuilds. Use this to automatically adjust the number of prebuild instances based on a schedule. (see [below for nested schema](#nestedblock--prebuilds--scheduling))
 
 <a id="nestedblock--prebuilds--expiration_policy"></a>
 ### Nested Schema for `prebuilds.expiration_policy`
@@ -62,3 +63,22 @@ Optional:
 Required:
 
 - `ttl` (Number) Time in seconds after which an unclaimed prebuild is considered expired and eligible for cleanup.
+
+
+<a id="nestedblock--prebuilds--scheduling"></a>
+### Nested Schema for `prebuilds.scheduling`
+
+Required:
+
+- `schedule` (Block List, Min: 1) One or more schedule blocks that define when to scale the number of prebuild instances. (see [below for nested schema](#nestedblock--prebuilds--scheduling--schedule))
+- `timezone` (String) The timezone to use for the prebuild schedules (e.g., "UTC", "America/New_York"). 
+Timezone must be a valid timezone in the IANA timezone database. 
+See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete list of valid timezone identifiers and https://www.iana.org/time-zones for the official IANA timezone database.
+
+<a id="nestedblock--prebuilds--scheduling--schedule"></a>
+### Nested Schema for `prebuilds.scheduling.schedule`
+
+Required:
+
+- `cron` (String) A cron expression that defines when this schedule should be active. The cron expression must be in the format "* HOUR DOM MONTH DAY-OF-WEEK" where HOUR is 0-23, DOM (day-of-month) is 1-31, MONTH is 1-12, and DAY-OF-WEEK is 0-6 (Sunday-Saturday). The minute field must be "*" to ensure the schedule covers entire hours rather than specific minute intervals.
+- `instances` (Number) The number of prebuild instances to maintain during this schedule period.
