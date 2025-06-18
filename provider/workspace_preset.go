@@ -161,7 +161,7 @@ See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete 
 
 											_, err := time.LoadLocation(timezone)
 											if err != nil {
-												return nil, []error{fmt.Errorf("failed to load location: %w", err)}
+												return nil, []error{fmt.Errorf("failed to load timezone %q: %w", timezone, err)}
 											}
 
 											return nil, nil
