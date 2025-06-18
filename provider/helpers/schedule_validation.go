@@ -113,7 +113,7 @@ func DaysOverlap(dom1, dow1, dom2, dow2 string) (bool, error) {
 	return domOverlap || dowOverlap, nil
 }
 
-// CheckOverlap is a generic function to check if two ranges overlap
+// CheckOverlap is a function to check if two ranges overlap
 func CheckOverlap(range1, range2 string, maxValue int) (bool, error) {
 	set1, err := ParseRange(range1, maxValue)
 	if err != nil {
