@@ -358,11 +358,11 @@ func TestDaysOverlap(t *testing.T) {
 func TestSchedulesOverlap(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name      string
-		s1        string
-		s2        string
-		overlap   bool
-		expectErr bool
+		name           string
+		s1             string
+		s2             string
+		overlap        bool
+		expectedErrMsg string
 	}{
 		// Basic overlap cases
 		{
@@ -466,34 +466,34 @@ func TestSchedulesOverlap(t *testing.T) {
 
 		// Error cases (keeping minimal)
 		{
-			name:      "Invalid hour range",
-			s1:        "* 25-26 * * 1-5",
-			s2:        "* 9-18 * * 1-5",
-			expectErr: true,
+			name:           "Invalid hour range",
+			s1:             "* 25-26 * * 1-5",
+			s2:             "* 9-18 * * 1-5",
+			expectedErrMsg: "invalid hour range",
 		},
 		{
-			name:      "Invalid month range",
-			s1:        "* 9-18 * 13 1-5",
-			s2:        "* 9-18 * * 1-5",
-			expectErr: true,
+			name:           "Invalid month range",
+			s1:             "* 9-18 * 13 1-5",
+			s2:             "* 9-18 * * 1-5",
+			expectedErrMsg: "invalid month range",
 		},
 		{
-			name:      "Invalid field count - too few fields",
-			s1:        "* 9-18 * *",
-			s2:        "* 9-18 * * 1-5",
-			expectErr: true,
+			name:           "Invalid field count - too few fields",
+			s1:             "* 9-18 * *",
+			s2:             "* 9-18 * * 1-5",
+			expectedErrMsg: "has 4 fields, expected 5 fields",
 		},
 		{
-			name:      "Invalid field count - too many fields",
-			s1:        "* 9-18 * * 1-5 *",
-			s2:        "* 9-18 * * 1-5",
-			expectErr: true,
+			name:           "Invalid field count - too many fields",
+			s1:             "* 9-18 * * 1-5 *",
+			s2:             "* 9-18 * * 1-5",
+			expectedErrMsg: "has 6 fields, expected 5 fields",
 		},
 		{
-			name:      "Invalid field count - s2 has too few fields",
-			s1:        "* 9-18 * * 1-5",
-			s2:        "* 9-18 * *",
-			expectErr: true,
+			name:           "Invalid field count - s2 has too few fields",
+			s1:             "* 9-18 * * 1-5",
+			s2:             "* 9-18 * *",
+			expectedErrMsg: "has 4 fields, expected 5 fields",
 		},
 	}
 
@@ -503,12 +503,13 @@ func TestSchedulesOverlap(t *testing.T) {
 			t.Parallel()
 
 			overlap, err := helpers.SchedulesOverlap(testCase.s1, testCase.s2)
-			if testCase.expectErr {
+			if testCase.expectedErrMsg != "" {
 				require.Error(t, err)
-				return
+				require.Contains(t, err.Error(), testCase.expectedErrMsg)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, testCase.overlap, overlap)
 			}
-			require.NoError(t, err)
-			require.Equal(t, testCase.overlap, overlap)
 		})
 	}
 }
