@@ -30,7 +30,7 @@ data "coder_workspace_preset" "preset" {
     expiration_policy {
       ttl = 86400
     }
-    autoscaling {
+    scheduling {
       timezone = "UTC"
       schedule {
         cron      = "* 8-18 * * 1-5"
@@ -67,11 +67,11 @@ locals {
     "workspace_preset.parameters.param" : data.coder_workspace_preset.preset.parameters.param,
     "workspace_preset.prebuilds.instances" : tostring(one(data.coder_workspace_preset.preset.prebuilds).instances),
     "workspace_preset.prebuilds.expiration_policy.ttl" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).expiration_policy).ttl),
-    "workspace_preset.prebuilds.autoscaling.timezone" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).autoscaling).timezone),
-    "workspace_preset.prebuilds.autoscaling.schedule0.cron" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).autoscaling).schedule[0].cron),
-    "workspace_preset.prebuilds.autoscaling.schedule0.instances" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).autoscaling).schedule[0].instances),
-    "workspace_preset.prebuilds.autoscaling.schedule1.cron" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).autoscaling).schedule[1].cron),
-    "workspace_preset.prebuilds.autoscaling.schedule1.instances" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).autoscaling).schedule[1].instances),
+    "workspace_preset.prebuilds.scheduling.timezone" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).scheduling).timezone),
+    "workspace_preset.prebuilds.scheduling.schedule0.cron" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).scheduling).schedule[0].cron),
+    "workspace_preset.prebuilds.scheduling.schedule0.instances" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).scheduling).schedule[0].instances),
+    "workspace_preset.prebuilds.scheduling.schedule1.cron" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).scheduling).schedule[1].cron),
+    "workspace_preset.prebuilds.scheduling.schedule1.instances" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).scheduling).schedule[1].instances),
   }
 }
 

@@ -36,14 +36,14 @@ type WorkspacePrebuild struct {
 	// for utilities that parse our terraform output using this type. To remain compatible
 	// with those cases, we use a slice here.
 	ExpirationPolicy []ExpirationPolicy `mapstructure:"expiration_policy"`
-	Autoscaling      []Autoscaling      `mapstructure:"autoscaling"`
+	Scheduling       []Scheduling       `mapstructure:"scheduling"`
 }
 
 type ExpirationPolicy struct {
 	TTL int `mapstructure:"ttl"`
 }
 
-type Autoscaling struct {
+type Scheduling struct {
 	Timezone string     `mapstructure:"timezone"`
 	Schedule []Schedule `mapstructure:"schedule"`
 }
@@ -70,7 +70,7 @@ func workspacePresetDataSource() *schema.Resource {
 				return diag.Errorf("decode workspace preset: %s", err)
 			}
 
-			// Validate schedule overlaps if autoscaling is configured
+			// Validate schedule overlaps if scheduling is configured
 			err = validateSchedules(rd)
 			if err != nil {
 				return diag.Errorf("schedules overlap with each other: %s", err)
@@ -143,16 +143,16 @@ func workspacePresetDataSource() *schema.Resource {
 								},
 							},
 						},
-						"autoscaling": {
+						"scheduling": {
 							Type:        schema.TypeList,
-							Description: "Configuration block that defines autoscaling behavior for prebuilds. Use this to automatically adjust the number of prebuild instances based on a schedule.",
+							Description: "Configuration block that defines scheduling behavior for prebuilds. Use this to automatically adjust the number of prebuild instances based on a schedule.",
 							Optional:    true,
 							MaxItems:    1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"timezone": {
 										Type: schema.TypeString,
-										Description: `The timezone to use for the autoscaling schedule (e.g., "UTC", "America/New_York"). 
+										Description: `The timezone to use for the scheduling schedule (e.g., "UTC", "America/New_York"). 
 Timezone must be a valid timezone in the IANA timezone database. 
 See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete list of valid timezone identifiers and https://www.iana.org/time-zones for the official IANA timezone database.`,
 										Required: true,
@@ -213,7 +213,7 @@ See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete 
 }
 
 // validatePrebuildsCronSpec ensures that the minute field is set to *.
-// This is required because autoscaling schedules represent continuous time ranges,
+// This is required because scheduling schedules represent continuous time ranges,
 // and we want the schedule to cover entire hours rather than specific minute intervals.
 func validatePrebuildsCronSpec(spec string) error {
 	parts := strings.Fields(spec)
@@ -227,7 +227,7 @@ func validatePrebuildsCronSpec(spec string) error {
 	return nil
 }
 
-// validateSchedules checks if any of the configured autoscaling schedules overlap with each other.
+// validateSchedules checks if any of the configured scheduling schedules overlap with each other.
 // It returns an error if overlaps are found, nil otherwise.
 func validateSchedules(rd *schema.ResourceData) error {
 	// TypeSet from schema definition
@@ -243,22 +243,22 @@ func validateSchedules(rd *schema.ResourceData) error {
 	}
 
 	// TypeList from schema definition
-	autoscalingBlocks, ok := prebuild["autoscaling"].([]interface{})
+	schedulingBlocks, ok := prebuild["scheduling"].([]interface{})
 	if !ok {
-		return fmt.Errorf("invalid autoscaling configuration: expected []interface{}")
+		return fmt.Errorf("invalid scheduling configuration: expected []interface{}")
 	}
-	if len(autoscalingBlocks) == 0 {
+	if len(schedulingBlocks) == 0 {
 		return nil
 	}
 
 	// Each element of TypeList with Elem: &schema.Resource{} should be map[string]interface{}
-	autoscalingBlock, ok := autoscalingBlocks[0].(map[string]interface{})
+	schedulingBlock, ok := schedulingBlocks[0].(map[string]interface{})
 	if !ok {
-		return fmt.Errorf("invalid autoscaling configuration: expected map[string]interface{}")
+		return fmt.Errorf("invalid scheduling configuration: expected map[string]interface{}")
 	}
 
 	// TypeList from schema definition
-	scheduleBlocks, ok := autoscalingBlock["schedule"].([]interface{})
+	scheduleBlocks, ok := schedulingBlock["schedule"].([]interface{})
 	if !ok {
 		return fmt.Errorf("invalid schedule configuration: expected []interface{}")
 	}

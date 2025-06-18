@@ -266,25 +266,25 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile("An argument named \"invalid_argument\" is not expected here."),
 		},
 		{
-			Name: "Prebuilds is set with an empty autoscaling field",
+			Name: "Prebuilds is set with an empty scheduling field",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {}
+					scheduling {}
 				}
 			}`,
 			ExpectError: regexp.MustCompile(`The argument "[^"]+" is required, but no definition was found.`),
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling field, but without timezone",
+			Name: "Prebuilds is set with an scheduling field, but without timezone",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 					  	schedule {
 							cron = "* 8-18 * * 1-5"
 							instances = 3
@@ -295,13 +295,13 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile(`The argument "timezone" is required, but no definition was found.`),
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling field, but without schedule",
+			Name: "Prebuilds is set with an scheduling field, but without schedule",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 					}
 				}
@@ -309,13 +309,13 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile(`At least 1 "schedule" blocks are required.`),
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling.schedule field, but without cron",
+			Name: "Prebuilds is set with an scheduling.schedule field, but without cron",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 						schedule {
 							instances = 3
@@ -326,13 +326,13 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile(`The argument "cron" is required, but no definition was found.`),
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling.schedule field, but without instances",
+			Name: "Prebuilds is set with an scheduling.schedule field, but without instances",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 						schedule {
 							cron = "* 8-18 * * 1-5"
@@ -343,13 +343,13 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile(`The argument "instances" is required, but no definition was found.`),
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling.schedule field, but with invalid type for instances",
+			Name: "Prebuilds is set with an scheduling.schedule field, but with invalid type for instances",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 						schedule {
 							cron = "* 8-18 * * 1-5"
@@ -361,13 +361,13 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile(`Inappropriate value for attribute "instances": a number is required`),
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling field with 1 schedule",
+			Name: "Prebuilds is set with an scheduling field with 1 schedule",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 					  	schedule {
 							cron = "* 8-18 * * 1-5"
@@ -384,20 +384,20 @@ func TestWorkspacePreset(t *testing.T) {
 				require.NotNil(t, resource)
 				attrs := resource.Primary.Attributes
 				require.Equal(t, attrs["name"], "preset_1")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.timezone"], "UTC")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.schedule.0.cron"], "* 8-18 * * 1-5")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.schedule.0.instances"], "3")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.timezone"], "UTC")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.schedule.0.cron"], "* 8-18 * * 1-5")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.schedule.0.instances"], "3")
 				return nil
 			},
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling field with 2 schedules",
+			Name: "Prebuilds is set with an scheduling field with 2 schedules",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 					  	schedule {
 							cron = "* 8-18 * * 1-5"
@@ -418,22 +418,22 @@ func TestWorkspacePreset(t *testing.T) {
 				require.NotNil(t, resource)
 				attrs := resource.Primary.Attributes
 				require.Equal(t, attrs["name"], "preset_1")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.timezone"], "UTC")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.schedule.0.cron"], "* 8-18 * * 1-5")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.schedule.0.instances"], "3")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.schedule.1.cron"], "* 8-14 * * 6")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.schedule.1.instances"], "1")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.timezone"], "UTC")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.schedule.0.cron"], "* 8-18 * * 1-5")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.schedule.0.instances"], "3")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.schedule.1.cron"], "* 8-14 * * 6")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.schedule.1.instances"], "1")
 				return nil
 			},
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling.schedule field, but the cron includes a disallowed minute field",
+			Name: "Prebuilds is set with an scheduling.schedule field, but the cron includes a disallowed minute field",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 						schedule {
 							cron = "30 8-18 * * 1-5"
@@ -445,13 +445,13 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile(`cron spec failed validation: minute field should be *`),
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling.schedule field, but the cron hour field is invalid",
+			Name: "Prebuilds is set with an scheduling.schedule field, but the cron hour field is invalid",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 						schedule {
 							cron = "* 25-26 * * 1-5"
@@ -463,13 +463,13 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile(`failed to parse cron spec: end of range \(26\) above maximum \(23\): 25-26`),
 		},
 		{
-			Name: "Prebuilds is set with a valid autoscaling.timezone field",
+			Name: "Prebuilds is set with a valid scheduling.timezone field",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "America/Los_Angeles"
 						schedule {
 							cron = "* 8-18 * * 1-5"
@@ -486,18 +486,18 @@ func TestWorkspacePreset(t *testing.T) {
 				require.NotNil(t, resource)
 				attrs := resource.Primary.Attributes
 				require.Equal(t, attrs["name"], "preset_1")
-				require.Equal(t, attrs["prebuilds.0.autoscaling.0.timezone"], "America/Los_Angeles")
+				require.Equal(t, attrs["prebuilds.0.scheduling.0.timezone"], "America/Los_Angeles")
 				return nil
 			},
 		},
 		{
-			Name: "Prebuilds is set with an invalid autoscaling.timezone field",
+			Name: "Prebuilds is set with an invalid scheduling.timezone field",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "InvalidLocation"
 						schedule {
 							cron = "* 8-18 * * 1-5"
@@ -509,13 +509,13 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: regexp.MustCompile(`failed to load timezone "InvalidLocation": unknown time zone InvalidLocation`),
 		},
 		{
-			Name: "Prebuilds is set with an autoscaling field, with 2 overlapping schedules",
+			Name: "Prebuilds is set with an scheduling field, with 2 overlapping schedules",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
 				prebuilds {
 					instances = 1
-					autoscaling {
+					scheduling {
 						timezone = "UTC"
 					  	schedule {
 							cron = "* 8-18 * * 1-5"
