@@ -25,7 +25,7 @@ func ValidateSchedules(schedules []string) error {
 }
 
 // SchedulesOverlap checks if two schedules overlap by checking
-// days, months, and hours separately
+// all cron fields separately
 func SchedulesOverlap(schedule1, schedule2 string) (bool, error) {
 	// Get cron fields
 	fields1 := strings.Fields(schedule1)
