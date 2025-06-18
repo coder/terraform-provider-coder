@@ -12,3 +12,13 @@ data "coder_workspace_preset" "example" {
     (data.coder_parameter.ami.name)     = "ami-xxxxxxxx"
   }
 }
+
+# Example of a default preset that will be pre-selected for users
+data "coder_workspace_preset" "standard" {
+  name    = "Standard"
+  default = true
+  parameters = {
+    (data.coder_parameter.instance_type.name) = "t3.medium"
+    (data.coder_parameter.region.name)        = "us-west-2"
+  }
+}
