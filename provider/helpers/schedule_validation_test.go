@@ -322,6 +322,22 @@ func TestDaysOverlap(t *testing.T) {
 			dow2:    "4-6",
 			overlap: false, // false because neither overlaps
 		},
+		{
+			name:    "Both DOW wildcard - DOM overlaps",
+			dom1:    "1-15",
+			dow1:    "*",
+			dom2:    "10-20",
+			dow2:    "*",
+			overlap: true, // true because DOM overlaps (10-15)
+		},
+		{
+			name:    "Both DOW wildcard - DOM doesn't overlap",
+			dom1:    "1-15",
+			dow1:    "*",
+			dom2:    "16-31",
+			dow2:    "*",
+			overlap: false, // false because DOM doesn't overlap
+		},
 	}
 
 	for _, testCase := range testCases {
