@@ -212,7 +212,9 @@ See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for a complete 
 	}
 }
 
-// validatePrebuildsCronSpec ensures that the minute field is set to *
+// validatePrebuildsCronSpec ensures that the minute field is set to *.
+// This is required because autoscaling schedules represent continuous time ranges,
+// and we want the schedule to cover entire hours rather than specific minute intervals.
 func validatePrebuildsCronSpec(spec string) error {
 	parts := strings.Fields(spec)
 	if len(parts) != 5 {
