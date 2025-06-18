@@ -506,7 +506,7 @@ func TestWorkspacePreset(t *testing.T) {
 					}
 				}
 			}`,
-			ExpectError: regexp.MustCompile(`failed to load location: unknown time zone InvalidLocation`),
+			ExpectError: regexp.MustCompile(`failed to load timezone "InvalidLocation": unknown time zone InvalidLocation`),
 		},
 		{
 			Name: "Prebuilds is set with an autoscaling field, with 2 overlapping schedules",
