@@ -20,7 +20,8 @@ data "coder_parameter" "param" {
   icon        = "param icon"
 }
 data "coder_workspace_preset" "preset" {
-  name = "preset"
+  name    = "preset"
+  default = true
   parameters = {
     (data.coder_parameter.param.name) = "preset param value"
   }
@@ -64,6 +65,7 @@ locals {
     "workspace_parameter.value" : data.coder_parameter.param.value,
     "workspace_parameter.icon" : data.coder_parameter.param.icon,
     "workspace_preset.name" : data.coder_workspace_preset.preset.name,
+    "workspace_preset.default" : tostring(data.coder_workspace_preset.preset.default),
     "workspace_preset.parameters.param" : data.coder_workspace_preset.preset.parameters.param,
     "workspace_preset.prebuilds.instances" : tostring(one(data.coder_workspace_preset.preset.prebuilds).instances),
     "workspace_preset.prebuilds.expiration_policy.ttl" : tostring(one(one(data.coder_workspace_preset.preset.prebuilds).expiration_policy).ttl),

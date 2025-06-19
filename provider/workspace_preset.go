@@ -19,6 +19,7 @@ var PrebuildsCRONParser = rbcron.NewParser(rbcron.Minute | rbcron.Hour | rbcron.
 
 type WorkspacePreset struct {
 	Name       string            `mapstructure:"name"`
+	Default    bool              `mapstructure:"default"`
 	Parameters map[string]string `mapstructure:"parameters"`
 	// There should always be only one prebuild block, but Terraform's type system
 	// still parses them as a slice, so we need to handle it as such. We could use
@@ -91,6 +92,12 @@ func workspacePresetDataSource() *schema.Resource {
 				Description:  "The name of the workspace preset.",
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"default": {
+				Type:        schema.TypeBool,
+				Description: "Whether this preset should be selected by default when creating a workspace. Only one preset per template can be marked as default.",
+				Optional:    true,
+				Default:     false,
 			},
 			"parameters": {
 				Type:        schema.TypeMap,

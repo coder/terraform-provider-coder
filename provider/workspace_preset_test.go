@@ -530,6 +530,62 @@ func TestWorkspacePreset(t *testing.T) {
 			}`,
 			ExpectError: regexp.MustCompile(`schedules overlap with each other: schedules overlap: \* 8-18 \* \* 1-5 and \* 18-19 \* \* 5-6`),
 		},
+		{
+			Name: "Default field set to true",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				default = true
+				parameters = {
+					"region" = "us-east1-a"
+				}
+			}`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				resource := state.Modules[0].Resources["data.coder_workspace_preset.preset_1"]
+				require.NotNil(t, resource)
+				require.Equal(t, resource.Primary.Attributes["default"], "true")
+				return nil
+			},
+		},
+		{
+			Name: "Default field set to false",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				default = false
+				parameters = {
+					"region" = "us-east1-a"
+				}
+			}`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				resource := state.Modules[0].Resources["data.coder_workspace_preset.preset_1"]
+				require.NotNil(t, resource)
+				require.Equal(t, resource.Primary.Attributes["default"], "false")
+				return nil
+			},
+		},
+		{
+			Name: "Default field not provided (defaults to false)",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+			}`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				resource := state.Modules[0].Resources["data.coder_workspace_preset.preset_1"]
+				require.NotNil(t, resource)
+				require.Equal(t, resource.Primary.Attributes["default"], "false")
+				return nil
+			},
+		},
 	}
 
 	for _, testcase := range testcases {

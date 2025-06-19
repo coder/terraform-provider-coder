@@ -93,6 +93,7 @@ func TestIntegration(t *testing.T) {
 				"workspace_parameter.value":                                 `param value`,
 				"workspace_parameter.icon":                                  `param icon`,
 				"workspace_preset.name":                                     `preset`,
+				"workspace_preset.default":                                  `true`,
 				"workspace_preset.parameters.param":                         `preset param value`,
 				"workspace_preset.prebuilds.instances":                      `1`,
 				"workspace_preset.prebuilds.expiration_policy.ttl":          `86400`,
