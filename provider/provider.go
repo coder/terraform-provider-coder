@@ -72,6 +72,7 @@ func New() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"coder_agent":          agentResource(),
 			"coder_agent_instance": agentInstanceResource(),
+			"coder_ai_task":        aiTask(),
 			"coder_app":            appResource(),
 			"coder_metadata":       metadataResource(),
 			"coder_script":         scriptResource(),
