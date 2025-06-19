@@ -19,7 +19,7 @@ type AITaskSidebarApp struct {
 }
 
 // TaskPromptParameterName is the name of the parameter which is *required* to be defined when a coder_ai_task is used.
-const TaskPromptParameterName = "task_prompt"
+const TaskPromptParameterName = "AI Prompt"
 
 func aiTask() *schema.Resource {
 	return &schema.Resource{
