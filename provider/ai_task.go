@@ -25,7 +25,7 @@ func aiTask() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this resource to define Coder tasks.", // TODO: docs link.
+		Description: "Use this resource to define Coder tasks.",
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i any) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
 			return nil
@@ -40,7 +40,7 @@ func aiTask() *schema.Resource {
 			},
 			"sidebar_app": {
 				Type:        schema.TypeSet,
-				Description: "The coder_app to display in the sidebar.", // TODO: need some clear guidance on what type of app to use here.
+				Description: "The coder_app to display in the sidebar. Usually a chat interface with the AI agent running in the workspace, like https://github.com/coder/agentapi.",
 				ForceNew:    true,
 				Required:    true,
 				MaxItems:    1,
