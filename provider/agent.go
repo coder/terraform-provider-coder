@@ -239,7 +239,7 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 	}
 
 	var metadataMap map[string]interface{}
-	if len(.metadata) > 0 {
+	if len(metadata) > 0 {
 		metadataMap = metadata[0].(map[string]interface{})
 	}
 
