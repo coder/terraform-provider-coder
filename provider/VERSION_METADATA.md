@@ -88,9 +88,9 @@ Results in documentation with:
 
 ## When to Add Version Information
 
-- **Add @since: markers** for resources introduced after Coder v2.0
-- **Add @since: markers** for attributes added to existing resources
-- **Don't add markers** for resources that existed before Coder v2.0
+- **Add @since: markers** for newly introduced resources and data sources
+- **Add @since: markers** for attributes added to existing resources and data sources
+- **Don't add markers** for resources that existed before terraform-provider-coder v2.0
 - Resources and attributes without `@since:` markers won't show version information
 
 ## Best Practices
@@ -99,7 +99,4 @@ Results in documentation with:
 2. **Use semantic versioning** (vX.Y.Z format)
 3. **Test documentation generation** with `make gen` after adding markers
 4. **Keep descriptions concise** - the version marker is removed from the final docs
-5. **Use the version constants** from `version_meta.go` when available:
-   ```go
-   Description: "My feature. @since:" + provider.V2_21_0,
-   ```
+
