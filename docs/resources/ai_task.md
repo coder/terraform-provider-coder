@@ -4,11 +4,14 @@ page_title: "coder_ai_task Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
   Use this resource to define Coder tasks.
+  ~> Note: This resource requires Coder v2.24.0 https://github.com/coder/coder/releases/tag/v2.24.0 or later.
 ---
 
 # coder_ai_task (Resource)
 
 Use this resource to define Coder tasks.
+
+~> **Note:** This resource requires [Coder v2.24.0](https://github.com/coder/coder/releases/tag/v2.24.0) or later.
 
 
 
