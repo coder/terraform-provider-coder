@@ -110,13 +110,11 @@ func processVersionInformation(p *schema.Provider) error {
 		
 		// Extract version from description
 		version := extractVersionFromDescription(dataSource.Description)
-		if version == "" {
-			// Default to v2.18.0 if no version specified
-			version = "v2.18.0"
-		}
-		
-		if err := addVersionToResourceDoc(docFile, dataSourceName, version, "data source"); err != nil {
-			return xerrors.Errorf("unable to add version to data-source doc file (data-source: %s): %w", dataSourceName, err)
+		if version != "" {
+			// Only add version note if explicitly specified
+			if err := addVersionToResourceDoc(docFile, dataSourceName, version, "data source"); err != nil {
+				return xerrors.Errorf("unable to add version to data-source doc file (data-source: %s): %w", dataSourceName, err)
+			}
 		}
 		
 		// Process attributes for version info
@@ -131,20 +129,11 @@ func processVersionInformation(p *schema.Provider) error {
 		
 		// Extract version from description
 		version := extractVersionFromDescription(resource.Description)
-		if version == "" {
-			// Check for special cases
-			switch resourceName {
-			case "coder_devcontainer":
-				version = "v2.21.0"
-			case "coder_ai_task":
-				version = "v2.24.0"
-			default:
-				version = "v2.18.0"
+		if version != "" {
+			// Only add version note if explicitly specified
+			if err := addVersionToResourceDoc(docFile, resourceName, version, "resource"); err != nil {
+				return xerrors.Errorf("unable to add version to resource doc file (resource: %s): %w", resourceName, err)
 			}
-		}
-		
-		if err := addVersionToResourceDoc(docFile, resourceName, version, "resource"); err != nil {
-			return xerrors.Errorf("unable to add version to resource doc file (resource: %s): %w", resourceName, err)
 		}
 		
 		// Process attributes for version info

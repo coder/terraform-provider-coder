@@ -10,8 +10,6 @@ description: |-
 
 Use this resource to associate an instance ID with an agent for zero-trust authentication. This association is done automatically for `"google_compute_instance"`, `"aws_instance"`, `"azurerm_linux_virtual_machine"`, and `"azurerm_windows_virtual_machine"` resources.
 
-~> **Note:** This resource requires [Coder v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
-
 ## Example Usage
 
 ```terraform

@@ -10,8 +10,6 @@ description: |-
 
 Use this data source to configure workspace tags to select provisioners.
 
-~> **Note:** This data source requires [Coder v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
-
 ## Example Usage
 
 ```terraform

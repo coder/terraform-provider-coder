@@ -10,8 +10,6 @@ description: |-
 
 Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the `coder_agent` resource.
 
-~> **Note:** This resource requires [Coder v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
-
 ## Example Usage
 
 ```terraform

@@ -10,8 +10,6 @@ description: |-
 
 Use this resource to associate an agent.
 
-~> **Note:** This resource requires [Coder v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
-
 ## Example Usage
 
 ```terraform

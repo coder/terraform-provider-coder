@@ -17,4 +17,7 @@ const (
 	
 	// V2_24_0 introduced AI task resources
 	V2_24_0 = "v2.24.0"
+	
+	// V2_8_0 introduced workspace preset data source
+	V2_8_0 = "v2.8.0"
 )

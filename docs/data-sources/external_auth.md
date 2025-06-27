@@ -10,8 +10,6 @@ description: |-
 
 Use this data source to require users to authenticate with an external service prior to workspace creation. This can be used to [pre-authenticate external services](https://coder.com/docs/admin/external-auth) in a workspace. (e.g. Google Cloud, Github, Docker, etc.)
 
-~> **Note:** This data source requires [Coder v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
-
 ## Example Usage
 
 ```terraform

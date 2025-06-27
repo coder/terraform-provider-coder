@@ -11,8 +11,6 @@ description: |-
 
 Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard alongside the resource. The resource containing the agent, and it's metadata, will be shown by default. 
 
-~> **Note:** This resource requires [Coder v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
-
 Alternatively, to attach metadata to the agent, use a `metadata` block within a `coder_agent` resource.
 
 ## Example Usage

@@ -58,7 +58,7 @@ func workspacePresetDataSource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.",
+		Description: "Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace. @since:v2.8.0",
 
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			var preset WorkspacePreset

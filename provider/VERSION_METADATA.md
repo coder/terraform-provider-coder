@@ -86,13 +86,12 @@ Results in documentation with:
 - `advanced_option` (Boolean) Enable advanced features. *(since v2.22.0)*
 ```
 
-## Default Versions
+## When to Add Version Information
 
-- Resources without `@since:` markers default to `v2.18.0` (the base requirement)
-- Attributes without `@since:` markers don't show version information
-- Special resources have hardcoded defaults:
-  - `coder_devcontainer`: v2.21.0
-  - `coder_ai_task`: v2.24.0
+- **Add @since: markers** for resources introduced after Coder v2.0
+- **Add @since: markers** for attributes added to existing resources
+- **Don't add markers** for resources that existed before Coder v2.0
+- Resources and attributes without `@since:` markers won't show version information
 
 ## Best Practices
 
