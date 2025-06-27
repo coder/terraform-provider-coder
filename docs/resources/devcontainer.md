@@ -11,6 +11,8 @@ description: |-
 
 Define a Dev Container the agent should know of and attempt to autostart.
 
+~> **Note:** This resource requires [Coder v2.21.0](https://github.com/coder/coder/releases/tag/v2.21.0) or later.
+
 -> This resource is only available in Coder v2.21 and later.
 
 

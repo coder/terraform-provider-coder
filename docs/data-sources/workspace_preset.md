@@ -10,6 +10,8 @@ description: |-
 
 Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.
 
+~> **Note:** This data source requires [Coder v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
+
 ## Example Usage
 
 ```terraform

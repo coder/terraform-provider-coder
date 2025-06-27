@@ -14,6 +14,20 @@ Terraform provider for managing Coder [templates](https://coder.com/docs/admin/t
 
 !> [`coder_git_auth`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/git_auth) and owner related fields of [`coder_workspace`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/workspace) data source have been removed. Follow the [Version 2 Upgrade Guide](https://registry.terraform.io/providers/coder/coder/latest/docs/guides/version-2-upgrade) to update your code.
 
+## Version Compatibility
+
+The following table shows the minimum Coder version required for each terraform-provider-coder release:
+
+| Provider Version | Minimum Coder Version | Key Features |
+|------------------|-----------------------|--------------|
+| v2.8.0+ | [v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) | Default preset support |
+| v2.7.0+ | [v2.24.0](https://github.com/coder/coder/releases/tag/v2.24.0) | AI task resource |
+| v2.6.0+ | [v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) | Scheduling configuration for prebuilds |
+| v2.5.0+ | [v2.21.0](https://github.com/coder/coder/releases/tag/v2.21.0) | Devcontainer support |
+| v2.0.0+ | [v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) | Base requirement for v2 provider |
+
+~> **Note:** Individual resources may have higher version requirements. Check the documentation for each resource to see its specific minimum Coder version.
+
 ## Example
 
 ```terraform

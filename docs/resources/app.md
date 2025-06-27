@@ -10,6 +10,8 @@ description: |-
 
 Use this resource to define shortcuts to access applications in a workspace.
 
+~> **Note:** This resource requires [Coder v2.18.0](https://github.com/coder/coder/releases/tag/v2.18.0) or later.
+
 ## Example Usage
 
 ```terraform
