@@ -22,7 +22,7 @@ resource "coder_agent" "dev" {
 }
 
 resource "coder_script" "dotfiles" {
-  agent_id     = coder_agent.dev.agent_id
+  agent_id     = coder_agent.dev.id
   display_name = "Dotfiles"
   icon         = "/icon/dotfiles.svg"
   run_on_start = true
@@ -33,7 +33,7 @@ resource "coder_script" "dotfiles" {
 }
 
 resource "coder_script" "code-server" {
-  agent_id           = coder_agent.dev.agent_id
+  agent_id           = coder_agent.dev.id
   display_name       = "code-server"
   icon               = "/icon/code.svg"
   run_on_start       = true
@@ -44,7 +44,7 @@ resource "coder_script" "code-server" {
 }
 
 resource "coder_script" "nightly_update" {
-  agent_id     = coder_agent.dev.agent_id
+  agent_id     = coder_agent.dev.id
   display_name = "Nightly update"
   icon         = "/icon/database.svg"
   cron         = "0 0 22 * * *" # Run at 22:00 (10 PM) every day
@@ -56,7 +56,7 @@ resource "coder_script" "nightly_update" {
 }
 
 resource "coder_script" "every_5_minutes" {
-  agent_id     = coder_agent.dev.agent_id
+  agent_id     = coder_agent.dev.id
   display_name = "Health check"
   icon         = "/icon/heart.svg"
   cron         = "0 */5 * * * *" # Run every 5 minutes
