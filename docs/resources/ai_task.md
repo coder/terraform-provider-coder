@@ -3,7 +3,7 @@
 page_title: "coder_ai_task Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to define Coder tasks.
+ Use this resource to define Coder tasks.
 ---
 
 # coder_ai_task (Resource)
