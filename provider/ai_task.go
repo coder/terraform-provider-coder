@@ -25,7 +25,7 @@ func aiTask() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-                Description: "Use this resource to define Coder tasks. @since:v2.24.0",
+                Description: "Use this resource to define Coder tasks.",
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i any) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
 			return nil

@@ -3,14 +3,12 @@
 page_title: "coder_workspace_preset Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace. @since:v2.8.0
+  Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.
 ---
 
 # coder_workspace_preset (Data Source)
 
-Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace. @since:v2.8.0
-
-~> **Note:** This data source requires [Coder v2.8.0](https://github.com/coder/coder/releases/tag/v2.8.0) or later.
+Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.
 
 ## Example Usage
 
