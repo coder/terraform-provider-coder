@@ -28,15 +28,26 @@ resource "coder_script" "code-server" {
   })
 }
 
-resource "coder_script" "nightly_sleep_reminder" {
+resource "coder_script" "nightly_update" {
   agent_id     = coder_agent.dev.agent_id
   display_name = "Nightly update"
   icon         = "/icon/database.svg"
-  cron         = "0 22 * * *"
+  cron         = "0 0 22 * * *" # Run at 22:00 (10 PM) every day
   script       = <<EOF
     #!/bin/sh
     echo "Running nightly update"
-    sudo apt-get install
+    sudo apt-get update
+  EOF
+}
+
+resource "coder_script" "every_5_minutes" {
+  agent_id     = coder_agent.dev.agent_id
+  display_name = "Health check"
+  icon         = "/icon/heart.svg"
+  cron         = "0 */5 * * * *" # Run every 5 minutes
+  script       = <<EOF
+    #!/bin/sh
+    echo "Health check at $(date)"
   EOF
 }
 
