@@ -3,12 +3,12 @@
 page_title: "coder_devcontainer Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Define a Dev Container the agent should know of and attempt to autostart. @minCoderVersion:v2.21.0
+  Define a Dev Container the agent should know of and attempt to autostart. @since:v2.21.0
 ---
 
 # coder_devcontainer (Resource)
 
-Define a Dev Container the agent should know of and attempt to autostart. @minCoderVersion:v2.21.0
+Define a Dev Container the agent should know of and attempt to autostart. @since:v2.21.0
 
 ~> **Note:** This resource requires [Coder v2.21.0](https://github.com/coder/coder/releases/tag/v2.21.0) or later.
 

@@ -23,10 +23,10 @@ const docsDir = "docs" // FIXME expose as flag?
 
 var (
 	reDeprecatedProperty = regexp.MustCompile("`([^`]+)` \\(([^,\\)]+), Deprecated\\) ([^\n]+)")
-	// Pattern to extract version info from descriptions: @minCoderVersion:v2.16.0 or @since:v2.16.0
-	reVersionPattern = regexp.MustCompile(`@(?:minCoderVersion|since):(v\d+\.\d+\.\d+)`)
+	// Pattern to extract version info from descriptions: @since:v2.16.0
+	reVersionPattern = regexp.MustCompile(`@since:(v\d+\.\d+\.\d+)`)
 	// Pattern to find existing version info in descriptions (to clean up)
-	reExistingVersionInfo = regexp.MustCompile(`\s*\(@(?:minCoderVersion|since):[^)]+\)|\s*\(minimum Coder version:[^)]+\)`)
+	reExistingVersionInfo = regexp.MustCompile(`\s*\(@since:[^)]+\)|\s*\(minimum Coder version:[^)]+\)`)
 )
 
 func main() {

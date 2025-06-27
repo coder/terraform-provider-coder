@@ -1,14 +1,8 @@
 package provider
 
-// VersionMeta provides utilities for managing version metadata in resources.
+// VersionMeta provides utilities and constants for managing version metadata in resources.
 // Resources and attributes can specify their minimum Coder version requirements
-// using these utilities.
-
-// MinCoderVersion is a helper function that returns a formatted version string
-// for use in resource descriptions. This ensures consistent formatting.
-func MinCoderVersion(version string) string {
-	return "@minCoderVersion:" + version
-}
+// using the @since: marker in their descriptions.
 
 // Common version constants for frequently used versions
 const (
