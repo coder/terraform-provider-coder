@@ -65,7 +65,7 @@ resource "coder_app" "vim" {
 - `external` (Boolean) Specifies whether `url` is opened on the client machine instead of proxied through the workspace.
 - `group` (String) The name of a group that this app belongs to.
 - `healthcheck` (Block Set, Max: 1) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
-- `hidden` (Boolean) Determines if the app is visible in the UI. *(since v2.16.0)*
+- `hidden` (Boolean) Determines if the app is visible in the UI.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
 - `open_in` (String) Determines where the app will be opened. Valid values are `"tab"` and `"slim-window" (default)`. `"tab"` opens in a new tab in the same browser window. `"slim-window"` opens a new browser window without navigation controls.
 - `order` (Number) The order determines the position of app in the UI presentation. The lowest order is shown first and apps with equal order are sorted by name (ascending order).
