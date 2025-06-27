@@ -110,10 +110,12 @@ func writeDeprecationMessage(doc []byte, schemas map[string]*schema.Schema) []by
 func cleanVersionMarkers(doc []byte) []byte {
 	// Remove @since:vX.Y.Z patterns from the documentation
 	result := reVersionPattern.ReplaceAll(doc, []byte(""))
-	// Clean up any extra spaces that might be left
-	result = regexp.MustCompile(`\s+`).ReplaceAll(result, []byte(" "))
+	// Clean up any double spaces that might be left after removing @since markers
+	result = regexp.MustCompile(`  +`).ReplaceAll(result, []byte(" "))
 	// Clean up trailing spaces at end of lines
-	result = regexp.MustCompile(` +\n`).ReplaceAll(result, []byte("\n"))
+	result = regexp.MustCompile(` +$`).ReplaceAllFunc(result, func(m []byte) []byte {
+		return []byte{}
+	})
 	return result
 }
 
