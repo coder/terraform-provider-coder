@@ -80,6 +80,9 @@ func adjustDocFile(docPath string, schemas map[string]*schema.Schema) error {
 	}
 
 	result := writeDeprecationMessage(doc, schemas)
+	
+	// Clean @since markers from the final documentation
+	result = cleanVersionMarkers(result)
 
 	err = os.WriteFile(docPath, result, 0644)
 	if err != nil {
@@ -101,6 +104,17 @@ func writeDeprecationMessage(doc []byte, schemas map[string]*schema.Schema) []by
 		}
 		return bytes.Replace(m, []byte("Deprecated"), []byte(fmt.Sprintf("**Deprecated**: %s", sch.Deprecated)), 1)
 	})
+}
+
+// cleanVersionMarkers removes @since markers from the documentation
+func cleanVersionMarkers(doc []byte) []byte {
+	// Remove @since:vX.Y.Z patterns from the documentation
+	result := reVersionPattern.ReplaceAll(doc, []byte(""))
+	// Clean up any extra spaces that might be left
+	result = regexp.MustCompile(`\s+`).ReplaceAll(result, []byte(" "))
+	// Clean up trailing spaces at end of lines
+	result = regexp.MustCompile(` +\n`).ReplaceAll(result, []byte("\n"))
+	return result
 }
 
 func processVersionInformation(p *schema.Provider) error {
@@ -274,7 +288,9 @@ func processAttributeVersions(docPath string, schemas map[string]*schema.Schema)
 	}
 	
 	if modified {
-		err = os.WriteFile(docPath, []byte(docStr), 0644)
+		// Clean any remaining @since markers from the final document
+		cleanedDoc := cleanVersionMarkers([]byte(docStr))
+		err = os.WriteFile(docPath, cleanedDoc, 0644)
 		if err != nil {
 			return xerrors.Errorf("can't write modified doc file: %w", err)
 		}
