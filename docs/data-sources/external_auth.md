@@ -39,4 +39,4 @@ data "coder_external_auth" "azure-identity" {
 
 ### Read-Only
 
-- `access_token` (String) The access token returned by the external auth provider. This can be used to pre-authenticate command-line tools.
+- `access_token` (String, Sensitive) The access token returned by the external auth provider. This can be used to pre-authenticate command-line tools.
