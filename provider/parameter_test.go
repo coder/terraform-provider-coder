@@ -227,23 +227,19 @@ func TestParameter(t *testing.T) {
 			data "coder_parameter" "region" {
 				name = "Region"
 				type = "string"
-				default = "2"
+				default = "1"
 				option {
 					name = "1"
 					value = "1"
 					icon = "/icon/code.svg"
 					description = "Something!"
 				}
-				option {
-					name = "2"
-					value = "2"
-				}
 			}
 			`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
 				"name":                 "Region",
-				"option.#":             "2",
+				"option.#":             "1",
 				"option.0.name":        "1",
 				"option.0.value":       "1",
 				"option.0.icon":        "/icon/code.svg",
@@ -665,7 +661,33 @@ data "coder_parameter" "region" {
 			}
 			`,
 		ExpectError: regexp.MustCompile("ephemeral parameter requires the default property"),
-	}} {
+	}, {
+		Name: "InvalidIconURL",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				icon = "/icon%.svg"
+			}
+			`,
+		ExpectError: regexp.MustCompile("invalid URL escape"),
+	}, {
+		Name: "OptionInvalidIconURL",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				option {
+					name = "1"
+					value = "1"
+					icon = "/icon%.svg"
+					description = "Something!"
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("invalid URL escape"),
+	},
+	} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
