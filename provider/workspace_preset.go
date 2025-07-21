@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -18,9 +19,11 @@ import (
 var PrebuildsCRONParser = rbcron.NewParser(rbcron.Minute | rbcron.Hour | rbcron.Dom | rbcron.Month | rbcron.Dow)
 
 type WorkspacePreset struct {
-	Name       string            `mapstructure:"name"`
-	Default    bool              `mapstructure:"default"`
-	Parameters map[string]string `mapstructure:"parameters"`
+	Name        string            `mapstructure:"name"`
+	Description string            `mapstructure:"description"`
+	Icon        string            `mapstructure:"icon"`
+	Default     bool              `mapstructure:"default"`
+	Parameters  map[string]string `mapstructure:"parameters"`
 	// There should always be only one prebuild block, but Terraform's type system
 	// still parses them as a slice, so we need to handle it as such. We could use
 	// an anonymous type and rd.Get to avoid a slice here, but that would not be possible
@@ -92,6 +95,29 @@ func workspacePresetDataSource() *schema.Resource {
 				Description:  "The name of the workspace preset.",
 				Required:     true,
 				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Describe what this preset does.",
+			},
+			"icon": {
+				Type: schema.TypeString,
+				Description: "A URL to an icon that will display in the dashboard. View built-in " +
+					"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
+					"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
+				ForceNew: true,
+				Optional: true,
+				ValidateFunc: func(value interface{}, label string) ([]string, []error) {
+					val, ok := value.(string)
+					if !ok {
+						return nil, []error{fmt.Errorf("expected %q to be a string", label)}
+					}
+					if _, err := url.Parse(val); err != nil {
+						return nil, []error{err}
+					}
+					return nil, nil
+				},
 			},
 			"default": {
 				Type:        schema.TypeBool,

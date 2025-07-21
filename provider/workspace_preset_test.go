@@ -23,6 +23,11 @@ func TestWorkspacePreset(t *testing.T) {
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
 				name = "preset_1"
+				description = <<-EOT
+					# Select the machine image
+					See the [registry](https://container.registry.blah/namespace) for options.
+					EOT
+				icon = "/icon/region.svg"
 				parameters = {
 					"region" = "us-east1-a"
 				}
@@ -34,6 +39,8 @@ func TestWorkspacePreset(t *testing.T) {
 				require.NotNil(t, resource)
 				attrs := resource.Primary.Attributes
 				require.Equal(t, attrs["name"], "preset_1")
+				require.Equal(t, attrs["description"], "# Select the machine image\nSee the [registry](https://container.registry.blah/namespace) for options.\n")
+				require.Equal(t, attrs["icon"], "/icon/region.svg")
 				require.Equal(t, attrs["parameters.region"], "us-east1-a")
 				return nil
 			},
@@ -75,6 +82,48 @@ func TestWorkspacePreset(t *testing.T) {
 			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
 			// So we test it here to make sure we don't regress.
 			ExpectError: regexp.MustCompile("Incorrect attribute value type"),
+		},
+		{
+			Name: "Description field is empty",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				description = ""
+				parameters = {
+					"region" = "us-east1-a"
+				}
+			}`,
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
+			ExpectError: nil,
+		},
+		{
+			Name: "Icon field is empty",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				icon = ""
+				parameters = {
+					"region" = "us-east1-a"
+				}
+			}`,
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
+			ExpectError: nil,
+		},
+		{
+			Name: "Icon field is an invalid URL",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				icon = "/icon%.svg"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+			}`,
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
+			ExpectError: regexp.MustCompile("invalid URL escape"),
 		},
 		{
 			Name: "Parameters field is not provided",
