@@ -150,7 +150,7 @@ data "coder_parameter" "home_volume_size" {
 - `mutable` (Boolean) Whether this value can be changed after workspace creation. This can be destructive for values like region, so use with caution!
 - `option` (Block List) Each `option` block defines a value for a user to select from. (see [below for nested schema](#nestedblock--option))
 - `order` (Number) The order determines the position of a template parameter in the UI/CLI presentation. The lowest order is shown first and parameters with equal order are sorted by name (ascending order).
-- `styling` (String) JSON encoded string containing the metadata for controlling the appearance of this parameter in the UI. This option is purely cosmetic and does not affect the function of the parameter in terraform.
+- `styling` (String) JSON encoded string containing the metadata for controlling the appearance of this parameter in the UI. This option is purely cosmetic and does not affect the function of the parameter in terraform. See [styling options documentation](https://coder.com/docs/admin/templates/extending-templates/dynamic-parameters#available-styling-options) for available styling attributes.
 - `type` (String) The type of this parameter. Must be one of: `"string"`, `"number"`, `"bool"`, `"list(string)"`.
 - `validation` (Block List, Max: 1) Validate the input of a parameter. (see [below for nested schema](#nestedblock--validation))
 

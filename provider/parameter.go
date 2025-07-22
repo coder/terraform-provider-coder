@@ -205,7 +205,8 @@ func parameterDataSource() *schema.Resource {
 				Type:    schema.TypeString,
 				Default: `{}`,
 				Description: "JSON encoded string containing the metadata for controlling the appearance of this parameter in the UI. " +
-					"This option is purely cosmetic and does not affect the function of the parameter in terraform.",
+					"This option is purely cosmetic and does not affect the function of the parameter in terraform. " +
+					"See [styling options documentation](https://coder.com/docs/admin/templates/extending-templates/dynamic-parameters#available-styling-options) for available styling attributes.",
 				Optional: true,
 			},
 			"mutable": {
