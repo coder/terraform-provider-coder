@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 	"net/url"
 	"reflect"
 	"strings"
@@ -11,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/xerrors"
+
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 )
 
 type config struct {

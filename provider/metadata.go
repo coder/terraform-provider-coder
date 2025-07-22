@@ -2,11 +2,13 @@ package provider
 
 import (
 	"context"
-	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
+
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/xerrors"
+
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 )
 
 func metadataResource() *schema.Resource {

@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 	"os"
 	"regexp"
 	"strconv"
@@ -19,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/xerrors"
+
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 )
 
 var (

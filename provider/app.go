@@ -2,13 +2,14 @@ package provider
 
 import (
 	"context"
-	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 )
 
 var (
