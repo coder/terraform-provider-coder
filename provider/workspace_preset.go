@@ -96,18 +96,22 @@ func workspacePresetDataSource() *schema.Resource {
 				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"description": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "Describe what this preset does.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "Describe what this preset does.",
+				ValidateFunc: validation.StringLenBetween(0, 128),
 			},
 			"icon": {
 				Type: schema.TypeString,
 				Description: "A URL to an icon that will display in the dashboard. View built-in " +
 					"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
 					"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
-				ForceNew:     true,
-				Optional:     true,
-				ValidateFunc: helpers.ValidateURL,
+				ForceNew: true,
+				Optional: true,
+				ValidateFunc: validation.All(
+					helpers.ValidateURL,
+					validation.StringLenBetween(0, 256),
+				),
 			},
 			"default": {
 				Type:        schema.TypeBool,

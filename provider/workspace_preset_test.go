@@ -98,6 +98,20 @@ func TestWorkspacePreset(t *testing.T) {
 			ExpectError: nil,
 		},
 		{
+			Name: "Description field exceeds maximum supported length (128 characters)",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur vehicula leo sit amet mi laoreet, sed ornare velit tincidunt. Proin gravida lacinia blandit."
+				parameters = {
+					"region" = "us-east1-a"
+				}
+			}`,
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
+			ExpectError: regexp.MustCompile(`expected length of description to be in the range \(0 - 128\)`),
+		},
+		{
 			Name: "Icon field is empty",
 			Config: `
 			data "coder_workspace_preset" "preset_1" {
@@ -124,6 +138,20 @@ func TestWorkspacePreset(t *testing.T) {
 			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
 			// So we test it here to make sure we don't regress.
 			ExpectError: regexp.MustCompile("invalid URL escape"),
+		},
+		{
+			Name: "Icon field exceeds maximum supported length (256 characters)",
+			Config: `
+			data "coder_workspace_preset" "preset_1" {
+				name = "preset_1"
+				icon = "https://example.com/path/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.svg"
+				parameters = {
+					"region" = "us-east1-a"
+				}
+			}`,
+			// This validation is done by Terraform, but it could still break if we misconfigure the schema.
+			// So we test it here to make sure we don't regress.
+			ExpectError: regexp.MustCompile(`expected length of icon to be in the range \(0 - 256\)`),
 		},
 		{
 			Name: "Parameters field is not provided",
