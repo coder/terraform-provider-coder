@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"golang.org/x/xerrors"
+
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 )
 
 type config struct {
@@ -26,14 +28,8 @@ func New() *schema.Provider {
 				Optional:    true,
 				// The "CODER_AGENT_URL" environment variable is used by default
 				// as the Access URL when generating scripts.
-				DefaultFunc: schema.EnvDefaultFunc("CODER_AGENT_URL", "https://mydeployment.coder.com"),
-				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
-					_, err := url.Parse(s)
-					if err != nil {
-						return nil, []error{err}
-					}
-					return nil, nil
-				},
+				DefaultFunc:  schema.EnvDefaultFunc("CODER_AGENT_URL", "https://mydeployment.coder.com"),
+				ValidateFunc: helpers.ValidateURL,
 			},
 		},
 		ConfigureContextFunc: func(c context.Context, resourceData *schema.ResourceData) (interface{}, diag.Diagnostics) {

@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -19,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/mitchellh/mapstructure"
 	"golang.org/x/xerrors"
+
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 )
 
 var (
@@ -223,15 +224,9 @@ func parameterDataSource() *schema.Resource {
 				Description: "A URL to an icon that will display in the dashboard. View built-in " +
 					"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
 					"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
-				ForceNew: true,
-				Optional: true,
-				ValidateFunc: func(i interface{}, s string) ([]string, []error) {
-					_, err := url.Parse(s)
-					if err != nil {
-						return nil, []error{err}
-					}
-					return nil, nil
-				},
+				ForceNew:     true,
+				Optional:     true,
+				ValidateFunc: helpers.ValidateURL,
 			},
 			"option": {
 				Type:        schema.TypeList,
@@ -263,15 +258,9 @@ func parameterDataSource() *schema.Resource {
 							Description: "A URL to an icon that will display in the dashboard. View built-in " +
 								"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
 								"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
-							ForceNew: true,
-							Optional: true,
-							ValidateFunc: func(i interface{}, s string) ([]string, []error) {
-								_, err := url.Parse(s)
-								if err != nil {
-									return nil, []error{err}
-								}
-								return nil, nil
-							},
+							ForceNew:     true,
+							Optional:     true,
+							ValidateFunc: helpers.ValidateURL,
 						},
 					},
 				},

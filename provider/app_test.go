@@ -478,4 +478,61 @@ func TestApp(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("Icon", func(t *testing.T) {
+		t.Parallel()
+
+		cases := []struct {
+			name        string
+			icon        string
+			expectError *regexp.Regexp
+		}{
+			{
+				name: "Empty",
+				icon: "",
+			},
+			{
+				name: "ValidURL",
+				icon: "/icon/region.svg",
+			},
+			{
+				name:        "InvalidURL",
+				icon:        "/icon%.svg",
+				expectError: regexp.MustCompile("invalid URL escape"),
+			},
+		}
+
+		for _, c := range cases {
+			c := c
+
+			t.Run(c.name, func(t *testing.T) {
+				t.Parallel()
+
+				config := fmt.Sprintf(`
+				provider "coder" {}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "code-server" {
+					agent_id = coder_agent.dev.id
+					slug = "code-server"
+					display_name = "Testing"
+					url = "http://localhost:13337"
+					open_in = "slim-window"
+					icon = "%s"
+				}
+				`, c.icon)
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      config,
+						ExpectError: c.expectError,
+					}},
+				})
+			})
+		}
+	})
 }
