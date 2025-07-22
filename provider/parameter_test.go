@@ -665,7 +665,33 @@ data "coder_parameter" "region" {
 			}
 			`,
 		ExpectError: regexp.MustCompile("ephemeral parameter requires the default property"),
-	}} {
+	}, {
+		Name: "InvalidIconURL",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				icon = "/icon%.svg"
+			}
+			`,
+		ExpectError: regexp.MustCompile("invalid URL escape"),
+	}, {
+		Name: "OptionInvalidIconURL",
+		Config: `
+			data "coder_parameter" "region" {
+				name = "Region"
+				type = "string"
+				option {
+					name = "1"
+					value = "1"
+					icon = "/icon%.svg"
+					description = "Something!"
+				}
+			}
+			`,
+		ExpectError: regexp.MustCompile("invalid URL escape"),
+	},
+	} {
 		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()

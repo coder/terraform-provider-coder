@@ -2,13 +2,14 @@ package provider
 
 import (
 	"context"
-	"net/url"
 	"regexp"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/coder/terraform-provider-coder/v2/provider/helpers"
 )
 
 var (
@@ -93,15 +94,9 @@ func appResource() *schema.Resource {
 				Description: "A URL to an icon that will display in the dashboard. View built-in " +
 					"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
 					"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
-				ForceNew: true,
-				Optional: true,
-				ValidateFunc: func(i any, s string) ([]string, []error) {
-					_, err := url.Parse(s)
-					if err != nil {
-						return nil, []error{err}
-					}
-					return nil, nil
-				},
+				ForceNew:     true,
+				Optional:     true,
+				ValidateFunc: helpers.ValidateURL,
 			},
 			"slug": {
 				Type: schema.TypeString,
