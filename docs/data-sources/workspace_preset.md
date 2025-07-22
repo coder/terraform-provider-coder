@@ -21,7 +21,9 @@ provider "coder" {}
 # See the coder_parameter data source's documentation for examples of how to define
 # parameters like the ones used below.
 data "coder_workspace_preset" "example" {
-  name = "example"
+  name        = "example"
+  description = "Example description of what this preset does."
+  icon        = "/icon/example.svg"
   parameters = {
     (data.coder_parameter.example.name) = "us-central1-a"
     (data.coder_parameter.ami.name)     = "ami-xxxxxxxx"
@@ -30,8 +32,10 @@ data "coder_workspace_preset" "example" {
 
 # Example of a default preset that will be pre-selected for users
 data "coder_workspace_preset" "standard" {
-  name    = "Standard"
-  default = true
+  name        = "Standard"
+  description = "A workspace preset with medium compute in the US West region."
+  icon        = "/icon/standard.svg"
+  default     = true
   parameters = {
     (data.coder_parameter.instance_type.name) = "t3.medium"
     (data.coder_parameter.region.name)        = "us-west-2"
@@ -49,6 +53,8 @@ data "coder_workspace_preset" "standard" {
 ### Optional
 
 - `default` (Boolean) Whether this preset should be selected by default when creating a workspace. Only one preset per template can be marked as default.
+- `description` (String) Describe what this preset does.
+- `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
 - `parameters` (Map of String) Workspace parameters that will be set by the workspace preset. For simple templates that only need prebuilds, you may define a preset with zero parameters. Because workspace parameters may change between Coder template versions, preset parameters are allowed to define values for parameters that do not exist in the current template version.
 - `prebuilds` (Block Set, Max: 1) Configuration for prebuilt workspaces associated with this preset. Coder will maintain a pool of standby workspaces based on this configuration. When a user creates a workspace using this preset, they are assigned a prebuilt workspace instead of waiting for a new one to build. See prebuilt workspace documentation [here](https://coder.com/docs/admin/templates/extending-templates/prebuilt-workspaces.md) (see [below for nested schema](#nestedblock--prebuilds))
 
