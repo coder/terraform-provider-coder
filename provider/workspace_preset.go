@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strings"
 	"time"
 
@@ -106,18 +105,9 @@ func workspacePresetDataSource() *schema.Resource {
 				Description: "A URL to an icon that will display in the dashboard. View built-in " +
 					"icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a " +
 					"built-in icon with `\"${data.coder_workspace.me.access_url}/icon/<path>\"`.",
-				ForceNew: true,
-				Optional: true,
-				ValidateFunc: func(value interface{}, label string) ([]string, []error) {
-					val, ok := value.(string)
-					if !ok {
-						return nil, []error{fmt.Errorf("expected %q to be a string", label)}
-					}
-					if _, err := url.Parse(val); err != nil {
-						return nil, []error{err}
-					}
-					return nil, nil
-				},
+				ForceNew:     true,
+				Optional:     true,
+				ValidateFunc: helpers.ValidateURL,
 			},
 			"default": {
 				Type:        schema.TypeBool,
