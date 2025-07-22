@@ -138,17 +138,14 @@ func TestValidateURL(t *testing.T) {
 			warnings, errors := ValidateURL(tt.value, tt.label)
 
 			if tt.expectError {
-				require.NotEmpty(t, errors, "expected an error but got none")
-
-				if tt.errorContains != "" {
-					require.Contains(t, errors[0].Error(), tt.errorContains)
-				}
+				require.Len(t, errors, 1, "expected an error but got none")
+				require.Contains(t, errors[0].Error(), tt.errorContains)
 			} else {
 				require.Empty(t, errors, "expected no errors but got: %v", errors)
 			}
 
 			// Should always return nil for warnings
-			require.Nil(t, warnings, "expected warnings to be nil, got %v", warnings)
+			require.Nil(t, warnings, "expected warnings to be nil but got: %v", warnings)
 		})
 	}
 }
