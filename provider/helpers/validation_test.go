@@ -1,8 +1,9 @@
 package helpers
 
 import (
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestValidateURL(t *testing.T) {
@@ -137,27 +138,17 @@ func TestValidateURL(t *testing.T) {
 			warnings, errors := ValidateURL(tt.value, tt.label)
 
 			if tt.expectError {
-				if len(errors) == 0 {
-					t.Errorf("expected an error but got none")
-					return
-				}
+				require.NotEmpty(t, errors, "expected an error but got none")
 
 				if tt.errorContains != "" {
-					errorStr := errors[0].Error()
-					if !strings.Contains(errorStr, tt.errorContains) {
-						t.Errorf("expected error to contain %q, got %q", tt.errorContains, errorStr)
-					}
+					require.Contains(t, errors[0].Error(), tt.errorContains)
 				}
 			} else {
-				if len(errors) > 0 {
-					t.Errorf("expected no errors but got: %v", errors)
-				}
-
-				// Should always return nil for warnings
-				if warnings != nil {
-					t.Errorf("expected warnings to be nil, got %v", warnings)
-				}
+				require.Empty(t, errors, "expected no errors but got: %v", errors)
 			}
+
+			// Should always return nil for warnings
+			require.Nil(t, warnings, "expected warnings to be nil, got %v", warnings)
 		})
 	}
 }
