@@ -227,19 +227,23 @@ func TestParameter(t *testing.T) {
 			data "coder_parameter" "region" {
 				name = "Region"
 				type = "string"
-				default = "1"
+				default = "2"
 				option {
 					name = "1"
 					value = "1"
 					icon = "/icon/code.svg"
 					description = "Something!"
 				}
+				option {
+					name = "2"
+					value = "2"
+				}
 			}
 			`,
 		Check: func(state *terraform.ResourceState) {
 			for key, expected := range map[string]string{
 				"name":                 "Region",
-				"option.#":             "1",
+				"option.#":             "2",
 				"option.0.name":        "1",
 				"option.0.value":       "1",
 				"option.0.icon":        "/icon/code.svg",
