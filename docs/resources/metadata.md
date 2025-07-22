@@ -3,8 +3,8 @@
 page_title: "coder_metadata Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard alongside the resource. The resource containing the agent, and it's metadata, will be shown by default.
-  Alternatively, to attach metadata to the agent, use a metadata block within a coder_agent resource.
+ Use this resource to attach metadata to a resource. They will be displayed in the Coder dashboard alongside the resource. The resource containing the agent, and it's metadata, will be shown by default.
+ Alternatively, to attach metadata to the agent, use a metadata block within a coder_agent resource.
 ---
 
 # coder_metadata (Resource)
@@ -20,40 +20,40 @@ data "coder_workspace" "me" {
 }
 
 resource "kubernetes_pod" "dev" {
-  count = data.coder_workspace.me.start_count
-  metadata {
-    name      = "k8s_example"
-    namespace = "example"
-  }
-  spec {
-    # Draw the rest of the pod!
-  }
+ count = data.coder_workspace.me.start_count
+ metadata {
+ name = "k8s_example"
+ namespace = "example"
+ }
+ spec {
+ # Draw the rest of the pod!
+ }
 }
 
 resource "tls_private_key" "example_key_pair" {
-  algorithm   = "ECDSA"
-  ecdsa_curve = "P256"
+ algorithm = "ECDSA"
+ ecdsa_curve = "P256"
 }
 
 resource "coder_metadata" "pod_info" {
-  count       = data.coder_workspace.me.start_count
-  resource_id = kubernetes_pod.dev[0].id
-  # (Enterprise-only) this resource consumes 200 quota units
-  daily_cost = 200
-  item {
-    key   = "description"
-    value = "This description will show up in the Coder dashboard."
-  }
-  item {
-    key   = "pod_uid"
-    value = kubernetes_pod.dev[0].uid
-  }
-  item {
-    key   = "public_key"
-    value = tls_private_key.example_key_pair.public_key_openssh
-    # The value of this item will be hidden from view by default
-    sensitive = true
-  }
+ count = data.coder_workspace.me.start_count
+ resource_id = kubernetes_pod.dev[0].id
+ # (Enterprise-only) this resource consumes 200 quota units
+ daily_cost = 200
+ item {
+ key = "description"
+ value = "This description will show up in the Coder dashboard."
+ }
+ item {
+ key = "pod_uid"
+ value = kubernetes_pod.dev[0].uid
+ }
+ item {
+ key = "public_key"
+ value = tls_private_key.example_key_pair.public_key_openssh
+ # The value of this item will be hidden from view by default
+ sensitive = true
+ }
 }
 ```
 

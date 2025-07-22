@@ -3,7 +3,7 @@
 page_title: "Coder Provider"
 subcategory: "Infrastructure"
 description: |-
-    Terraform provider for managing Coder templates, which are the underlying infrastructure for Coder workspaces.
+ Terraform provider for managing Coder templates, which are the underlying infrastructure for Coder workspaces.
 ---
 
 # Coder Provider
@@ -14,52 +14,58 @@ Terraform provider for managing Coder [templates](https://coder.com/docs/admin/t
 
 !> [`coder_git_auth`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/git_auth) and owner related fields of [`coder_workspace`](https://registry.terraform.io/providers/coder/coder/1.0.4/docs/data-sources/workspace) data source have been removed. Follow the [Version 2 Upgrade Guide](https://registry.terraform.io/providers/coder/coder/latest/docs/guides/version-2-upgrade) to update your code.
 
+## Version Compatibility
+
+This provider automatically documents version requirements for individual resources and features.
+
+~> **Note:** Individual resources may have higher version requirements. Check the documentation for each resource to see its specific minimum Coder version.
+
 ## Example
 
 ```terraform
 terraform {
-  required_providers {
-    coder = {
-      source = "coder/coder"
-    }
-  }
+ required_providers {
+ coder = {
+ source = "coder/coder"
+ }
+ }
 }
 
 provider "google" {
-  region = "us-central1"
+ region = "us-central1"
 }
 
 data "coder_workspace" "me" {}
 
 resource "coder_agent" "dev" {
-  arch = "amd64"
-  os   = "linux"
-  auth = "google-instance-identity"
+ arch = "amd64"
+ os = "linux"
+ auth = "google-instance-identity"
 }
 
 data "google_compute_default_service_account" "default" {}
 
 resource "google_compute_instance" "dev" {
-  zone         = "us-central1-a"
-  count        = data.coder_workspace.me.start_count
-  name         = "coder-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}"
-  machine_type = "e2-medium"
-  network_interface {
-    network = "default"
-    access_config {
-      // Ephemeral public IP
-    }
-  }
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-9"
-    }
-  }
-  service_account {
-    email  = data.google_compute_default_service_account.default.email
-    scopes = ["cloud-platform"]
-  }
-  metadata_startup_script = coder_agent.dev.init_script
+ zone = "us-central1-a"
+ count = data.coder_workspace.me.start_count
+ name = "coder-${data.coder_workspace.me.owner}-${data.coder_workspace.me.name}"
+ machine_type = "e2-medium"
+ network_interface {
+ network = "default"
+ access_config {
+ // Ephemeral public IP
+ }
+ }
+ boot_disk {
+ initialize_params {
+ image = "debian-cloud/debian-9"
+ }
+ }
+ service_account {
+ email = data.google_compute_default_service_account.default.email
+ scopes = ["cloud-platform"]
+ }
+ metadata_startup_script = coder_agent.dev.init_script
 }
 ```
 
