@@ -1,0 +1,32 @@
+package provider
+
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+func externalAgentResource() *schema.Resource {
+	return &schema.Resource{
+		SchemaVersion: 1,
+
+		Description: "Define an external agent to be used in a workspace.",
+		CreateContext: func(ctx context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
+			rd.SetId(uuid.NewString())
+			return nil
+		},
+		ReadContext:   schema.NoopContext,
+		DeleteContext: schema.NoopContext,
+		Schema: map[string]*schema.Schema{
+			"token": {
+				ForceNew:    true,
+				Required:    true,
+				Sensitive:   true,
+				Description: "Set the environment variable `CODER_AGENT_TOKEN` with this token to authenticate an agent.",
+				Type:        schema.TypeString,
+			},
+		},
+	}
+}
