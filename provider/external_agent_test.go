@@ -21,18 +21,26 @@ func TestExternalAgent(t *testing.T) {
 				Config: `
 				provider "coder" {
 				}
+
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
 				
-				resource "coder_external_agent" "main" {
-					token       = "token"
+				resource "coder_external_agent" "dev" {
+					agent_id = coder_agent.dev.id
 				}
 				`,
 				Check: func(state *terraform.State) error {
 					require.Len(t, state.Modules, 1)
-					resource := state.Modules[0].Resources["coder_external_agent.main"]
-					require.NotNil(t, resource)
-					value := resource.Primary.Attributes["token"]
-					require.NotNil(t, value)
-					require.Greater(t, len(value), 0)
+					require.Len(t, state.Modules[0].Resources, 2)
+
+					agentResource := state.Modules[0].Resources["coder_agent.dev"]
+					require.NotNil(t, agentResource)
+					externalAgentResource := state.Modules[0].Resources["coder_external_agent.dev"]
+					require.NotNil(t, externalAgentResource)
+
+					require.Equal(t, agentResource.Primary.Attributes["id"], externalAgentResource.Primary.Attributes["agent_id"])
 					return nil
 				},
 			}},

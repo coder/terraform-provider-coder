@@ -20,12 +20,11 @@ func externalAgentResource() *schema.Resource {
 		ReadContext:   schema.NoopContext,
 		DeleteContext: schema.NoopContext,
 		Schema: map[string]*schema.Schema{
-			"token": {
+			"agent_id": {
+				Type:        schema.TypeString,
+				Description: "The `id` property of a `coder_agent` resource to associate with.",
 				ForceNew:    true,
 				Required:    true,
-				Sensitive:   true,
-				Description: "Set the environment variable `CODER_AGENT_TOKEN` with this token to authenticate an agent.",
-				Type:        schema.TypeString,
 			},
 		},
 	}

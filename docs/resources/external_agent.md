@@ -17,7 +17,7 @@ Define an external agent to be used in a workspace.
 
 ### Required
 
-- `token` (String, Sensitive) Set the environment variable `CODER_AGENT_TOKEN` with this token to authenticate an agent.
+- `agent_id` (String) The `id` property of a `coder_agent` resource to associate with.
 
 ### Read-Only
 
