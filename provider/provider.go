@@ -74,6 +74,7 @@ func New() *schema.Provider {
 			"coder_script":         scriptResource(),
 			"coder_env":            envResource(),
 			"coder_devcontainer":   devcontainerResource(),
+			"coder_external_agent": externalAgentResource(),
 		},
 	}
 }
