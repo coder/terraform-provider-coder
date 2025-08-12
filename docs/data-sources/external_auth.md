@@ -21,7 +21,7 @@ data "coder_external_auth" "github" {
 }
 
 data "coder_external_auth" "azure-identity" {
-  id       = "azure-identiy"
+  id       = "azure-identity"
   optional = true
 }
 ```
