@@ -12,7 +12,7 @@ func externalAgentResource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Define an external agent to be used in a workspace.",
+		Description: "Define an external agent to be used in a workspace.\n\n~> **Warning:** External agents require a Premium Coder license. This feature is not available with the free tier.",
 		CreateContext: func(ctx context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 			return nil
