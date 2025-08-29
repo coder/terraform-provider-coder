@@ -31,6 +31,7 @@ resource "coder_app" "code-server" {
   display_name = "VS Code"
   icon         = "${data.coder_workspace.me.access_url}/icon/code.svg"
   url          = "http://localhost:13337"
+  tooltip      = "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop#install-coder-desktop) to use this button."
   share        = "owner"
   subdomain    = false
   open_in      = "window"
