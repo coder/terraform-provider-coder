@@ -44,6 +44,7 @@ func TestApp(t *testing.T) {
 					order = 4
 					hidden = false
 					open_in = "slim-window"
+					tooltip = "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop#install-coder-desktop) to use this button."
 				}
 				`,
 				Check: func(state *terraform.State) error {
@@ -68,6 +69,7 @@ func TestApp(t *testing.T) {
 						"order",
 						"hidden",
 						"open_in",
+						"tooltip",
 					} {
 						value := resource.Primary.Attributes[key]
 						t.Logf("%q = %q", key, value)
@@ -523,6 +525,78 @@ func TestApp(t *testing.T) {
 					icon = "%s"
 				}
 				`, c.icon)
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      config,
+						ExpectError: c.expectError,
+					}},
+				})
+			})
+		}
+	})
+
+	t.Run("Tooltip", func(t *testing.T) {
+		t.Parallel()
+
+		cases := []struct {
+			name        string
+			tooltip     string
+			expectError *regexp.Regexp
+		}{
+			{
+				name:    "Empty",
+				tooltip: "",
+			},
+			{
+				name: "ValidTooltip",
+				tooltip: "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop" +
+					"#install-coder-desktop) to use this button.",
+			},
+			{
+				name: "TooltipMaxLength", // < 512 characters
+				tooltip: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut" +
+					"labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco" +
+					"laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in" +
+					"voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat" +
+					"non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut" +
+					"perspiciatis unde omnis iste natus error sit voluptatem accusant",
+			},
+			{
+				name: "TooltipTooLong", // > 512 characters
+				tooltip: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor " +
+					"incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud " +
+					"exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor " +
+					"in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint " +
+					"occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. " +
+					"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque.",
+				expectError: regexp.MustCompile("tooltip is too long"),
+			},
+		}
+
+		for _, c := range cases {
+			c := c
+
+			t.Run(c.name, func(t *testing.T) {
+				t.Parallel()
+
+				config := fmt.Sprintf(`
+				provider "coder" {}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "code-server" {
+					agent_id = coder_agent.dev.id
+					slug = "code-server"
+					display_name = "Testing"
+					url = "http://localhost:13337"
+					open_in = "slim-window"
+					tooltip = "%s"
+				}
+				`, c.tooltip)
 
 				resource.Test(t, resource.TestCase{
 					ProviderFactories: coderFactory(),
