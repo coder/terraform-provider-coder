@@ -27,6 +27,7 @@ var (
 const (
 	appDisplayNameMaxLength = 64 // database column limit
 	appGroupNameMaxLength   = 64
+	appTooltipMaxLength     = 2048
 )
 
 func appResource() *schema.Resource {
@@ -271,6 +272,23 @@ func appResource() *schema.Resource {
 					}
 
 					return diag.Errorf(`invalid "coder_app" open_in value, must be one of "tab", "slim-window": %q`, valStr)
+				},
+			},
+			"tooltip": {
+				Type:        schema.TypeString,
+				Description: "Markdown text that is displayed when hovering over workspace apps.",
+				ForceNew:    true,
+				Optional:    true,
+				ValidateDiagFunc: func(val any, c cty.Path) diag.Diagnostics {
+					valStr, ok := val.(string)
+					if !ok {
+						return diag.Errorf("expected string, got %T", val)
+					}
+
+					if len(valStr) > appTooltipMaxLength {
+						return diag.Errorf("tooltip is too long (max %d characters)", appTooltipMaxLength)
+					}
+					return nil
 				},
 			},
 		},
