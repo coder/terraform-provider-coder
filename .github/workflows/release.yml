@@ -19,6 +19,9 @@ jobs:
     name: Run Integration Tests
     runs-on: ubuntu-latest
     steps:
+      - name: Check Go Versions
+        run: ./scripts/check_go_version.sh
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -76,6 +79,9 @@ jobs:
 
       - name: Unshallow
         run: git fetch --prune --unshallow
+
+      - name: Check Go Versions
+        run: ./scripts/check_go_version.sh
 
       - name: Set up Go
         uses: actions/setup-go@v5
