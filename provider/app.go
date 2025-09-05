@@ -27,7 +27,7 @@ var (
 const (
 	appDisplayNameMaxLength = 64 // database column limit
 	appGroupNameMaxLength   = 64
-	appTooltipMaxLength     = 512
+	appTooltipMaxLength     = 2048
 )
 
 func appResource() *schema.Resource {
@@ -276,7 +276,7 @@ func appResource() *schema.Resource {
 			},
 			"tooltip": {
 				Type:        schema.TypeString,
-				Description: "String with markdown support to display over the app icon in a workspace dashboard.",
+				Description: "Markdown text that is displayed when hovering over workspace apps.",
 				ForceNew:    true,
 				Optional:    true,
 				ValidateDiagFunc: func(val any, c cty.Path) diag.Diagnostics {
