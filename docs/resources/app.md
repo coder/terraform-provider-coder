@@ -31,6 +31,7 @@ resource "coder_app" "code-server" {
   display_name = "VS Code"
   icon         = "${data.coder_workspace.me.access_url}/icon/code.svg"
   url          = "http://localhost:13337"
+  tooltip      = "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop#install-coder-desktop) to use this button."
   share        = "owner"
   subdomain    = false
   open_in      = "window"
@@ -71,6 +72,7 @@ resource "coder_app" "vim" {
 - `order` (Number) The order determines the position of app in the UI presentation. The lowest order is shown first and apps with equal order are sorted by name (ascending order).
 - `share` (String) Determines the level which the application is shared at. Valid levels are `"owner"` (default), `"authenticated"` and `"public"`. Level `"owner"` disables sharing on the app, so only the workspace owner can access it. Level `"authenticated"` shares the app with all authenticated users. Level `"public"` shares it with any user, including unauthenticated users. Permitted application sharing levels can be configured site-wide via a flag on `coder server` (Enterprise only).
 - `subdomain` (Boolean) Determines whether the app will be accessed via it's own subdomain or whether it will be accessed via a path on Coder. If wildcards have not been setup by the administrator then apps with `subdomain` set to `true` will not be accessible. Defaults to `false`.
+- `tooltip` (String) Markdown text that is displayed when hovering over workspace apps.
 - `url` (String) An external url if `external=true` or a URL to be proxied to from inside the workspace. This should be of the form `http://localhost:PORT[/SUBPATH]`. Either `command` or `url` may be specified, but not both.
 
 ### Read-Only

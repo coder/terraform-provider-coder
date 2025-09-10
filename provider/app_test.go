@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -44,6 +45,7 @@ func TestApp(t *testing.T) {
 					order = 4
 					hidden = false
 					open_in = "slim-window"
+					tooltip = "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop#install-coder-desktop) to use this button."
 				}
 				`,
 				Check: func(state *terraform.State) error {
@@ -68,6 +70,7 @@ func TestApp(t *testing.T) {
 						"order",
 						"hidden",
 						"open_in",
+						"tooltip",
 					} {
 						value := resource.Primary.Attributes[key]
 						t.Logf("%q = %q", key, value)
@@ -523,6 +526,64 @@ func TestApp(t *testing.T) {
 					icon = "%s"
 				}
 				`, c.icon)
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      config,
+						ExpectError: c.expectError,
+					}},
+				})
+			})
+		}
+	})
+
+	t.Run("Tooltip", func(t *testing.T) {
+		t.Parallel()
+
+		cases := []struct {
+			name        string
+			tooltip     string
+			expectError *regexp.Regexp
+		}{
+			{
+				name:    "Empty",
+				tooltip: "",
+			},
+			{
+				name: "ValidTooltip",
+				tooltip: "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop" +
+					"#install-coder-desktop) to use this button.",
+			},
+			{
+				name:        "TooltipTooLong",
+				tooltip:     strings.Repeat("a", 2049),
+				expectError: regexp.MustCompile("tooltip is too long"),
+			},
+		}
+
+		for _, c := range cases {
+			c := c
+
+			t.Run(c.name, func(t *testing.T) {
+				t.Parallel()
+
+				config := fmt.Sprintf(`
+				provider "coder" {}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "code-server" {
+					agent_id = coder_agent.dev.id
+					slug = "code-server"
+					display_name = "Testing"
+					url = "http://localhost:13337"
+					open_in = "slim-window"
+					tooltip = "%s"
+				}
+				`, c.tooltip)
 
 				resource.Test(t, resource.TestCase{
 					ProviderFactories: coderFactory(),
