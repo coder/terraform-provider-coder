@@ -383,16 +383,28 @@ func agentResource() *schema.Resource {
 			}
 
 			if rd.HasChange("resources_monitoring") {
-				monitors, ok := rd.Get("resources_monitoring").(*schema.Set)
+				rmResource, ok := rd.Get("resources_monitoring").(*schema.Set)
 				if !ok {
-					return xerrors.Errorf("unexpected type %T for resources_monitoring.0.volume, expected []any", rd.Get("resources_monitoring.0.volume"))
+					return xerrors.Errorf("unexpected type %T for resources_monitoring, expected []any", rd.Get("resources_monitoring"))
 				}
 
-				monitor := monitors.List()[0].(map[string]any)
+				rmResourceAsList := rmResource.List()
+				if len(rmResourceAsList) == 0 {
+					return xerrors.Errorf("developer error: resources_monitoring cannot be empty")
+				}
+				rawMonitors := rmResourceAsList[0]
+				if rawMonitors == nil {
+					return xerrors.Errorf("resources_monitoring must define at least one monitor")
+				}
 
-				volumes, ok := monitor["volume"].(*schema.Set)
+				monitors, ok := rawMonitors.(map[string]any)
 				if !ok {
-					return xerrors.Errorf("unexpected type %T for resources_monitoring.0.volume, expected []any", monitor["volume"])
+					return xerrors.Errorf("unexpected type %T for resources_monitoring.0.volume, expected []any", rawMonitors)
+				}
+
+				volumes, ok := monitors["volume"].(*schema.Set)
+				if !ok {
+					return xerrors.Errorf("unexpected type %T for resources_monitoring.0.volume, expected []any", monitors["volume"])
 				}
 
 				paths := map[string]bool{}
@@ -403,7 +415,6 @@ func agentResource() *schema.Resource {
 					}
 
 					// print path for debug purpose
-
 					path, ok := obj["path"].(string)
 					if !ok {
 						return xerrors.Errorf("unexpected type %T for volume path, expected string", obj["path"])
