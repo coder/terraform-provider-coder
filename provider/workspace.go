@@ -98,7 +98,7 @@ func workspaceDataSource() *schema.Resource {
 			"access_url": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The access URL of the Coder deployment provisioning this workspace.",
+				Description: `The access URL of the Coder deployment provisioning this workspace. This is the base URL without a trailing slash (e.g., "https://coder.example.com" or "https://coder.example.com:8080").`,
 			},
 			"access_port": {
 				Type:        schema.TypeInt,
