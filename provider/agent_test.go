@@ -352,6 +352,26 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 		})
 	})
 
+	t.Run("MissingMonitors", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+					provider "coder" {
+						url = "https://example.com"
+					}
+					resource "coder_agent" "dev" {
+						os = "linux"
+						arch = "amd64"
+						resources_monitoring {}
+					}`,
+				Check:       nil,
+				ExpectError: regexp.MustCompile(`resources_monitoring must define at least one monitor`),
+			}},
+		})
+	})
+
 	t.Run("DuplicatePaths", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
 			ProviderFactories: coderFactory(),
