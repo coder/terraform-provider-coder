@@ -67,7 +67,7 @@ resource "docker_container" "workspace" {
 ### Read-Only
 
 - `access_port` (Number) The access port of the Coder deployment provisioning this workspace.
-- `access_url` (String) The access URL of the Coder deployment provisioning this workspace.
+- `access_url` (String) The access URL of the Coder deployment provisioning this workspace. This is the base URL without a trailing slash (e.g., "https://coder.example.com" or "https://coder.example.com:8080").
 - `id` (String) UUID of the workspace.
 - `is_prebuild` (Boolean) Similar to `prebuild_count`, but a boolean value instead of a count. This is set to true if the workspace is a currently unassigned prebuild. Once the workspace is assigned, this value will be false.
 - `is_prebuild_claim` (Boolean) Indicates whether a prebuilt workspace has just been claimed and this is the first `apply` after that occurrence.
