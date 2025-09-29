@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -31,7 +30,7 @@ func aiTaskResource() *schema.Resource {
 			if idStr := os.Getenv("CODER_TASK_ID"); idStr != "" {
 				resourceData.SetId(idStr)
 			} else {
-				resourceData.SetId(uuid.NewString())
+				return diag.Errorf("CODER_TASK_ID must be set")
 			}
 
 			if prompt := os.Getenv("CODER_TASK_PROMPT"); prompt != "" {
