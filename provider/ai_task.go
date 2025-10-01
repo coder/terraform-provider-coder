@@ -37,7 +37,7 @@ func aiTaskResource() *schema.Resource {
 
 				diags = append(diags, diag.Diagnostic{
 					Severity: diag.Warning,
-					Summary:  "`CODER_TASK_ID` should be set, this will be an error in the future",
+					Summary:  "`CODER_TASK_ID` should be set. If you are seeing this message, the version of the Coder Terraform provider you are using is likely too new for your current Coder version.",
 				})
 			}
 
