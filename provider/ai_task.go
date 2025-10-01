@@ -12,6 +12,8 @@ import (
 type AITask struct {
 	ID         string             `mapstructure:"id"`
 	SidebarApp []AITaskSidebarApp `mapstructure:"sidebar_app"`
+	Prompt     string             `mapstructure:"prompt"`
+	AppID      string             `mapstructure:"app_id"`
 }
 
 type AITaskSidebarApp struct {
