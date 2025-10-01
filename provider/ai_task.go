@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -27,10 +28,17 @@ func aiTaskResource() *schema.Resource {
 
 		Description: "Use this resource to define Coder tasks.",
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i any) diag.Diagnostics {
+			var diags diag.Diagnostics
+
 			if idStr := os.Getenv("CODER_TASK_ID"); idStr != "" {
 				resourceData.SetId(idStr)
 			} else {
-				return diag.Errorf("CODER_TASK_ID must be set")
+				resourceData.SetId(uuid.NewString())
+
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "`CODER_TASK_ID` should be set, this will be an error in the future",
+				})
 			}
 
 			if prompt := os.Getenv("CODER_TASK_PROMPT"); prompt != "" {
@@ -58,7 +66,7 @@ func aiTaskResource() *schema.Resource {
 				return diag.Errorf("'app_id' must be set")
 			}
 
-			return nil
+			return diags
 		},
 		ReadContext:   schema.NoopContext,
 		DeleteContext: schema.NoopContext,
