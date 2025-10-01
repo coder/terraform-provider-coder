@@ -17,7 +17,7 @@ Use this resource to define Coder tasks.
 
 ### Optional
 
-- `app_id` (String) The ID of the coder_app resource that provides the AI interface for this task.
+- `app_id` (String) The ID of the `coder_app` resource that provides the AI interface for this task.
 - `sidebar_app` (Block Set, Max: 1, Deprecated) The coder_app to display in the sidebar. Usually a chat interface with the AI agent running in the workspace, like https://github.com/coder/agentapi. (see [below for nested schema](#nestedblock--sidebar_app))
 
 ### Read-Only

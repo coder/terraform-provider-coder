@@ -95,7 +95,7 @@ func aiTaskResource() *schema.Resource {
 			},
 			"app_id": {
 				Type:          schema.TypeString,
-				Description:   "The ID of the coder_app resource that provides the AI interface for this task.",
+				Description:   "The ID of the `coder_app` resource that provides the AI interface for this task.",
 				ForceNew:      true,
 				Optional:      true,
 				Computed:      true,
