@@ -211,6 +211,16 @@ func TestIntegration(t *testing.T) {
 				"coder_app.defaulted.hidden": "false",
 			},
 		},
+		{
+			name:       "coder-ai-task",
+			minVersion: "v2.26.0",
+			expectedOutput: map[string]string{
+				"ai_task.id":     `^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`,
+				"ai_task.prompt": "default",
+				"ai_task.app_id": `^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`,
+				"app.id":         `^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`,
+			},
+		},
 	} {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -218,6 +228,7 @@ func TestIntegration(t *testing.T) {
 			if coderVersion != "latest" && semver.Compare(coderVersion, tt.minVersion) < 0 {
 				t.Skipf("skipping due to CODER_VERSION %q < minVersion %q", coderVersion, tt.minVersion)
 			}
+
 			// Given: we have an existing Coder deployment running locally
 			// Import named template
 
