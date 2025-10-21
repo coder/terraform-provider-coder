@@ -103,6 +103,12 @@ func metadataResource() *schema.Resource {
 							ForceNew: true,
 							Computed: true,
 						},
+						"order": {
+							Type:        schema.TypeInt,
+							Description: "The order in which this item will be displayed relative to other items. Lower numbers appear first.",
+							ForceNew:    true,
+							Computed:    true,
+						},
 					},
 				},
 			},

@@ -30,6 +30,7 @@ func TestMetadata(t *testing.T) {
 					item {
 						key = "foo"
 						value = "bar"
+						order = 4
 					}
 					item {
 						key = "secret"
@@ -66,6 +67,7 @@ func TestMetadata(t *testing.T) {
 					"item.0.key":       "foo",
 					"item.0.value":     "bar",
 					"item.0.sensitive": "false",
+					"item.0.order":     "4",
 					"item.1.key":       "secret",
 					"item.1.value":     "squirrel",
 					"item.1.sensitive": "true",
