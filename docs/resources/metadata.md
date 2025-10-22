@@ -84,6 +84,7 @@ Required:
 
 Optional:
 
+- `order` (Number) The order determines the position of item in the UI presentation. The lowest order is shown first and items with equal order are sorted by key (ascending order).
 - `sensitive` (Boolean) Set to `true` to for items such as API keys whose values should be hidden from view by default. Note that this does not prevent metadata from being retrieved using the API, so it is not suitable for secrets that should not be exposed to workspace users.
 - `value` (String) The value of this metadata item. Supports basic Markdown, including hyperlinks.
 
