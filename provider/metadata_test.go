@@ -30,23 +30,26 @@ func TestMetadata(t *testing.T) {
 					item {
 						key = "foo"
 						value = "bar"
-						order = 4
 					}
 					item {
 						key = "secret"
 						value = "squirrel"
 						sensitive = true
+						order = 1
 					}
 					item {
 						key = "implicit_null"
+						order = 2
 					}
 					item {
 						key = "explicit_null"
 						value = null
+						order = 3
 					}
 					item {
 						key = "empty"
 						value = ""
+						order = 4
 					}
 				}
 				`,
@@ -67,20 +70,24 @@ func TestMetadata(t *testing.T) {
 					"item.0.key":       "foo",
 					"item.0.value":     "bar",
 					"item.0.sensitive": "false",
-					"item.0.order":     "4",
+					"item.0.order":     "0",
 					"item.1.key":       "secret",
 					"item.1.value":     "squirrel",
 					"item.1.sensitive": "true",
+					"item.1.order":     "1",
 					"item.2.key":       "implicit_null",
 					"item.2.is_null":   "true",
 					"item.2.sensitive": "false",
+					"item.2.order":     "2",
 					"item.3.key":       "explicit_null",
 					"item.3.is_null":   "true",
 					"item.3.sensitive": "false",
+					"item.3.order":     "3",
 					"item.4.key":       "empty",
 					"item.4.value":     "",
 					"item.4.is_null":   "false",
 					"item.4.sensitive": "false",
+					"item.4.order":     "4",
 				} {
 					require.Equal(t, expected, metadata.Primary.Attributes[key])
 				}

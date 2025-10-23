@@ -43,16 +43,19 @@ resource "coder_metadata" "pod_info" {
   item {
     key   = "description"
     value = "This description will show up in the Coder dashboard."
+    order = 1
   }
   item {
     key   = "pod_uid"
     value = kubernetes_pod.dev[0].uid
+    order = 2
   }
   item {
     key   = "public_key"
     value = tls_private_key.example_key_pair.public_key_openssh
     # The value of this item will be hidden from view by default
     sensitive = true
+    order     = 3
   }
 }
 ```
