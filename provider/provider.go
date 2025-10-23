@@ -100,11 +100,16 @@ func populateIsNull(resourceData *schema.ResourceData) (result interface{}, err 
 	var resultItems []interface{}
 	for _, item := range items {
 		key := valueAsString(item.GetAttr("key"))
+		order, err := valueAsInt(item.GetAttr("order"))
+		if err != nil {
+			return nil, xerrors.Errorf("unable to parse order for coder_metadata item %q: %w", key, err)
+		}
+
 		resultItem := map[string]interface{}{
 			"key":       key,
 			"value":     valueAsString(item.GetAttr("value")),
 			"sensitive": valueAsBool(item.GetAttr("sensitive")),
-			"order":     valueAsInt(item.GetAttr("order")),
+			"order":     order,
 		}
 		if item.GetAttr("value").IsNull() {
 			resultItem["is_null"] = true
@@ -134,13 +139,13 @@ func valueAsBool(value cty.Value) interface{} {
 	return value.True()
 }
 
-func valueAsInt(value cty.Value) interface{} {
+func valueAsInt(value cty.Value) (interface{}, error) {
 	if value.IsNull() {
-		return nil
+		return nil, nil
 	}
 	var valueAsInt int64
-	gocty.FromCtyValue(value, &valueAsInt)
-	return valueAsInt
+	err := gocty.FromCtyValue(value, &valueAsInt)
+	return valueAsInt, err
 }
 
 // errorAsDiagnostic transforms a Go error to a diag.Diagnostics object representing a fatal error.
