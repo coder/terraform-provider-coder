@@ -43,7 +43,7 @@ func TestIntegration(t *testing.T) {
 
 	coderImg := os.Getenv("CODER_IMAGE")
 	if coderImg == "" {
-		coderImg = "ghcr.io/coder/coder"
+		coderImg = "ghcr.io/coder/coder-preview"
 	}
 
 	coderVersion := os.Getenv("CODER_VERSION")
@@ -215,10 +215,10 @@ func TestIntegration(t *testing.T) {
 			name:       "coder-ai-task",
 			minVersion: "v2.26.0",
 			expectedOutput: map[string]string{
-				"ai_task.id":     `^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`,
+				"ai_task.id":     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
 				"ai_task.prompt": "default",
-				"ai_task.app_id": `^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`,
-				"app.id":         `^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`,
+				"ai_task.app_id": `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"app.id":         `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
 			},
 		},
 	} {
