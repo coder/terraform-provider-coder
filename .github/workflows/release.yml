@@ -28,7 +28,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.24.2"
+          go-version: "1.24.6"
         id: go
 
       - name: Get dependencies
@@ -86,7 +86,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.24.2"
+          go-version: "1.24.6"
 
       - name: Import GPG key
         id: import_gpg
