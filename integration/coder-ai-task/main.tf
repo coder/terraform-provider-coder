@@ -41,10 +41,11 @@ resource "coder_ai_task" "task" {
 locals {
   # NOTE: these must all be strings in the output
   output = {
-    "ai_task.id"     = coder_ai_task.task.id
-    "ai_task.app_id" = coder_ai_task.task.app_id
-    "ai_task.prompt" = coder_ai_task.task.prompt
-    "app.id"         = coder_app.ai_interface.id
+    "ai_task.id"      = coder_ai_task.task.id
+    "ai_task.app_id"  = coder_ai_task.task.app_id
+    "ai_task.prompt"  = coder_ai_task.task.prompt
+    "ai_task.enabled" = tostring(coder_ai_task.task.enabled)
+    "app.id"          = coder_app.ai_interface.id
   }
 }
 

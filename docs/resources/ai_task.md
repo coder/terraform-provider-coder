@@ -22,6 +22,7 @@ Use this resource to define Coder tasks.
 
 ### Read-Only
 
+- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context
 - `id` (String) A unique identifier for this resource.
 - `prompt` (String) The prompt text provided to the task by Coder.
 

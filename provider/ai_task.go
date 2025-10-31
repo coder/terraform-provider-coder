@@ -32,15 +32,12 @@ func aiTaskResource() *schema.Resource {
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i any) diag.Diagnostics {
 			var diags diag.Diagnostics
 
-			if idStr := os.Getenv("CODER_TASK_ID"); idStr != "" {
-				resourceData.SetId(idStr)
+			if id, err := uuid.Parse(os.Getenv("CODER_TASK_ID")); err == nil && id != uuid.Nil {
+				resourceData.SetId(id.String())
+				resourceData.Set("enabled", true)
 			} else {
 				resourceData.SetId(uuid.NewString())
-
-				diags = append(diags, diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "`CODER_TASK_ID` should be set. If you are seeing this message, the version of the Coder Terraform provider you are using is likely too new for your current Coder version.",
-				})
+				resourceData.Set("enabled", false)
 			}
 
 			if prompt := os.Getenv("CODER_TASK_PROMPT"); prompt != "" {
@@ -109,6 +106,11 @@ func aiTaskResource() *schema.Resource {
 				Computed:      true,
 				ValidateFunc:  validation.IsUUID,
 				ConflictsWith: []string{"sidebar_app"},
+			},
+			"enabled": {
+				Type:        schema.TypeBool,
+				Description: "True when executing in a Coder Task context, false when in a Coder Workspace context",
+				Computed:    true,
 			},
 		},
 	}

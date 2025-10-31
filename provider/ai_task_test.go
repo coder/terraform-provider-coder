@@ -9,6 +9,62 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestAITask_Enabled(t *testing.T) {
+	t.Run("EnabledWhenTask", func(t *testing.T) {
+		t.Setenv("CODER_TASK_ID", "7d8d4c2e-fb57-44f9-a183-22509819c2e7")
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+				provider "coder" {
+				}
+				resource "coder_ai_task" "test" {
+					app_id = "9a3ff7b4-4b3f-48c6-8d3a-a8118ac921fc"
+				}
+				`,
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					resource := state.Modules[0].Resources["coder_ai_task.test"]
+					require.NotNil(t, resource)
+
+					require.Equal(t, "true", resource.Primary.Attributes["enabled"])
+
+					return nil
+				},
+			}},
+		})
+	})
+
+	t.Run("DisabledWhenWorkspace", func(t *testing.T) {
+		t.Setenv("CODER_TASK_ID", "")
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+				provider "coder" {
+				}
+				resource "coder_ai_task" "test" {
+					app_id = "9a3ff7b4-4b3f-48c6-8d3a-a8118ac921fc"
+				}
+				`,
+				Check: func(state *terraform.State) error {
+					require.Len(t, state.Modules, 1)
+					resource := state.Modules[0].Resources["coder_ai_task.test"]
+					require.NotNil(t, resource)
+
+					require.Equal(t, "false", resource.Primary.Attributes["enabled"])
+
+					return nil
+				},
+			}},
+		})
+	})
+}
+
 func TestAITask(t *testing.T) {
 	t.Setenv("CODER_TASK_ID", "7d8d4c2e-fb57-44f9-a183-22509819c2e7")
 	t.Setenv("CODER_TASK_PROMPT", "some task prompt")
@@ -35,6 +91,7 @@ func TestAITask(t *testing.T) {
 						"id",
 						"prompt",
 						"app_id",
+						"enabled",
 					} {
 						value := resource.Primary.Attributes[key]
 						require.NotNil(t, value)
@@ -97,6 +154,7 @@ func TestAITask(t *testing.T) {
 						"id",
 						"prompt",
 						"app_id",
+						"enabled",
 					} {
 						value := resource.Primary.Attributes[key]
 						require.NotNil(t, value)
