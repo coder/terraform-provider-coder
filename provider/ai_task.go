@@ -45,8 +45,6 @@ func aiTaskResource() *schema.Resource {
 
 			if prompt := os.Getenv("CODER_TASK_PROMPT"); prompt != "" {
 				resourceData.Set("prompt", prompt)
-			} else {
-				resourceData.Set("prompt", "default")
 			}
 
 			var (
