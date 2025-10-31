@@ -3,7 +3,7 @@
 page_title: "coder_workspace_tags Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this data source to configure workspace tags to select provisioners.
+ Use this data source to configure workspace tags to select provisioners.
 ---
 
 # coder_workspace_tags (Data Source)
@@ -16,52 +16,52 @@ Use this data source to configure workspace tags to select provisioners.
 provider "coder" {}
 
 data "coder_parameter" "os_selector" {
-  name         = "os_selector"
-  display_name = "Operating System"
-  mutable      = false
+ name = "os_selector"
+ display_name = "Operating System"
+ mutable = false
 
-  default = "osx"
+ default = "osx"
 
-  option {
-    icon  = "/icons/linux.png"
-    name  = "Linux"
-    value = "linux"
-  }
-  option {
-    icon  = "/icons/osx.png"
-    name  = "OSX"
-    value = "osx"
-  }
-  option {
-    icon  = "/icons/windows.png"
-    name  = "Windows"
-    value = "windows"
-  }
+ option {
+ icon = "/icons/linux.png"
+ name = "Linux"
+ value = "linux"
+ }
+ option {
+ icon = "/icons/osx.png"
+ name = "OSX"
+ value = "osx"
+ }
+ option {
+ icon = "/icons/windows.png"
+ name = "Windows"
+ value = "windows"
+ }
 }
 
 data "coder_parameter" "feature_cache_enabled" {
-  name         = "feature_cache_enabled"
-  display_name = "Enable cache?"
-  type         = "bool"
+ name = "feature_cache_enabled"
+ display_name = "Enable cache?"
+ type = "bool"
 
-  default = false
+ default = false
 }
 
 data "coder_parameter" "feature_debug_enabled" {
-  name         = "feature_debug_enabled"
-  display_name = "Enable debug?"
-  type         = "bool"
+ name = "feature_debug_enabled"
+ display_name = "Enable debug?"
+ type = "bool"
 
-  default = true
+ default = true
 }
 
 data "coder_workspace_tags" "custom_workspace_tags" {
-  tags = {
-    "cluster" = "developers"
-    "os"      = data.coder_parameter.os_selector.value
-    "debug"   = "${data.coder_parameter.feature_debug_enabled.value}+12345"
-    "cache"   = data.coder_parameter.feature_cache_enabled.value == "true" ? "nix-with-cache" : "no-cache"
-  }
+ tags = {
+ "cluster" = "developers"
+ "os" = data.coder_parameter.os_selector.value
+ "debug" = "${data.coder_parameter.feature_debug_enabled.value}+12345"
+ "cache" = data.coder_parameter.feature_cache_enabled.value == "true" ? "nix-with-cache" : "no-cache"
+ }
 }
 ```
 

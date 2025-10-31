@@ -3,8 +3,8 @@
 page_title: "coder_external_agent Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Define an external agent to be used in a workspace.
-  ~> Warning: External agents require a Premium https://coder.com/pricing Coder license.
+ Define an external agent to be used in a workspace.
+ ~> Warning: External agents require a Premium https://coder.com/pricing Coder license.
 ---
 
 # coder_external_agent (Resource)

@@ -3,7 +3,7 @@
 page_title: "coder_workspace_preset Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.
+ Use this data source to predefine common configurations for coder workspaces. Users will have the option to select a defined preset, which will automatically apply the selected configuration. Any parameters defined in the preset will be applied to the workspace. Parameters that are defined by the template but not defined by the preset will still be configurable when creating a workspace.
 ---
 
 # coder_workspace_preset (Data Source)
@@ -21,25 +21,25 @@ provider "coder" {}
 # See the coder_parameter data source's documentation for examples of how to define
 # parameters like the ones used below.
 data "coder_workspace_preset" "example" {
-  name        = "example"
-  description = "Example description of what this preset does."
-  icon        = "/icon/example.svg"
-  parameters = {
-    (data.coder_parameter.example.name) = "us-central1-a"
-    (data.coder_parameter.ami.name)     = "ami-xxxxxxxx"
-  }
+ name = "example"
+ description = "Example description of what this preset does."
+ icon = "/icon/example.svg"
+ parameters = {
+ (data.coder_parameter.example.name) = "us-central1-a"
+ (data.coder_parameter.ami.name) = "ami-xxxxxxxx"
+ }
 }
 
 # Example of a default preset that will be pre-selected for users
 data "coder_workspace_preset" "standard" {
-  name        = "Standard"
-  description = "A workspace preset with medium compute in the US West region."
-  icon        = "/icon/standard.svg"
-  default     = true
-  parameters = {
-    (data.coder_parameter.instance_type.name) = "t3.medium"
-    (data.coder_parameter.region.name)        = "us-west-2"
-  }
+ name = "Standard"
+ description = "A workspace preset with medium compute in the US West region."
+ icon = "/icon/standard.svg"
+ default = true
+ parameters = {
+ (data.coder_parameter.instance_type.name) = "t3.medium"
+ (data.coder_parameter.region.name) = "us-west-2"
+ }
 }
 ```
 

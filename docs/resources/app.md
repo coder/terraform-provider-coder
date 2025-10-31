@@ -3,7 +3,7 @@
 page_title: "coder_app Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to define shortcuts to access applications in a workspace.
+ Use this resource to define shortcuts to access applications in a workspace.
 ---
 
 # coder_app (Resource)
@@ -16,38 +16,38 @@ Use this resource to define shortcuts to access applications in a workspace.
 data "coder_workspace" "me" {}
 
 resource "coder_agent" "dev" {
-  os             = "linux"
-  arch           = "amd64"
-  dir            = "/workspace"
-  startup_script = <<EOF
+ os = "linux"
+ arch = "amd64"
+ dir = "/workspace"
+ startup_script = <<EOF
 curl -fsSL https://code-server.dev/install.sh | sh
 code-server --auth none --port 13337
 EOF
 }
 
 resource "coder_app" "code-server" {
-  agent_id     = coder_agent.dev.id
-  slug         = "code-server"
-  display_name = "VS Code"
-  icon         = "${data.coder_workspace.me.access_url}/icon/code.svg"
-  url          = "http://localhost:13337"
-  tooltip      = "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop#install-coder-desktop) to use this button."
-  share        = "owner"
-  subdomain    = false
-  open_in      = "window"
-  healthcheck {
-    url       = "http://localhost:13337/healthz"
-    interval  = 5
-    threshold = 6
-  }
+ agent_id = coder_agent.dev.id
+ slug = "code-server"
+ display_name = "VS Code"
+ icon = "${data.coder_workspace.me.access_url}/icon/code.svg"
+ url = "http://localhost:13337"
+ tooltip = "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop#install-coder-desktop) to use this button."
+ share = "owner"
+ subdomain = false
+ open_in = "window"
+ healthcheck {
+ url = "http://localhost:13337/healthz"
+ interval = 5
+ threshold = 6
+ }
 }
 
 resource "coder_app" "vim" {
-  agent_id     = coder_agent.dev.id
-  slug         = "vim"
-  display_name = "Vim"
-  icon         = "${data.coder_workspace.me.access_url}/icon/vim.svg"
-  command      = "vim"
+ agent_id = coder_agent.dev.id
+ slug = "vim"
+ display_name = "Vim"
+ icon = "${data.coder_workspace.me.access_url}/icon/vim.svg"
+ command = "vim"
 }
 ```
 
@@ -66,7 +66,7 @@ resource "coder_app" "vim" {
 - `external` (Boolean) Specifies whether `url` is opened on the client machine instead of proxied through the workspace.
 - `group` (String) The name of a group that this app belongs to.
 - `healthcheck` (Block Set, Max: 1) HTTP health checking to determine the application readiness. (see [below for nested schema](#nestedblock--healthcheck))
-- `hidden` (Boolean) Determines if the app is visible in the UI (minimum Coder version: v2.16).
+- `hidden` (Boolean) Determines if the app is visible in the UI.
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
 - `open_in` (String) Determines where the app will be opened. Valid values are `"tab"` and `"slim-window" (default)`. `"tab"` opens in a new tab in the same browser window. `"slim-window"` opens a new browser window without navigation controls.
 - `order` (Number) The order determines the position of app in the UI presentation. The lowest order is shown first and apps with equal order are sorted by name (ascending order).

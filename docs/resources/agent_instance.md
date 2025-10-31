@@ -3,7 +3,7 @@
 page_title: "coder_agent_instance Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to associate an instance ID with an agent for zero-trust authentication. This association is done automatically for "google_compute_instance", "aws_instance", "azurerm_linux_virtual_machine", and "azurerm_windows_virtual_machine" resources.
+ Use this resource to associate an instance ID with an agent for zero-trust authentication. This association is done automatically for "google_compute_instance", "aws_instance", "azurerm_linux_virtual_machine", and "azurerm_windows_virtual_machine" resources.
 ---
 
 # coder_agent_instance (Resource)
@@ -14,18 +14,18 @@ Use this resource to associate an instance ID with an agent for zero-trust authe
 
 ```terraform
 resource "coder_agent" "dev" {
-  os   = "linux"
-  arch = "amd64"
-  auth = "google-instance-identity"
+ os = "linux"
+ arch = "amd64"
+ auth = "google-instance-identity"
 }
 
 resource "google_compute_instance" "dev" {
-  zone = "us-central1-a"
+ zone = "us-central1-a"
 }
 
 resource "coder_agent_instance" "dev" {
-  agent_id    = coder_agent.dev.id
-  instance_id = google_compute_instance.dev.instance_id
+ agent_id = coder_agent.dev.id
+ instance_id = google_compute_instance.dev.instance_id
 }
 ```
 

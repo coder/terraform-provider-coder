@@ -3,7 +3,7 @@
 page_title: "coder_provisioner Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this data source to get information about the Coder provisioner.
+ Use this data source to get information about the Coder provisioner.
 ---
 
 # coder_provisioner (Data Source)
@@ -20,15 +20,15 @@ data "coder_provisioner" "dev" {}
 data "coder_workspace" "dev" {}
 
 resource "coder_agent" "main" {
-  arch = data.coder_provisioner.dev.arch
-  os   = data.coder_provisioner.dev.os
-  dir  = "/workspace"
-  display_apps {
-    vscode          = true
-    vscode_insiders = false
-    web_terminal    = true
-    ssh_helper      = false
-  }
+ arch = data.coder_provisioner.dev.arch
+ os = data.coder_provisioner.dev.os
+ dir = "/workspace"
+ display_apps {
+ vscode = true
+ vscode_insiders = false
+ web_terminal = true
+ ssh_helper = false
+ }
 }
 ```
 

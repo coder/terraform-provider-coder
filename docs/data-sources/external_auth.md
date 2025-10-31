@@ -3,7 +3,7 @@
 page_title: "coder_external_auth Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this data source to require users to authenticate with an external service prior to workspace creation. This can be used to pre-authenticate external services https://coder.com/docs/admin/external-auth in a workspace. (e.g. Google Cloud, Github, Docker, etc.)
+ Use this data source to require users to authenticate with an external service prior to workspace creation. This can be used to pre-authenticate external services https://coder.com/docs/admin/external-auth in a workspace. (e.g. Google Cloud, Github, Docker, etc.)
 ---
 
 # coder_external_auth (Data Source)
@@ -17,12 +17,12 @@ provider "coder" {}
 
 
 data "coder_external_auth" "github" {
-  id = "github"
+ id = "github"
 }
 
 data "coder_external_auth" "azure-identity" {
-  id       = "azure-identiy"
-  optional = true
+ id = "azure-identiy"
+ optional = true
 }
 ```
 

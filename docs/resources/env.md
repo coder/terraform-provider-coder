@@ -3,7 +3,7 @@
 page_title: "coder_env Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the coder_agent resource.
+ Use this resource to set an environment variable in a workspace. Note that this resource cannot be used to overwrite existing environment variables set on the coder_agent resource.
 ---
 
 # coder_env (Resource)
@@ -16,21 +16,21 @@ Use this resource to set an environment variable in a workspace. Note that this 
 data "coder_workspace" "me" {}
 
 resource "coder_agent" "dev" {
-  os   = "linux"
-  arch = "amd64"
-  dir  = "/workspace"
+ os = "linux"
+ arch = "amd64"
+ dir = "/workspace"
 }
 
 resource "coder_env" "welcome_message" {
-  agent_id = coder_agent.dev.id
-  name     = "WELCOME_MESSAGE"
-  value    = "Welcome to your Coder workspace!"
+ agent_id = coder_agent.dev.id
+ name = "WELCOME_MESSAGE"
+ value = "Welcome to your Coder workspace!"
 }
 
 resource "coder_env" "internal_api_url" {
-  agent_id = coder_agent.dev.id
-  name     = "INTERNAL_API_URL"
-  value    = "https://api.internal.company.com/v1"
+ agent_id = coder_agent.dev.id
+ name = "INTERNAL_API_URL"
+ value = "https://api.internal.company.com/v1"
 }
 ```
 

@@ -6,6 +6,7 @@ fmt:
 gen:
 	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs@latest
 	go run ./scripts/docsgen/...
+	terraform fmt -recursive
 
 build: terraform-provider-coder
 

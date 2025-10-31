@@ -247,7 +247,7 @@ func appResource() *schema.Resource {
 			},
 			"hidden": {
 				Type:        schema.TypeBool,
-				Description: "Determines if the app is visible in the UI (minimum Coder version: v2.16).",
+				Description: "Determines if the app is visible in the UI.",
 				Default:     false,
 				ForceNew:    true,
 				Optional:    true,

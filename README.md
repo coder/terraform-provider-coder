@@ -57,6 +57,25 @@ to setup your local Terraform to use your local version rather than the registry
    ⚠️ Be sure to include `/v2` in the module path as it needs to match the version declared in the provider’s `go.mod`.
 
 
+#### Documentation
+
+When adding new resources or attributes, use `@since:vX.Y.Z` markers to document version requirements:
+
+```go
+// For new resources
+Description: "Define a new feature. @since:v2.25.0",
+
+// For new attributes
+"my_attribute": {
+  Description: "New feature flag. @since:v2.25.0",
+}
+```
+
+Run `make gen` to generate documentation. The markers will be automatically:
+- Extracted and formatted as version notes
+- Sanitized from the final docs
+- Validated for proper semver format
+
 #### Terraform Acceptance Tests
 
 To run Terraform acceptance tests, run `make testacc`. This will test the provider against the locally installed version of Terraform.
