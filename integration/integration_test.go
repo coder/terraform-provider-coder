@@ -215,15 +215,17 @@ func TestIntegration(t *testing.T) {
 			name:       "coder-ai-task",
 			minVersion: "v2.26.0",
 			expectedOutput: map[string]string{
-				"ai_task.id":      `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
-				"ai_task.prompt":  "",
-				"ai_task.app_id":  `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
-				"ai_task.enabled": "false",
-				"app.id":          `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"ai_task.id":             `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"ai_task.prompt":         "",
+				"ai_task.app_id":         `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"ai_task.enabled":        "false",
+				"app.id":                 `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"ai_task_prompt.id":      `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"ai_task_prompt.value":   "",
+				"ai_task_prompt.enabled": "false",
 			},
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if coderVersion != "latest" && semver.Compare(coderVersion, tt.minVersion) < 0 {

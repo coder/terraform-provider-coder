@@ -115,3 +115,44 @@ func aiTaskResource() *schema.Resource {
 		},
 	}
 }
+
+func aiTaskPromptDatasource() *schema.Resource {
+	return &schema.Resource{
+		Description: "Use this data source to read information about Coder tasks.",
+		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
+			diags := diag.Diagnostics{}
+
+			idStr := os.Getenv("CODER_TASK_ID")
+			if idStr == "" || idStr == uuid.Nil.String() {
+				rd.SetId(uuid.NewString())
+				_ = rd.Set("enabled", false)
+			} else if _, err := uuid.Parse(idStr); err == nil {
+				rd.SetId(idStr)
+				_ = rd.Set("enabled", true)
+			} else { // invalid UUID
+				diags = append(diags, errorAsDiagnostics(err)...)
+			}
+
+			prompt := os.Getenv("CODER_TASK_PROMPT")
+			_ = rd.Set("value", prompt)
+			return diags
+		},
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The UUID of the task, if executing in a Coder Task context. Empty in a Coder Workspace context.",
+			},
+			"value": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.",
+			},
+			"enabled": {
+				Type:        schema.TypeBool,
+				Computed:    true,
+				Description: "True when executing in a Coder Task context, false when in a Coder Workspace context",
+			},
+		},
+	}
+}
