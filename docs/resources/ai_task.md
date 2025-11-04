@@ -22,9 +22,13 @@ Use this resource to define Coder tasks.
 
 ### Read-Only
 
-- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context
+- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context.
+
+  -> The `enabled` field is only populated in Coder v2.28 and later.
 - `id` (String) A unique identifier for this resource.
 - `prompt` (String) The prompt text provided to the task by Coder.
+
+  -> The `prompt` field is only populated in Coder v2.28 and later.
 
 <a id="nestedblock--sidebar_app"></a>
 ### Nested Schema for `sidebar_app`
