@@ -64,7 +64,7 @@ func New() *schema.Provider {
 			"coder_external_auth":    externalAuthDataSource(),
 			"coder_workspace_owner":  workspaceOwnerDataSource(),
 			"coder_workspace_preset": workspacePresetDataSource(),
-			"coder_ai_task_prompt":   aiTaskPromptDatasource(),
+			"coder_task":             aiTaskDatasource(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"coder_agent":          agentResource(),

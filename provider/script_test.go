@@ -131,10 +131,10 @@ func TestValidateCronExpression(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name           string
-		cronExpr       string
-		expectWarnings bool
-		expectErrors   bool
+		name            string
+		cronExpr        string
+		expectWarnings  bool
+		expectErrors    bool
 		warningContains string
 	}{
 		{

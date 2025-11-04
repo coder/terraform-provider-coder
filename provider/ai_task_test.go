@@ -226,18 +226,18 @@ func TestAITaskPromptDatasource(t *testing.T) {
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {}
-				data "coder_ai_task_prompt" "me" {}
+				data "coder_task" "me" {}
 				`,
 				Check: func(s *terraform.State) error {
 					require.Len(t, s.Modules, 1)
 					require.Len(t, s.Modules[0].Resources, 1)
-					resource := s.Modules[0].Resources["data.coder_ai_task_prompt.me"]
+					resource := s.Modules[0].Resources["data.coder_task.me"]
 					require.NotNil(t, resource)
 
 					taskID := resource.Primary.Attributes["id"]
 					require.Equal(t, "7d8d4c2e-fb57-44f9-a183-22509819c2e7", taskID)
 
-					taskPromptValue := resource.Primary.Attributes["value"]
+					taskPromptValue := resource.Primary.Attributes["prompt"]
 					require.Equal(t, "some task prompt", taskPromptValue)
 
 					enabledValue := resource.Primary.Attributes["enabled"]
@@ -255,12 +255,12 @@ func TestAITaskPromptDatasource(t *testing.T) {
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {}
-				data "coder_ai_task_prompt" "me" {}
+				data "coder_task" "me" {}
 				`,
 				Check: func(s *terraform.State) error {
 					require.Len(t, s.Modules, 1)
 					require.Len(t, s.Modules[0].Resources, 1)
-					resource := s.Modules[0].Resources["data.coder_ai_task_prompt.me"]
+					resource := s.Modules[0].Resources["data.coder_task.me"]
 					require.NotNil(t, resource)
 
 					taskID := resource.Primary.Attributes["id"]
@@ -269,7 +269,7 @@ func TestAITaskPromptDatasource(t *testing.T) {
 					_, err := uuid.Parse(taskID)
 					require.NoError(t, err)
 
-					taskPromptValue := resource.Primary.Attributes["value"]
+					taskPromptValue := resource.Primary.Attributes["prompt"]
 					require.Empty(t, taskPromptValue)
 
 					enabledValue := resource.Primary.Attributes["enabled"]
@@ -288,7 +288,7 @@ func TestAITaskPromptDatasource(t *testing.T) {
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {}
-				data "coder_ai_task_prompt" "me" {}
+				data "coder_task" "me" {}
 				`,
 				ExpectError: regexp.MustCompile(`invalid UUID`),
 			}},

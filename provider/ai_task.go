@@ -116,7 +116,7 @@ func aiTaskResource() *schema.Resource {
 	}
 }
 
-func aiTaskPromptDatasource() *schema.Resource {
+func aiTaskDatasource() *schema.Resource {
 	return &schema.Resource{
 		Description: "Use this data source to read information about Coder tasks.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
@@ -133,8 +133,7 @@ func aiTaskPromptDatasource() *schema.Resource {
 				diags = append(diags, errorAsDiagnostics(err)...)
 			}
 
-			prompt := os.Getenv("CODER_TASK_PROMPT")
-			_ = rd.Set("value", prompt)
+			_ = rd.Set("prompt", os.Getenv("CODER_TASK_PROMPT"))
 			return diags
 		},
 		Schema: map[string]*schema.Schema{
@@ -143,7 +142,7 @@ func aiTaskPromptDatasource() *schema.Resource {
 				Computed:    true,
 				Description: "The UUID of the task, if executing in a Coder Task context. Empty in a Coder Workspace context.",
 			},
-			"value": {
+			"prompt": {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.\n\n->This field is only populated in Coder v2.28 and later.",

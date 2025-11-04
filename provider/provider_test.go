@@ -38,7 +38,7 @@ func TestProviderEmpty(t *testing.T) {
 			data "coder_parameter" "param" {
 				name = "hey"
 			}
-			data "coder_ai_task_prompt" "me" {}`,
+			data "coder_task" "me" {}`,
 			Check: func(state *terraform.State) error {
 				return nil
 			},
