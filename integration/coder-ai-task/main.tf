@@ -32,6 +32,8 @@ data "coder_parameter" "ai_prompt" {
   mutable     = true
 }
 
+data "coder_task" "me" {}
+
 resource "coder_ai_task" "task" {
   sidebar_app {
     id = coder_app.ai_interface.id
@@ -46,6 +48,10 @@ locals {
     "ai_task.prompt"  = coder_ai_task.task.prompt
     "ai_task.enabled" = tostring(coder_ai_task.task.enabled)
     "app.id"          = coder_app.ai_interface.id
+
+    "task.id"      = data.coder_task.me.id
+    "task.prompt"  = data.coder_task.me.prompt
+    "task.enabled" = tostring(data.coder_task.me.enabled)
   }
 }
 

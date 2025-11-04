@@ -220,10 +220,12 @@ func TestIntegration(t *testing.T) {
 				"ai_task.app_id":  `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
 				"ai_task.enabled": "false",
 				"app.id":          `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"task.id":         `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"task.prompt":     "",
+				"task.enabled":    "false",
 			},
 		},
 	} {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 			if coderVersion != "latest" && semver.Compare(coderVersion, tt.minVersion) < 0 {

@@ -17,6 +17,6 @@ func ValidateURL(value any, label string) ([]string, []error) {
 	if _, err := url.Parse(val); err != nil {
 		return nil, []error{err}
 	}
-	
+
 	return nil, nil
 }
