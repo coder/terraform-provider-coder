@@ -145,12 +145,12 @@ func taskDatasource() *schema.Resource {
 			"prompt": {
 				Type:        schema.TypeString,
 				Computed:    true,
-				Description: "The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.\n\n->This field is only populated in Coder v2.28 and later.",
+				Description: "The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.\n\n  -> The `prompt` field is only populated in Coder v2.28 and later.",
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
 				Computed:    true,
-				Description: "True when executing in a Coder Task context, false when in a Coder Workspace context.\n\n->This field is only populated in Coder v2.28 and later.",
+				Description: "True when executing in a Coder Task context, false when in a Coder Workspace context.\n\n  -> The `enabled` field is only populated in Coder v2.28 and later.",
 			},
 		},
 	}
