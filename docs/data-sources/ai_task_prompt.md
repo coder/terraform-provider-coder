@@ -17,6 +17,10 @@ Use this data source to read information about Coder tasks.
 
 ### Read-Only
 
-- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context
+- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context.
+
+->This field is only populated in Coder v2.28 and later.
 - `id` (String) The UUID of the task, if executing in a Coder Task context. Empty in a Coder Workspace context.
 - `value` (String) The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.
+
+->This field is only populated in Coder v2.28 and later.
