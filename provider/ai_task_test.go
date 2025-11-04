@@ -216,7 +216,7 @@ func TestAITask(t *testing.T) {
 	})
 }
 
-func TestAITaskPromptDatasource(t *testing.T) {
+func TestTaskDatasource(t *testing.T) {
 	t.Run("Exists", func(t *testing.T) {
 		t.Setenv("CODER_TASK_ID", "7d8d4c2e-fb57-44f9-a183-22509819c2e7")
 		t.Setenv("CODER_TASK_PROMPT", "some task prompt")

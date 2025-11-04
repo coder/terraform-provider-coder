@@ -116,9 +116,9 @@ func aiTaskResource() *schema.Resource {
 	}
 }
 
-func aiTaskDatasource() *schema.Resource {
+func taskDatasource() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to read information about Coder tasks.",
+		Description: "Use this data source to read information about Coder Tasks.",
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			diags := diag.Diagnostics{}
 
