@@ -87,15 +87,21 @@ To run these integration tests locally:
 > For example, `CODER_IMAGE=example.com/repo/coder CODER_VERSION=foobar make test-integration`.
 
 ### How to create a new release
+
 > [!Warning]
-> Before creating a new release, make sure you have pulled the latest commit from the main branch i.e. `git pull origin main`
+>
+> - Before creating a new release, make sure you have pulled the latest commit from the main branch i.e. `git pull origin main`
+> - If you have already published a previous tag, make sure you do not tag the same commit with the new tag.
+>   See: [goreleaser-action/512](https://github.com/goreleaser/goreleaser-action/issues/512)
 
 1. Create a new tag with a version number (following semantic versioning):
+
    ```console
    git tag -a v2.1.2 -m "v2.1.2"
    ```
 
 2. Push the tag to the remote repository:
+
    ```console
    git push origin tag v2.1.2
    ```
