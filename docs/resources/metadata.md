@@ -43,16 +43,19 @@ resource "coder_metadata" "pod_info" {
   item {
     key   = "description"
     value = "This description will show up in the Coder dashboard."
+    order = 1
   }
   item {
     key   = "pod_uid"
     value = kubernetes_pod.dev[0].uid
+    order = 2
   }
   item {
     key   = "public_key"
     value = tls_private_key.example_key_pair.public_key_openssh
     # The value of this item will be hidden from view by default
     sensitive = true
+    order     = 3
   }
 }
 ```
@@ -84,6 +87,7 @@ Required:
 
 Optional:
 
+- `order` (Number) The order determines the position of item in the UI presentation. The lowest order is shown first and items with equal order are sorted by key (ascending order).
 - `sensitive` (Boolean) Set to `true` to for items such as API keys whose values should be hidden from view by default. Note that this does not prevent metadata from being retrieved using the API, so it is not suitable for secrets that should not be exposed to workspace users.
 - `value` (String) The value of this metadata item. Supports basic Markdown, including hyperlinks.
 
