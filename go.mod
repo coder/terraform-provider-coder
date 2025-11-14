@@ -6,7 +6,7 @@ require (
 	github.com/docker/docker v26.1.5+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-cty v1.5.0
-	github.com/hashicorp/terraform-plugin-log v0.9.0
+	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/masterminds/semver v1.5.0
 	github.com/mitchellh/mapstructure v1.5.0
