@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Check Go Versions
         run: ./scripts/check_go_version.sh
@@ -96,7 +96,7 @@ jobs:
           - "1.11.*"
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Check Go Versions
         run: ./scripts/check_go_version.sh
@@ -129,7 +129,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Check Go Versions
         run: ./scripts/check_go_version.sh
