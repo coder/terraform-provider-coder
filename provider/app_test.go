@@ -597,8 +597,6 @@ func TestApp(t *testing.T) {
 		}
 	})
 
-	// TODO: Find a better place for this?
-	// TODO: Do we need to test this with the schema rules already existing?
 	t.Run("Command", func(t *testing.T) {
 		t.Parallel()
 
