@@ -597,7 +597,7 @@ func TestApp(t *testing.T) {
 		}
 	})
 
-	t.Run("Command", func(t *testing.T) {
+	t.Run("ConflictsWith", func(t *testing.T) {
 		t.Parallel()
 
 		cases := []struct {
