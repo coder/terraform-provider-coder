@@ -564,8 +564,6 @@ func TestApp(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			c := c
-
 			t.Run(c.name, func(t *testing.T) {
 				t.Parallel()
 
@@ -600,33 +598,100 @@ func TestApp(t *testing.T) {
 	t.Run("ConflictsWith", func(t *testing.T) {
 		t.Parallel()
 
+		type healthcheck struct {
+			url       string
+			interval  int
+			threshold int
+		}
+
 		cases := []struct {
 			name        string
+			url         string
 			command     string
 			subdomain   bool
+			healthcheck healthcheck
+			external    bool
+			share       string
 			expectError *regexp.Regexp
 		}{
 			{
-				name:    "Command",
-				command: "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
-			},
-			{
-				name:        "CommandAndURL",
+				name:        "CommandAndSubdomain",
 				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
 				subdomain:   true,
 				expectError: regexp.MustCompile("conflicts with subdomain"),
 			},
+			{
+				name:        "URLAndCommand",
+				url:         "https://google.com",
+				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
+				expectError: regexp.MustCompile("conflicts with command"),
+			},
+			{
+				name: "HealthcheckAndCommand",
+				healthcheck: healthcheck{
+					url:       "https://google.com",
+					interval:  5,
+					threshold: 6,
+				},
+				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
+				expectError: regexp.MustCompile("conflicts with command"),
+			},
+			{
+				name:     "ExternalAndHealthcheck",
+				external: true,
+				healthcheck: healthcheck{
+					url:       "https://google.com",
+					interval:  5,
+					threshold: 6,
+				},
+				expectError: regexp.MustCompile("conflicts with healthcheck"),
+			},
+			{
+				name:        "ExternalAndCommand",
+				external:    true,
+				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
+				expectError: regexp.MustCompile("conflicts with command"),
+			},
+			{
+				name:        "ExternalAndSubdomain",
+				external:    true,
+				subdomain:   true,
+				expectError: regexp.MustCompile("conflicts with subdomain"),
+			},
+			{
+				name:        "ExternalAndShare",
+				external:    true,
+				share:       "https://google.com",
+				expectError: regexp.MustCompile("conflicts with share"),
+			},
 		}
 
 		for _, c := range cases {
-			c := c
-
 			t.Run(c.name, func(t *testing.T) {
 				t.Parallel()
 
-				subdomainLine := ""
+				extraLines := []string{}
+				if c.command != "" {
+					extraLines = append(extraLines, fmt.Sprintf("command = %q", c.command))
+				}
 				if c.subdomain {
-					subdomainLine = "subdomain = true"
+					extraLines = append(extraLines, "subdomain = true")
+				}
+				if c.external {
+					extraLines = append(extraLines, "external = true")
+				}
+				if c.url != "" {
+					extraLines = append(extraLines, fmt.Sprintf("url = %q", c.url))
+				}
+				if c.healthcheck != (healthcheck{}) {
+					extraLines = append(extraLines, fmt.Sprintf(`healthcheck {
+						url = %q
+						interval = %d
+						threshold = %d
+					}`, c.healthcheck.url, c.healthcheck.interval, c.healthcheck.threshold))
+				}
+				if c.share != "" {
+					extraLines = append(extraLines, fmt.Sprintf("share = %q", c.share))
 				}
 
 				config := fmt.Sprintf(`
@@ -640,10 +705,9 @@ func TestApp(t *testing.T) {
 					slug = "code-server"
 					display_name = "Testing"
 					open_in = "slim-window"
-					command = "%s"
 					%s
 				}
-				`, c.command, subdomainLine)
+				`, strings.Join(extraLines, "\n	"))
 
 				resource.Test(t, resource.TestCase{
 					ProviderFactories: coderFactory(),
