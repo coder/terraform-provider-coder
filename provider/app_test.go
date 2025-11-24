@@ -596,4 +596,36 @@ func TestApp(t *testing.T) {
 			})
 		}
 	})
+
+	// TODO: Find a better place for this?
+	// TODO: Do we need to test this with the schema rules already existing?
+	t.Run("Command", func(t *testing.T) {
+		t.Parallel()
+
+		cases := []struct {
+			name        string
+			command     string
+			subdomain   bool
+			expectError *regexp.Regexp
+		}{
+			{
+				name:    "Command",
+				command: "read -p \"Workspace spawned. Press enter to continue...\"",
+			},
+			{
+				name:        "CommandAndURL",
+				command:     "read -p \"Workspace spawned. Press enter to continue...\"",
+				subdomain:   true,
+				expectError: regexp.MustCompile("conflicts with subdomain"),
+			},
+		}
+
+		for _, c := range cases {
+			c := c
+
+			t.Run(c.name, func(t *testing.T) {
+				t.Parallel()
+			})
+		}
+	})
 }
