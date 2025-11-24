@@ -610,11 +610,11 @@ func TestApp(t *testing.T) {
 		}{
 			{
 				name:    "Command",
-				command: "read -p \"Workspace spawned. Press enter to continue...\"",
+				command: "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
 			},
 			{
 				name:        "CommandAndURL",
-				command:     "read -p \"Workspace spawned. Press enter to continue...\"",
+				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
 				subdomain:   true,
 				expectError: regexp.MustCompile("conflicts with subdomain"),
 			},
@@ -625,6 +625,36 @@ func TestApp(t *testing.T) {
 
 			t.Run(c.name, func(t *testing.T) {
 				t.Parallel()
+
+				subdomainLine := ""
+				if c.subdomain {
+					subdomainLine = "subdomain = true"
+				}
+
+				config := fmt.Sprintf(`
+				provider "coder" {}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "code-server" {
+					agent_id = coder_agent.dev.id
+					slug = "code-server"
+					display_name = "Testing"
+					open_in = "slim-window"
+					command = "%s"
+					%s
+				}
+				`, c.command, subdomainLine)
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      config,
+						ExpectError: c.expectError,
+					}},
+				})
 			})
 		}
 	})
