@@ -604,6 +604,17 @@ func TestApp(t *testing.T) {
 			threshold int
 		}
 
+		dummyURL := "https://google.com"
+		dummyCommand := "read -p \\\"Workspace spawned. Press enter to continue...\\\""
+		dummyExternal := true
+		dummySubdomain := true
+		dummyHealthcheck := healthcheck{
+			url:       "https://google.com",
+			interval:  5,
+			threshold: 6,
+		}
+		dummyShare := "owner"
+
 		cases := []struct {
 			name        string
 			url         string
@@ -616,52 +627,44 @@ func TestApp(t *testing.T) {
 		}{
 			{
 				name:        "CommandAndSubdomain",
-				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
-				subdomain:   true,
+				command:     dummyCommand,
+				subdomain:   dummySubdomain,
 				expectError: regexp.MustCompile("conflicts with subdomain"),
 			},
 			{
 				name:        "URLAndCommand",
-				url:         "https://google.com",
-				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
+				url:         dummyURL,
+				command:     dummyCommand,
 				expectError: regexp.MustCompile("conflicts with command"),
 			},
 			{
-				name: "HealthcheckAndCommand",
-				healthcheck: healthcheck{
-					url:       "https://google.com",
-					interval:  5,
-					threshold: 6,
-				},
-				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
+				name:        "HealthcheckAndCommand",
+				healthcheck: dummyHealthcheck,
+				command:     dummyCommand,
 				expectError: regexp.MustCompile("conflicts with command"),
 			},
 			{
-				name:     "ExternalAndHealthcheck",
-				external: true,
-				healthcheck: healthcheck{
-					url:       "https://google.com",
-					interval:  5,
-					threshold: 6,
-				},
+				name:        "ExternalAndHealthcheck",
+				external:    dummyExternal,
+				healthcheck: dummyHealthcheck,
 				expectError: regexp.MustCompile("conflicts with healthcheck"),
 			},
 			{
 				name:        "ExternalAndCommand",
-				external:    true,
-				command:     "read -p \\\"Workspace spawned. Press enter to continue...\\\"",
+				external:    dummyExternal,
+				command:     dummyCommand,
 				expectError: regexp.MustCompile("conflicts with command"),
 			},
 			{
 				name:        "ExternalAndSubdomain",
-				external:    true,
-				subdomain:   true,
+				external:    dummyExternal,
+				subdomain:   dummySubdomain,
 				expectError: regexp.MustCompile("conflicts with subdomain"),
 			},
 			{
 				name:        "ExternalAndShare",
-				external:    true,
-				share:       "https://google.com",
+				external:    dummyExternal,
+				share:       dummyShare,
 				expectError: regexp.MustCompile("conflicts with share"),
 			},
 		}
