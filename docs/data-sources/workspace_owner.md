@@ -53,6 +53,7 @@ resource "coder_env" "git_author_email" {
 - `login_type` (String) The type of login the user has.
 - `name` (String) The username of the user.
 - `oidc_access_token` (String, Sensitive) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
+- `oidc_id_token` (String, Sensitive) A valid OpenID Connect ID token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
 - `rbac_roles` (List of Object) The RBAC roles of which the user is assigned. (see [below for nested schema](#nestedatt--rbac_roles))
 - `session_token` (String, Sensitive) Session token for authenticating with a Coder deployment. It is regenerated every time a workspace is started.
 - `ssh_private_key` (String, Sensitive) The user's generated SSH private key.
