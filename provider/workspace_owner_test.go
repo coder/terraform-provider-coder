@@ -33,6 +33,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_OWNER_GROUPS", `["group1", "group2"]`)
 		t.Setenv("CODER_WORKSPACE_OWNER_SESSION_TOKEN", `supersecret`)
 		t.Setenv("CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN", `alsosupersecret`)
+		t.Setenv("CODER_WORKSPACE_OWNER_OIDC_ID_TOKEN", `yetanothersecret`)
 		t.Setenv("CODER_WORKSPACE_OWNER_LOGIN_TYPE", `github`)
 		t.Setenv("CODER_WORKSPACE_OWNER_RBAC_ROLES", `[{"name":"member","org_id":"00000000-0000-0000-0000-000000000000"}]`)
 
@@ -61,6 +62,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Equal(t, `group2`, attrs["groups.1"])
 					assert.Equal(t, `supersecret`, attrs["session_token"])
 					assert.Equal(t, `alsosupersecret`, attrs["oidc_access_token"])
+					assert.Equal(t, `yetanothersecret`, attrs["oidc_id_token"])
 					assert.Equal(t, `github`, attrs["login_type"])
 					assert.Equal(t, `member`, attrs["rbac_roles.0.name"])
 					assert.Equal(t, `00000000-0000-0000-0000-000000000000`, attrs["rbac_roles.0.org_id"])
@@ -79,6 +81,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 			"CODER_WORKSPACE_OWNER_SESSION_TOKEN",
 			"CODER_WORKSPACE_OWNER_GROUPS",
 			"CODER_WORKSPACE_OWNER_OIDC_ACCESS_TOKEN",
+			"CODER_WORKSPACE_OWNER_OIDC_ID_TOKEN",
 			"CODER_WORKSPACE_OWNER_SSH_PUBLIC_KEY",
 			"CODER_WORKSPACE_OWNER_SSH_PRIVATE_KEY",
 			"CODER_WORKSPACE_OWNER_LOGIN_TYPE",
@@ -112,6 +115,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Empty(t, attrs["groups.0"])
 					assert.Empty(t, attrs["session_token"])
 					assert.Empty(t, attrs["oidc_access_token"])
+					assert.Empty(t, attrs["oidc_id_token"])
 					assert.Empty(t, attrs["login_type"])
 					assert.Empty(t, attrs["rbac_roles.0"])
 					return nil
