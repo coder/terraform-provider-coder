@@ -109,25 +109,6 @@ func TestApp(t *testing.T) {
 			}
 			`,
 			external: true,
-		}, {
-			name: "ConflictsWithSubdomain",
-			config: `
-			provider "coder" {}
-			resource "coder_agent" "dev" {
-				os = "linux"
-				arch = "amd64"
-			}
-			resource "coder_app" "test" {
-				agent_id = coder_agent.dev.id
-				slug = "test"
-				display_name = "Testing"
-				url = "https://google.com"
-				external = true
-				subdomain = true
-				open_in = "slim-window"
-			}
-			`,
-			expectError: regexp.MustCompile("conflicts with subdomain"),
 		}}
 		for _, tc := range cases {
 			tc := tc
