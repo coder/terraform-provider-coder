@@ -103,6 +103,12 @@ func metadataResource() *schema.Resource {
 							ForceNew: true,
 							Computed: true,
 						},
+						"order": {
+							Type:        schema.TypeInt,
+							Description: "The order determines the position of item in the UI presentation. The lowest order is shown first and items with equal order are sorted by key (ascending order).",
+							ForceNew:    true,
+							Optional:    true,
+						},
 					},
 				},
 			},
