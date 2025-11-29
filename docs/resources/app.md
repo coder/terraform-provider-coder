@@ -61,7 +61,7 @@ resource "coder_app" "vim" {
 
 ### Optional
 
-- `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either `command` or `url` may be specified, but not both.
+- `command` (String) A command to run in a terminal opening this app. In the web, this will open in a new tab. In the CLI, this will SSH and execute the command. Either `command` or `url` may be specified, but not both. Conflicts with `subdomain`.
 - `display_name` (String) A display name to identify the app. Defaults to the slug.
 - `external` (Boolean) Specifies whether `url` is opened on the client machine instead of proxied through the workspace.
 - `group` (String) The name of a group that this app belongs to.

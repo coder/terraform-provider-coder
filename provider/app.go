@@ -85,8 +85,9 @@ func appResource() *schema.Resource {
 				Type: schema.TypeString,
 				Description: "A command to run in a terminal opening this app. In the web, " +
 					"this will open in a new tab. In the CLI, this will SSH and execute the command. " +
-					"Either `command` or `url` may be specified, but not both.",
-				ConflictsWith: []string{"url"},
+					"Either `command` or `url` may be specified, but not both. " +
+					"Conflicts with `subdomain`.",
+				ConflictsWith: []string{"url", "subdomain"},
 				Optional:      true,
 				ForceNew:      true,
 			},

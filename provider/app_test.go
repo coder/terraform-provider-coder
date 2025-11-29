@@ -109,25 +109,6 @@ func TestApp(t *testing.T) {
 			}
 			`,
 			external: true,
-		}, {
-			name: "ConflictsWithSubdomain",
-			config: `
-			provider "coder" {}
-			resource "coder_agent" "dev" {
-				os = "linux"
-				arch = "amd64"
-			}
-			resource "coder_app" "test" {
-				agent_id = coder_agent.dev.id
-				slug = "test"
-				display_name = "Testing"
-				url = "https://google.com"
-				external = true
-				subdomain = true
-				open_in = "slim-window"
-			}
-			`,
-			expectError: regexp.MustCompile("conflicts with subdomain"),
 		}}
 		for _, tc := range cases {
 			tc := tc
@@ -564,8 +545,6 @@ func TestApp(t *testing.T) {
 		}
 
 		for _, c := range cases {
-			c := c
-
 			t.Run(c.name, func(t *testing.T) {
 				t.Parallel()
 
@@ -584,6 +563,135 @@ func TestApp(t *testing.T) {
 					tooltip = "%s"
 				}
 				`, c.tooltip)
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      config,
+						ExpectError: c.expectError,
+					}},
+				})
+			})
+		}
+	})
+
+	t.Run("ConflictsWith", func(t *testing.T) {
+		t.Parallel()
+
+		type healthcheck struct {
+			url       string
+			interval  int
+			threshold int
+		}
+
+		dummyURL := "https://google.com"
+		dummyCommand := "read -p \\\"Workspace spawned. Press enter to continue...\\\""
+		dummyExternal := true
+		dummySubdomain := true
+		dummyHealthcheck := healthcheck{
+			url:       "https://google.com",
+			interval:  5,
+			threshold: 6,
+		}
+		dummyShare := "owner"
+
+		cases := []struct {
+			name        string
+			url         string
+			command     string
+			subdomain   bool
+			healthcheck healthcheck
+			external    bool
+			share       string
+			expectError *regexp.Regexp
+		}{
+			{
+				name:        "CommandAndSubdomain",
+				command:     dummyCommand,
+				subdomain:   dummySubdomain,
+				expectError: regexp.MustCompile("conflicts with subdomain"),
+			},
+			{
+				name:        "URLAndCommand",
+				url:         dummyURL,
+				command:     dummyCommand,
+				expectError: regexp.MustCompile("conflicts with command"),
+			},
+			{
+				name:        "HealthcheckAndCommand",
+				healthcheck: dummyHealthcheck,
+				command:     dummyCommand,
+				expectError: regexp.MustCompile("conflicts with command"),
+			},
+			{
+				name:        "ExternalAndHealthcheck",
+				external:    dummyExternal,
+				healthcheck: dummyHealthcheck,
+				expectError: regexp.MustCompile("conflicts with healthcheck"),
+			},
+			{
+				name:        "ExternalAndCommand",
+				external:    dummyExternal,
+				command:     dummyCommand,
+				expectError: regexp.MustCompile("conflicts with command"),
+			},
+			{
+				name:        "ExternalAndSubdomain",
+				external:    dummyExternal,
+				subdomain:   dummySubdomain,
+				expectError: regexp.MustCompile("conflicts with subdomain"),
+			},
+			{
+				name:        "ExternalAndShare",
+				external:    dummyExternal,
+				share:       dummyShare,
+				expectError: regexp.MustCompile("conflicts with share"),
+			},
+		}
+
+		for _, c := range cases {
+			t.Run(c.name, func(t *testing.T) {
+				t.Parallel()
+
+				extraLines := []string{}
+				if c.command != "" {
+					extraLines = append(extraLines, fmt.Sprintf("command = %q", c.command))
+				}
+				if c.subdomain {
+					extraLines = append(extraLines, "subdomain = true")
+				}
+				if c.external {
+					extraLines = append(extraLines, "external = true")
+				}
+				if c.url != "" {
+					extraLines = append(extraLines, fmt.Sprintf("url = %q", c.url))
+				}
+				if c.healthcheck != (healthcheck{}) {
+					extraLines = append(extraLines, fmt.Sprintf(`healthcheck {
+						url = %q
+						interval = %d
+						threshold = %d
+					}`, c.healthcheck.url, c.healthcheck.interval, c.healthcheck.threshold))
+				}
+				if c.share != "" {
+					extraLines = append(extraLines, fmt.Sprintf("share = %q", c.share))
+				}
+
+				config := fmt.Sprintf(`
+				provider "coder" {}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "code-server" {
+					agent_id = coder_agent.dev.id
+					slug = "code-server"
+					display_name = "Testing"
+					open_in = "slim-window"
+					%s
+				}
+				`, strings.Join(extraLines, "\n	"))
 
 				resource.Test(t, resource.TestCase{
 					ProviderFactories: coderFactory(),
