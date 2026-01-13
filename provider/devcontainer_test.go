@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -39,6 +40,11 @@ func TestDevcontainer(t *testing.T) {
 				} {
 					require.Equal(t, expected, script.Primary.Attributes[key])
 				}
+				// Verify subagent_id is a valid UUID.
+				subagentID := script.Primary.Attributes["subagent_id"]
+				require.NotEmpty(t, subagentID)
+				_, err := uuid.Parse(subagentID)
+				require.NoError(t, err, "subagent_id should be a valid UUID")
 				return nil
 			},
 		}},
@@ -72,6 +78,11 @@ func TestDevcontainerNoConfigPath(t *testing.T) {
 				} {
 					require.Equal(t, expected, script.Primary.Attributes[key])
 				}
+				// Verify subagent_id is a valid UUID.
+				subagentID := script.Primary.Attributes["subagent_id"]
+				require.NotEmpty(t, subagentID)
+				_, err := uuid.Parse(subagentID)
+				require.NoError(t, err, "subagent_id should be a valid UUID")
 				return nil
 			},
 		}},

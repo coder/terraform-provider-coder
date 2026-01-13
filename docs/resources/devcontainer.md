@@ -30,3 +30,4 @@ Define a Dev Container the agent should know of and attempt to autostart.
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `subagent_id` (String) The ID of the subagent created for this Dev Container.
