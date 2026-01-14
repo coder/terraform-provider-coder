@@ -17,7 +17,6 @@ func devcontainerResource() *schema.Resource {
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
-			// Generate a unique subagent ID for this dev container.
 			if err := rd.Set("subagent_id", uuid.NewString()); err != nil {
 				return diag.FromErr(err)
 			}
