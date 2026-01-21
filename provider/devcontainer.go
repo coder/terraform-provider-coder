@@ -17,6 +17,10 @@ func devcontainerResource() *schema.Resource {
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 
+			if err := rd.Set("subagent_id", uuid.NewString()); err != nil {
+				return diag.FromErr(err)
+			}
+
 			return nil
 		},
 		ReadContext:   schema.NoopContext,
@@ -40,6 +44,11 @@ func devcontainerResource() *schema.Resource {
 				Description: "The path to the Dev Container configuration file (devcontainer.json).",
 				ForceNew:    true,
 				Optional:    true,
+			},
+			"subagent_id": {
+				Type:        schema.TypeString,
+				Description: "The ID of the subagent created for this Dev Container.",
+				Computed:    true,
 			},
 		},
 	}
