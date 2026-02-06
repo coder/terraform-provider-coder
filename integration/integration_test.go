@@ -99,7 +99,7 @@ func TestIntegration(t *testing.T) {
 				"workspace_preset.parameters.param":                         `preset param value`,
 				"workspace_preset.prebuilds.instances":                      `1`,
 				"workspace_preset.prebuilds.expiration_policy.ttl":          `86400`,
-				"workspace_preset.prebuilds.scheduling.timezone":            `UTC`,
+				"workspace_preset.prebuilds.scheduling.timezone":            `America/New_York`,
 				"workspace_preset.prebuilds.scheduling.schedule0.cron":      `\* 8-18 \* \* 1-5`,
 				"workspace_preset.prebuilds.scheduling.schedule0.instances": `3`,
 				"workspace_preset.prebuilds.scheduling.schedule1.cron":      `\* 8-14 \* \* 6`,

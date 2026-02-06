@@ -34,7 +34,7 @@ data "coder_workspace_preset" "preset" {
       ttl = 86400
     }
     scheduling {
-      timezone = "UTC"
+      timezone = "America/New_York"
       schedule {
         cron      = "* 8-18 * * 1-5"
         instances = 3
