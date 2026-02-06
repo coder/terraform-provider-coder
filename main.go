@@ -2,6 +2,9 @@ package main
 
 import (
 	"flag"
+	// Embed timezone data for use in environments that may not have the
+	// timezone database available (e.g. scratch Docker images).
+	_ "time/tzdata"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 
