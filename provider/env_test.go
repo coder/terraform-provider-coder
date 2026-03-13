@@ -117,3 +117,78 @@ func TestEnvNoName(t *testing.T) {
 		}},
 	})
 }
+
+func TestEnvDefaultMergeStrategy(t *testing.T) {
+	t.Parallel()
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
+		Steps: []resource.TestStep{{
+			Config: `
+			provider "coder" {}
+			resource "coder_env" "example" {
+				agent_id = "king"
+				name = "FOO"
+				value = "bar"
+			}`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				env := state.Modules[0].Resources["coder_env.example"]
+				require.NotNil(t, env)
+				require.Equal(t, "replace", env.Primary.Attributes["merge_strategy"])
+				return nil
+			},
+		}},
+	})
+}
+
+func TestEnvValidMergeStrategies(t *testing.T) {
+	t.Parallel()
+	for _, strategy := range []string{"replace", "append", "prepend", "error"} {
+		t.Run(strategy, func(t *testing.T) {
+			t.Parallel()
+			resource.Test(t, resource.TestCase{
+				ProviderFactories: coderFactory(),
+				IsUnitTest:        true,
+				Steps: []resource.TestStep{{
+					Config: `
+					provider "coder" {}
+					resource "coder_env" "example" {
+						agent_id = "king"
+						name = "FOO"
+						value = "bar"
+						merge_strategy = "` + strategy + `"
+					}`,
+					Check: func(state *terraform.State) error {
+						require.Len(t, state.Modules, 1)
+						require.Len(t, state.Modules[0].Resources, 1)
+						env := state.Modules[0].Resources["coder_env.example"]
+						require.NotNil(t, env)
+						require.Equal(t, strategy, env.Primary.Attributes["merge_strategy"])
+						return nil
+					},
+				}},
+			})
+		})
+	}
+}
+
+func TestEnvInvalidMergeStrategy(t *testing.T) {
+	t.Parallel()
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
+		Steps: []resource.TestStep{{
+			Config: `
+			provider "coder" {}
+			resource "coder_env" "example" {
+				agent_id = "king"
+				name = "FOO"
+				value = "bar"
+				merge_strategy = "concat"
+			}`,
+			ExpectError: regexp.MustCompile(`expected merge_strategy to be one of`),
+		}},
+	})
+}
