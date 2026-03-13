@@ -107,7 +107,7 @@ jobs:
           go-version: "1.24.6"
         id: go
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
@@ -140,7 +140,7 @@ jobs:
           go-version: "1.24.6"
         id: go
 
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: "latest"
           terraform_wrapper: false
