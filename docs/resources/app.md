@@ -34,7 +34,7 @@ resource "coder_app" "code-server" {
   tooltip      = "You need to [Install Coder Desktop](https://coder.com/docs/user-guides/desktop#install-coder-desktop) to use this button."
   share        = "owner"
   subdomain    = false
-  open_in      = "window"
+  open_in      = "slim-window"
   healthcheck {
     url       = "http://localhost:13337/healthz"
     interval  = 5
