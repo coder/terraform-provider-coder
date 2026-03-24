@@ -1,6 +1,6 @@
 module github.com/coder/terraform-provider-coder/v2
 
-go 1.25
+go 1.26
 
 require (
 	github.com/docker/docker v26.1.5+incompatible
