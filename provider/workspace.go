@@ -88,7 +88,7 @@ func workspaceDataSource() *schema.Resource {
 			}
 			port, err := strconv.Atoi(rawPort)
 			if err != nil {
-				return diag.Errorf("couldn't parse port %q", port)
+				return diag.Errorf("couldn't parse port %q", rawPort)
 			}
 			rd.Set("access_port", port)
 
