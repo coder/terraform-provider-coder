@@ -12,90 +12,57 @@ import (
 func main() {
 	releases := fetchReleases()
 
-	mainlineVer := semver.MustParse("v0.0.0")
+	mainlineVer := highestRelease(releases, nil)
+	_, _ = fmt.Fprintf(os.Stdout, "CODER_MAINLINE_VERSION=%q\n", formatVersion(mainlineVer))
+
+	stableMinor := mainlineVer.Minor() - 1
+	if stableMinor < 0 {
+		stableMinor = 0
+	}
+	debug("expected stable minor: %d\n", stableMinor)
+	stableVer := highestRelease(releases, &stableMinor)
+	_, _ = fmt.Fprintf(os.Stdout, "CODER_STABLE_VERSION=%q\n", formatVersion(stableVer))
+
+	oldStableMinor := mainlineVer.Minor() - 2
+	if oldStableMinor < 0 {
+		oldStableMinor = 0
+	}
+	debug("expected old stable minor: %d\n", oldStableMinor)
+	oldStableVer := highestRelease(releases, &oldStableMinor)
+	_, _ = fmt.Fprintf(os.Stdout, "CODER_OLDSTABLE_VERSION=%q\n", formatVersion(oldStableVer))
+}
+
+// highestRelease returns the highest non-prerelease semver from releases,
+// optionally filtered to a specific minor version.
+func highestRelease(releases []string, filterMinor *int64) *semver.Version {
+	best := semver.MustParse("v0.0.0")
 	for _, rel := range releases {
 		if rel == "" {
-			debug("ignoring untagged version %s\n", rel)
 			continue
 		}
-
 		ver, err := semver.NewVersion(rel)
 		if err != nil {
 			debug("skipping invalid version %s\n", rel)
-		}
-
-		if ver.Compare(mainlineVer) > 0 {
-			mainlineVer = ver
 			continue
+		}
+		if ver.Prerelease() != "" {
+			debug("skipping prerelease version %s\n", rel)
+			continue
+		}
+		if filterMinor != nil && ver.Minor() != *filterMinor {
+			continue
+		}
+		if ver.Compare(best) > 0 {
+			best = ver
 		}
 	}
+	return best
+}
 
-	mainline := fmt.Sprintf("v%d.%d.%d", mainlineVer.Major(), mainlineVer.Minor(), mainlineVer.Patch())
-	_, _ = fmt.Fprintf(os.Stdout, "CODER_MAINLINE_VERSION=%q\n", mainline)
-
-	expectedStableMinor := mainlineVer.Minor() - 1
-	if expectedStableMinor < 0 {
-		expectedStableMinor = 0
-	}
-	debug("expected stable minor: %d\n", expectedStableMinor)
-	stableVer := semver.MustParse("v0.0.0")
-	for _, rel := range releases {
-		debug("check version %s\n", rel)
-		if rel == "" {
-			debug("ignoring untagged version %s\n", rel)
-			continue
-		}
-
-		ver, err := semver.NewVersion(rel)
-		if err != nil {
-			debug("skipping invalid version %s\n", rel)
-		}
-
-		if ver.Minor() != expectedStableMinor {
-			debug("skipping version %s\n", rel)
-			continue
-		}
-
-		if ver.Compare(stableVer) > 0 {
-			stableVer = ver
-			continue
-		}
-	}
-
-	stable := fmt.Sprintf("v%d.%d.%d", stableVer.Major(), stableVer.Minor(), stableVer.Patch())
-	_, _ = fmt.Fprintf(os.Stdout, "CODER_STABLE_VERSION=%q\n", stable)
-
-	expectedOldStableMinor := mainlineVer.Minor() - 2
-	if expectedOldStableMinor < 0 {
-		expectedOldStableMinor = 0
-	}
-	debug("expected old stable minor: %d\n", expectedStableMinor)
-	oldStableVer := semver.MustParse("v0.0.0")
-	for _, rel := range releases {
-		debug("check version %s\n", rel)
-		if rel == "" {
-			debug("ignoring untagged version %s\n", rel)
-			continue
-		}
-
-		ver, err := semver.NewVersion(rel)
-		if err != nil {
-			debug("skipping invalid version %s\n", rel)
-		}
-
-		if ver.Minor() != expectedOldStableMinor {
-			debug("skipping version %s\n", rel)
-			continue
-		}
-
-		if ver.Compare(oldStableVer) > 0 {
-			oldStableVer = ver
-			continue
-		}
-	}
-
-	oldStable := fmt.Sprintf("v%d.%d.%d", oldStableVer.Major(), oldStableVer.Minor(), oldStableVer.Patch())
-	_, _ = fmt.Fprintf(os.Stdout, "CODER_OLDSTABLE_VERSION=%q\n", oldStable)
+// formatVersion formats a semver version as "vMAJOR.MINOR.PATCH",
+// stripping any prerelease or build metadata.
+func formatVersion(v *semver.Version) string {
+	return fmt.Sprintf("v%d.%d.%d", v.Major(), v.Minor(), v.Patch())
 }
 
 type release struct {
@@ -123,7 +90,6 @@ func fetchReleases() []string {
 	for _, rel := range releases {
 		if rel.TagName != "" {
 			ss = append(ss, rel.TagName)
-
 		}
 	}
 	return ss
