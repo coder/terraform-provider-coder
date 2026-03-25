@@ -99,7 +99,8 @@ func main() {
 }
 
 type release struct {
-	TagName string `json:"tag_name"`
+	TagName    string `json:"tag_name"`
+	Prerelease bool   `json:"prerelease"`
 }
 
 const releasesURL = "https://api.github.com/repos/coder/coder/releases"
@@ -121,9 +122,8 @@ func fetchReleases() []string {
 
 	var ss []string
 	for _, rel := range releases {
-		if rel.TagName != "" {
+		if rel.TagName != "" && !rel.Prerelease {
 			ss = append(ss, rel.TagName)
-
 		}
 	}
 	return ss
