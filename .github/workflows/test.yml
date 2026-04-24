@@ -158,4 +158,9 @@ jobs:
       - name: Lint gen
         run: |
           make gen
-          git diff --exit-code
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "make gen produced changes; run 'make gen' locally and commit the result:"
+            git status --porcelain
+            git --no-pager diff
+            exit 1
+          fi
