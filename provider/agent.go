@@ -115,7 +115,9 @@ func agentResource() *schema.Resource {
 				Type:        schema.TypeString,
 				ForceNew:    true,
 				Optional:    true,
-				Description: "The starting directory when a user creates a shell session. Defaults to `\"$HOME\"`.",
+				Description: "The starting directory when a user creates a shell session. Defaults to `\"$HOME\"`." +
+					"\n\n~> **Warning:** Setting `dir` to a value other than `$HOME` will break " +
+					"[Coder Desktop file sync](https://coder.com/docs/user-guides/desktop/desktop-connect-sync).",
 			},
 			"env": {
 				ForceNew:    true,
