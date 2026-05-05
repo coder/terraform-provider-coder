@@ -2,12 +2,14 @@
 set -euo pipefail
 
 MOD_VERSION=$(go mod edit -json | jq -r .Go)
-echo "go.mod version: $MOD_VERSION"
+# Strip patch version for comparison: workflows use major.minor to get latest patch automatically
+MOD_MINOR="${MOD_VERSION%.*}"
+echo "go.mod version: $MOD_VERSION (checking major.minor: $MOD_MINOR)"
 STATUS=0
 
 if [[ " $* " == *" --fix "* ]]; then
     for wf in .github/workflows/*.{yml,yaml}; do
-        sed -i "s/go-version:.*/go-version: \"${MOD_VERSION}\"/g" "${wf}"
+        sed -i "s/go-version:.*/go-version: \"${MOD_MINOR}\"/g" "${wf}"
     done
     exit 0
 fi
@@ -20,9 +22,9 @@ for wf in .github/workflows/*.{yml,yaml}; do
 
     UNIQUE_WF_VERSIONS=$(sort -u <<<"$WF_VERSIONS")
     for ver in $UNIQUE_WF_VERSIONS; do
-        if [[ $ver != "$MOD_VERSION" ]]; then
+        if [[ $ver != "$MOD_MINOR" ]]; then
             STATUS=1
-            echo "❌ $wf: go.mod=$MOD_VERSION but workflow uses $(tr '\n' ' ' <<<"$UNIQUE_WF_VERSIONS")"
+            echo "❌ $wf: go.mod=$MOD_MINOR but workflow uses $(tr '\n' ' ' <<<"$UNIQUE_WF_VERSIONS")"
             continue
         fi
     done
