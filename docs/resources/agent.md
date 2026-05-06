@@ -75,9 +75,9 @@ resource "kubernetes_pod" "dev" {
 - `api_key_scope` (String) Controls what API routes the agent token can access. Options: `all` (full access) or `no_user_data` (blocks `/external-auth`, `/gitsshkey`, and `/gitauth` routes)
 - `auth` (String) The authentication type the agent will use. Must be one of: `"token"`, `"google-instance-identity"`, `"aws-instance-identity"`, `"azure-instance-identity"`.
 - `connection_timeout` (Number) Time in seconds until the agent is marked as timed out when a connection with the server cannot be established. A value of zero never marks the agent as timed out.
-- `dir` (String) The starting directory when a user creates a shell session. Defaults to `"$HOME"`.
+- `dir` (String, Deprecated) The starting directory when a user creates a shell session. Defaults to `"$HOME"`.
 
-~> **Warning:** Setting `dir` to a value other than `$HOME` will break [Coder Desktop file sync](https://coder.com/docs/user-guides/desktop/desktop-connect-sync).
+~> **Warning:** This attribute is deprecated and will be removed in a future release. Setting `dir` to a value other than `$HOME` will break [Coder Desktop file sync](https://coder.com/docs/user-guides/desktop/desktop-connect-sync).
 - `display_apps` (Block Set, Max: 1) The list of built-in apps to display in the agent bar. (see [below for nested schema](#nestedblock--display_apps))
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
 - `metadata` (Block List) Each `metadata` block defines a single item consisting of a key/value pair. This feature is in alpha and may break in future releases. (see [below for nested schema](#nestedblock--metadata))
