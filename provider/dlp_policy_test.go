@@ -25,6 +25,7 @@ func TestDLPPolicy(t *testing.T) {
 					ssh_access             = true
 					web_terminal_access    = true
 					port_forwarding_access = true
+					desktop_access         = true
 					allowed_applications   = ["code-server", "vscode-desktop"]
 				}
 				`,
@@ -37,6 +38,7 @@ func TestDLPPolicy(t *testing.T) {
 					require.Equal(t, "true", res.Primary.Attributes["ssh_access"])
 					require.Equal(t, "true", res.Primary.Attributes["web_terminal_access"])
 					require.Equal(t, "true", res.Primary.Attributes["port_forwarding_access"])
+					require.Equal(t, "true", res.Primary.Attributes["desktop_access"])
 					require.Equal(t, "2", res.Primary.Attributes["allowed_applications.#"])
 					require.Equal(t, "code-server", res.Primary.Attributes["allowed_applications.0"])
 					require.Equal(t, "vscode-desktop", res.Primary.Attributes["allowed_applications.1"])
@@ -68,6 +70,7 @@ func TestDLPPolicy(t *testing.T) {
 					require.Equal(t, "false", res.Primary.Attributes["ssh_access"])
 					require.Equal(t, "false", res.Primary.Attributes["web_terminal_access"])
 					require.Equal(t, "false", res.Primary.Attributes["port_forwarding_access"])
+					require.Equal(t, "false", res.Primary.Attributes["desktop_access"])
 					// Omitting the field entirely leaves allowed_applications.# blank
 					// in state rather than "0"; both mean "no allowed apps".
 					require.Empty(t, res.Primary.Attributes["allowed_applications.#"])

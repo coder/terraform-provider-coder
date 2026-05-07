@@ -634,6 +634,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 							web_terminal = false
 							port_forwarding_helper = false
 							ssh_helper = false
+							desktop = false
 						}
 					}
 					`,
@@ -652,6 +653,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 						"vscode",
 						"port_forwarding_helper",
 						"ssh_helper",
+						"desktop",
 					} {
 						key := fmt.Sprintf("display_apps.0.%s", app)
 						if app == "vscode_insiders" {
@@ -700,6 +702,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 						"vscode",
 						"port_forwarding_helper",
 						"ssh_helper",
+						"desktop",
 					} {
 						key := fmt.Sprintf("display_apps.0.%s", app)
 						require.Equal(t, "true", resource.Primary.Attributes[key])
@@ -740,6 +743,7 @@ func TestAgent_DisplayApps(t *testing.T) {
 						"vscode",
 						"port_forwarding_helper",
 						"ssh_helper",
+						"desktop",
 					} {
 						key := fmt.Sprintf("display_apps.0.%s", app)
 						if app == "vscode_insiders" {

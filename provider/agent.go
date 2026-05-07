@@ -43,6 +43,7 @@ func agentResource() *schema.Resource {
 						"web_terminal":           true,
 						"ssh_helper":             true,
 						"port_forwarding_helper": true,
+						"desktop":                true,
 					},
 				})
 				if err != nil {
@@ -67,6 +68,7 @@ func agentResource() *schema.Resource {
 						"web_terminal":           true,
 						"ssh_helper":             true,
 						"port_forwarding_helper": true,
+						"desktop":                true,
 					},
 				})
 				if err != nil {
@@ -281,6 +283,13 @@ func agentResource() *schema.Resource {
 						"ssh_helper": {
 							Type:        schema.TypeBool,
 							Description: "Display the SSH helper button in the agent bar.",
+							ForceNew:    true,
+							Optional:    true,
+							Default:     true,
+						},
+						"desktop": {
+							Type:        schema.TypeBool,
+							Description: "Display the Desktop (VNC) button in the agent bar.",
 							ForceNew:    true,
 							Optional:    true,
 							Default:     true,

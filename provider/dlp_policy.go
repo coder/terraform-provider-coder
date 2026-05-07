@@ -13,6 +13,7 @@ type DLPPolicy struct {
 	SSHAccess            bool     `mapstructure:"ssh_access"`
 	WebTerminalAccess    bool     `mapstructure:"web_terminal_access"`
 	PortForwardingAccess bool     `mapstructure:"port_forwarding_access"`
+	DesktopAccess        bool     `mapstructure:"desktop_access"`
 	AllowedApplications  []string `mapstructure:"allowed_applications"`
 }
 
@@ -52,6 +53,13 @@ func dlpPolicyResource() *schema.Resource {
 			"port_forwarding_access": {
 				Type:        schema.TypeBool,
 				Description: "Whether workspace users may forward arbitrary TCP ports from the workspace.",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+			},
+			"desktop_access": {
+				Type:        schema.TypeBool,
+				Description: "Whether workspace users may open the noVNC desktop viewer.",
 				Optional:    true,
 				Default:     false,
 				ForceNew:    true,
