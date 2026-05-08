@@ -14,6 +14,7 @@ type DLPPolicy struct {
 	WebTerminalAccess    bool     `mapstructure:"web_terminal_access"`
 	PortForwardingAccess bool     `mapstructure:"port_forwarding_access"`
 	DesktopAccess        bool     `mapstructure:"desktop_access"`
+	ClipboardAccess      bool     `mapstructure:"clipboard_access"`
 	AllowedApplications  []string `mapstructure:"allowed_applications"`
 }
 
@@ -60,6 +61,13 @@ func dlpPolicyResource() *schema.Resource {
 			"desktop_access": {
 				Type:        schema.TypeBool,
 				Description: "Whether workspace users may open the noVNC desktop viewer.",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+			},
+			"clipboard_access": {
+				Type:        schema.TypeBool,
+				Description: "Whether workspace users may use clipboard copy/paste in the noVNC desktop viewer. When false, ClientCutText and ServerCutText RFB messages are dropped in flight.",
 				Optional:    true,
 				Default:     false,
 				ForceNew:    true,
