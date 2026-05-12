@@ -149,3 +149,57 @@ func TestValidateURL(t *testing.T) {
 		})
 	}
 }
+
+func TestWarnDirNotHome(t *testing.T) {
+	tests := []struct {
+		name         string
+		value        interface{}
+		warnCount    int
+	}{
+		// No warnings expected.
+		{
+			name:      "empty string",
+			value:     "",
+			warnCount: 0,
+		},
+		{
+			name:      "$HOME",
+			value:     "$HOME",
+			warnCount: 0,
+		},
+		{
+			name:      "tilde",
+			value:     "~",
+			warnCount: 0,
+		},
+		{
+			name:      "non-string type",
+			value:     123,
+			warnCount: 0,
+		},
+		// Warnings expected.
+		{
+			name:      "absolute path",
+			value:     "/workspace",
+			warnCount: 2,
+		},
+		{
+			name:      "relative path",
+			value:     "projects/foo",
+			warnCount: 2,
+		},
+		{
+			name:      "tilde subdir",
+			value:     "~/projects",
+			warnCount: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			warnings, errors := WarnDirNotHome(tt.value, "dir")
+			require.Empty(t, errors, "expected no errors")
+			require.Len(t, warnings, tt.warnCount)
+		})
+	}
+}
