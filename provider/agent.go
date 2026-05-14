@@ -94,13 +94,6 @@ func agentResource() *schema.Resource {
 					"no_user_data",
 				}, false),
 			},
-			"dlp_policy": {
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				Description:  "The id of a `coder_dlp_policy` resource that gates access to this agent. Omitted means no policy (permissive).",
-				ValidateFunc: validation.IsUUID,
-			},
 			"init_script": {
 				Type:        schema.TypeString,
 				Computed:    true,

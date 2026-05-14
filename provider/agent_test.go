@@ -65,57 +65,6 @@ func TestAgent(t *testing.T) {
 	})
 }
 
-func TestAgent_DLPPolicy(t *testing.T) {
-	t.Parallel()
-
-	t.Run("References", func(t *testing.T) {
-		t.Parallel()
-		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
-			Steps: []resource.TestStep{{
-				Config: `
-					resource "coder_dlp_policy" "strict" {
-						ssh_access = true
-					}
-					resource "coder_agent" "new" {
-						os         = "linux"
-						arch       = "amd64"
-						dlp_policy = coder_dlp_policy.strict.id
-					}
-				`,
-				Check: func(state *terraform.State) error {
-					require.Len(t, state.Modules, 1)
-					policy := state.Modules[0].Resources["coder_dlp_policy.strict"]
-					require.NotNil(t, policy)
-					agent := state.Modules[0].Resources["coder_agent.new"]
-					require.NotNil(t, agent)
-					require.Equal(t, policy.Primary.Attributes["id"], agent.Primary.Attributes["dlp_policy"])
-					return nil
-				},
-			}},
-		})
-	})
-
-	t.Run("InvalidUUID", func(t *testing.T) {
-		t.Parallel()
-		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
-			Steps: []resource.TestStep{{
-				Config: `
-					resource "coder_agent" "new" {
-						os         = "linux"
-						arch       = "amd64"
-						dlp_policy = "not-a-uuid"
-					}
-				`,
-				ExpectError: regexp.MustCompile(`expected "dlp_policy" to be a valid UUID`),
-			}},
-		})
-	})
-}
-
 func TestAgent_StartupScriptBehavior(t *testing.T) {
 	t.Parallel()
 

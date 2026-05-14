@@ -23,8 +23,8 @@ func dlpPolicyResource() *schema.Resource {
 		SchemaVersion: 1,
 
 		Description: "Use this resource to declare a data loss prevention policy. " +
-			"Reference its `id` from a `coder_agent`'s `dlp_policy` attribute to apply " +
-			"it to that agent. A single policy may be referenced by any number of agents.",
+			"Declare at most one `coder_dlp_policy` resource per template; it applies " +
+			"uniformly to every agent in the resulting workspace.",
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ any) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 			return nil
