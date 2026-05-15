@@ -15,6 +15,7 @@ type DLPPolicy struct {
 	PortForwardingAccess bool     `mapstructure:"port_forwarding_access"`
 	DesktopAccess        bool     `mapstructure:"desktop_access"`
 	ClipboardAccess      bool     `mapstructure:"clipboard_access"`
+	AIAgentAccess        bool     `mapstructure:"ai_agent_access"`
 	AllowedApplications  []string `mapstructure:"allowed_applications"`
 }
 
@@ -68,6 +69,13 @@ func dlpPolicyResource() *schema.Resource {
 			"clipboard_access": {
 				Type:        schema.TypeBool,
 				Description: "Whether workspace users may use clipboard copy/paste in the noVNC desktop viewer. When false, ClientCutText and ServerCutText RFB messages are dropped in flight.",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+			},
+			"ai_agent_access": {
+				Type:        schema.TypeBool,
+				Description: "Whether AI chat agents may dial the workspace agent. When false, chatd strips all workspace-touching tools from the LLM's tool slice for chats on this workspace.",
 				Optional:    true,
 				Default:     false,
 				ForceNew:    true,
