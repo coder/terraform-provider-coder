@@ -64,6 +64,7 @@ type Parameter struct {
 	Optional    bool
 	Order       int
 	Ephemeral   bool
+	Sensitive   bool
 }
 
 func parameterDataSource() *schema.Resource {
@@ -99,6 +100,7 @@ func parameterDataSource() *schema.Resource {
 				Optional    interface{}
 				Order       interface{}
 				Ephemeral   interface{}
+				Sensitive   interface{}
 			}{
 				Name:        rd.Get("name"),
 				DisplayName: rd.Get("display_name"),
@@ -126,6 +128,7 @@ func parameterDataSource() *schema.Resource {
 				}(),
 				Order:     rd.Get("order"),
 				Ephemeral: rd.Get("ephemeral"),
+				Sensitive: rd.Get("sensitive"),
 			}, &parameter)
 			if err != nil {
 				return diag.Errorf("decode parameter: %s", err)
@@ -327,6 +330,12 @@ func parameterDataSource() *schema.Resource {
 				Default:     false,
 				Optional:    true,
 				Description: "The value of an ephemeral parameter will not be preserved between consecutive workspace builds.",
+			},
+			"sensitive": {
+				Type:        schema.TypeBool,
+				Default:     false,
+				Optional:    true,
+				Description: "Whether the value of this parameter is sensitive. Sensitive parameter values are encrypted at rest and redacted when returned by the Coder API.",
 			},
 		},
 	}

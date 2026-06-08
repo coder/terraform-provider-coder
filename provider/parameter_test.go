@@ -52,6 +52,7 @@ func TestParameter(t *testing.T) {
 				}
 				order = 5
 				ephemeral = true
+				sensitive = true
 			}
 			`,
 		Check: func(state *terraform.ResourceState) {
@@ -75,6 +76,7 @@ func TestParameter(t *testing.T) {
 				"order":                "5",
 				"default":              "us-east1-a",
 				"ephemeral":            "true",
+				"sensitive":            "true",
 			} {
 				require.Equal(t, value, attrs[key])
 			}
