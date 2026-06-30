@@ -16,6 +16,7 @@ func TestExamples(t *testing.T) {
 		"coder_parameter",
 		"coder_workspace_tags",
 		"coder_resources_monitoring",
+		"coder_script_order",
 	} {
 		t.Run(testDir, func(t *testing.T) {
 			testDir := testDir
