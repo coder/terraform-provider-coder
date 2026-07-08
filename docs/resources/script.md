@@ -89,7 +89,7 @@ resource "coder_script" "shutdown" {
 
 ### Optional
 
-- `cron` (String) The cron schedule to run the script on. This uses a 6-field cron expression format: `seconds minutes hours day-of-month month day-of-week`. Note that this differs from the standard Unix 5-field format by including seconds as the first field. Examples: `"0 0 22 * * *"` (daily at 10 PM), `"0 */5 * * * *"` (every 5 minutes), `"30 0 9 * * 1-5"` (weekdays at 9:30 AM).
+- `cron` (String) The cron schedule to run the script on. This uses a 6-field cron expression format: `seconds minutes hours day-of-month month day-of-week`. Note that this differs from the standard Unix 5-field format by including seconds as the first field. Examples: `"0 0 22 * * *"` (daily at 10 PM), `"0 */5 * * * *"` (every 5 minutes), `"0 30 9 * * 1-5"` (weekdays at 9:30 AM).
 - `icon` (String) A URL to an icon that will display in the dashboard. View built-in icons [here](https://github.com/coder/coder/tree/main/site/static/icon). Use a built-in icon with `"${data.coder_workspace.me.access_url}/icon/<path>"`.
 - `log_path` (String) The path of a file to write the logs to. If relative, it will be appended to tmp.
 - `run_on_start` (Boolean) This option defines whether or not the script should run when the agent starts. The script should exit when it is done to signal that the agent is ready.
