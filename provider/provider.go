@@ -73,6 +73,7 @@ func New() *schema.Provider {
 			"coder_app":            appResource(),
 			"coder_metadata":       metadataResource(),
 			"coder_script":         scriptResource(),
+			"coder_script_order":   scriptOrderResource(),
 			"coder_env":            envResource(),
 			"coder_devcontainer":   devcontainerResource(),
 			"coder_external_agent": externalAgentResource(),
