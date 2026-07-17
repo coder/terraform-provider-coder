@@ -32,6 +32,12 @@ func devcontainerResource() *schema.Resource {
 				ForceNew:    true,
 				Required:    true,
 			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "A custom name for the sub-agent. If not set, the Terraform block name is used. Required when using `for_each` or `count` to avoid name collisions.",
+				ForceNew:    true,
+				Optional:    true,
+			},
 			"workspace_folder": {
 				Type:         schema.TypeString,
 				Description:  "The workspace folder to for the Dev Container.",

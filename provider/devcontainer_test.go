@@ -105,3 +105,32 @@ func TestDevcontainerNoWorkspaceFolder(t *testing.T) {
 		}},
 	})
 }
+
+func TestDevcontainerWithName(t *testing.T) {
+	t.Parallel()
+
+	resource.Test(t, resource.TestCase{
+		ProviderFactories: coderFactory(),
+		IsUnitTest:        true,
+		Steps: []resource.TestStep{{
+			Config: `
+			provider "coder" {
+			}
+			resource "coder_devcontainer" "example" {
+				agent_id = "king"
+				name = "my-custom-name"
+				workspace_folder = "/workspace"
+				config_path = "/workspace/devcontainer.json"
+			}
+			`,
+			Check: func(state *terraform.State) error {
+				require.Len(t, state.Modules, 1)
+				require.Len(t, state.Modules[0].Resources, 1)
+				script := state.Modules[0].Resources["coder_devcontainer.example"]
+				require.NotNil(t, script)
+				require.Equal(t, "my-custom-name", script.Primary.Attributes["name"])
+				return nil
+			},
+		}},
+	})
+}
