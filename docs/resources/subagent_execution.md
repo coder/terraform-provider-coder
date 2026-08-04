@@ -59,9 +59,9 @@ resource "coder_env" "sandbox_name" {
 
 ### Optional
 
-- `driver_protocol` (Number) The protocol version used to interpret the driver configuration. Only version 1 is supported.
-- `restart_policy` (String) Controls whether a failed child execution is restarted. Valid values are `never` and `on-failure`.
-- `startup_timeout` (Number) Time in seconds allowed for the child execution to start.
+- `driver_protocol` (Number) The protocol version used to interpret the driver configuration. Only version 1 is supported. Defaults to 1.
+- `restart_policy` (String) Controls whether a failed child execution is restarted. Valid values are `never` and `on-failure`. Defaults to `on-failure`.
+- `startup_timeout` (Number) Time in seconds allowed for the child execution to start. Defaults to 120 seconds.
 
 ### Read-Only
 

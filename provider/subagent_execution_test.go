@@ -30,17 +30,33 @@ func TestSubagentExecution(t *testing.T) {
 		require.Empty(t, resourceSchema.StateUpgraders)
 		require.NotContains(t, resourceSchema.Schema, "id")
 
-		for _, field := range []string{
-			"agent_id",
-			"name",
-			"driver",
-			"driver_protocol",
-			"shared_host_path",
-			"shared_child_path",
-			"startup_timeout",
-			"restart_policy",
-		} {
-			require.True(t, resourceSchema.Schema[field].ForceNew, "%s must be ForceNew", field)
+		expectedFields := []struct {
+			name       string
+			required   bool
+			optional   bool
+			computed   bool
+			forceNew   bool
+			defaultVal interface{}
+		}{
+			{name: "agent_id", required: true, forceNew: true},
+			{name: "name", required: true, forceNew: true},
+			{name: "driver", required: true, forceNew: true},
+			{name: "driver_protocol", optional: true, forceNew: true, defaultVal: 1},
+			{name: "shared_host_path", required: true, forceNew: true},
+			{name: "shared_child_path", required: true, forceNew: true},
+			{name: "startup_timeout", optional: true, forceNew: true, defaultVal: 120},
+			{name: "restart_policy", optional: true, forceNew: true, defaultVal: "on-failure"},
+			{name: "subagent_id", computed: true},
+		}
+		require.Len(t, resourceSchema.Schema, len(expectedFields))
+		for _, expected := range expectedFields {
+			field, ok := resourceSchema.Schema[expected.name]
+			require.True(t, ok, "%s must be present", expected.name)
+			require.Equal(t, expected.required, field.Required, "%s Required", expected.name)
+			require.Equal(t, expected.optional, field.Optional, "%s Optional", expected.name)
+			require.Equal(t, expected.computed, field.Computed, "%s Computed", expected.name)
+			require.Equal(t, expected.forceNew, field.ForceNew, "%s ForceNew", expected.name)
+			require.Equal(t, expected.defaultVal, field.Default, "%s Default", expected.name)
 		}
 	})
 
@@ -193,64 +209,98 @@ func TestSubagentExecution(t *testing.T) {
 func TestSubagentExecutionReferences(t *testing.T) {
 	t.Parallel()
 
+	const config = `
+		provider "coder" {}
+
+		resource "coder_agent" "parent" {
+			os = "linux"
+			arch = "amd64"
+		}
+
+		resource "coder_subagent_execution" "child" {
+			agent_id = coder_agent.parent.id
+			name = "child"
+			driver = "example-driver"
+			shared_host_path = "/workspace"
+			shared_child_path = "/workspace"
+		}
+
+		resource "coder_app" "child" {
+			agent_id = coder_subagent_execution.child.subagent_id
+			slug = "child-app"
+			command = "bash"
+		}
+
+		resource "coder_script" "child" {
+			agent_id = coder_subagent_execution.child.subagent_id
+			display_name = "Child setup"
+			run_on_start = true
+			script = "echo ready"
+		}
+
+		resource "coder_env" "child" {
+			agent_id = coder_subagent_execution.child.subagent_id
+			name = "CHILD_EXECUTION"
+			value = "true"
+		}
+	`
+	replacementConfig := strings.Replace(config, `driver = "example-driver"`, `driver = "replacement-driver"`, 1)
+
+	var initialResourceID, initialSubagentID string
+	requireDownstreamAgentIDs := func(state *terraform.State, expectedAgentID string) {
+		for _, address := range []string{
+			"coder_app.child",
+			"coder_script.child",
+			"coder_env.child",
+		} {
+			childResource := state.Modules[0].Resources[address]
+			require.NotNil(t, childResource, address)
+			require.Equal(t, expectedAgentID, childResource.Primary.Attributes["agent_id"], address)
+		}
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProviderFactories: coderFactory(),
 		IsUnitTest:        true,
-		Steps: []resource.TestStep{{
-			Config: `
-				provider "coder" {}
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				Check: func(state *terraform.State) error {
+					execution := state.Modules[0].Resources["coder_subagent_execution.child"]
+					require.NotNil(t, execution)
 
-				resource "coder_agent" "parent" {
-					os = "linux"
-					arch = "amd64"
-				}
-
-				resource "coder_subagent_execution" "child" {
-					agent_id = coder_agent.parent.id
-					name = "child"
-					driver = "example-driver"
-					shared_host_path = "/workspace"
-					shared_child_path = "/workspace"
-				}
-
-				resource "coder_app" "child" {
-					agent_id = coder_subagent_execution.child.subagent_id
-					slug = "child-app"
-					command = "bash"
-				}
-
-				resource "coder_script" "child" {
-					agent_id = coder_subagent_execution.child.subagent_id
-					display_name = "Child setup"
-					run_on_start = true
-					script = "echo ready"
-				}
-
-				resource "coder_env" "child" {
-					agent_id = coder_subagent_execution.child.subagent_id
-					name = "CHILD_EXECUTION"
-					value = "true"
-				}
-			`,
-			Check: func(state *terraform.State) error {
-				execution := state.Modules[0].Resources["coder_subagent_execution.child"]
-				require.NotNil(t, execution)
-				subagentID := execution.Primary.Attributes["subagent_id"]
-				_, err := uuid.Parse(subagentID)
-				require.NoError(t, err)
-
-				for _, address := range []string{
-					"coder_app.child",
-					"coder_script.child",
-					"coder_env.child",
-				} {
-					childResource := state.Modules[0].Resources[address]
-					require.NotNil(t, childResource, address)
-					require.Equal(t, subagentID, childResource.Primary.Attributes["agent_id"], address)
-				}
-				return nil
+					initialResourceID = execution.Primary.ID
+					initialSubagentID = execution.Primary.Attributes["subagent_id"]
+					_, err := uuid.Parse(initialResourceID)
+					require.NoError(t, err, "resource ID should be a valid UUID")
+					_, err = uuid.Parse(initialSubagentID)
+					require.NoError(t, err, "subagent_id should be a valid UUID")
+					require.NotEqual(t, initialResourceID, initialSubagentID)
+					requireDownstreamAgentIDs(state, initialSubagentID)
+					return nil
+				},
 			},
-		}},
+			{
+				Config: replacementConfig,
+				Check: func(state *terraform.State) error {
+					execution := state.Modules[0].Resources["coder_subagent_execution.child"]
+					require.NotNil(t, execution)
+					require.Equal(t, "replacement-driver", execution.Primary.Attributes["driver"])
+
+					replacementResourceID := execution.Primary.ID
+					replacementSubagentID := execution.Primary.Attributes["subagent_id"]
+					_, err := uuid.Parse(replacementResourceID)
+					require.NoError(t, err, "replacement resource ID should be a valid UUID")
+					_, err = uuid.Parse(replacementSubagentID)
+					require.NoError(t, err, "replacement subagent_id should be a valid UUID")
+					require.NotEqual(t, initialResourceID, replacementResourceID, "resource ID must rotate on replacement")
+					require.NotEqual(t, initialSubagentID, replacementSubagentID, "subagent_id must rotate on replacement")
+					require.NotEqual(t, replacementResourceID, replacementSubagentID)
+					requireDownstreamAgentIDs(state, replacementSubagentID)
+					return nil
+				},
+			},
+		},
 	})
 }
 

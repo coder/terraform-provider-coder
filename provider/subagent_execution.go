@@ -52,7 +52,7 @@ func subagentExecutionResource() *schema.Resource {
 			},
 			"driver_protocol": {
 				Type:         schema.TypeInt,
-				Description:  "The protocol version used to interpret the driver configuration. Only version 1 is supported.",
+				Description:  "The protocol version used to interpret the driver configuration. Only version 1 is supported. Defaults to 1.",
 				ForceNew:     true,
 				Optional:     true,
 				Default:      1,
@@ -74,7 +74,7 @@ func subagentExecutionResource() *schema.Resource {
 			},
 			"startup_timeout": {
 				Type:         schema.TypeInt,
-				Description:  "Time in seconds allowed for the child execution to start.",
+				Description:  "Time in seconds allowed for the child execution to start. Defaults to 120 seconds.",
 				ForceNew:     true,
 				Optional:     true,
 				Default:      120,
@@ -82,7 +82,7 @@ func subagentExecutionResource() *schema.Resource {
 			},
 			"restart_policy": {
 				Type:         schema.TypeString,
-				Description:  "Controls whether a failed child execution is restarted. Valid values are `never` and `on-failure`.",
+				Description:  "Controls whether a failed child execution is restarted. Valid values are `never` and `on-failure`. Defaults to `on-failure`.",
 				ForceNew:     true,
 				Optional:     true,
 				Default:      "on-failure",
