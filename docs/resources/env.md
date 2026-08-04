@@ -39,7 +39,7 @@ resource "coder_env" "internal_api_url" {
 
 ### Required
 
-- `agent_id` (String) The `id` property of a `coder_agent` resource to associate with.
+- `agent_id` (String) The `id` property of a `coder_agent` resource, or the computed `subagent_id` of a supported child execution resource, to associate with.
 - `name` (String) The name of the environment variable.
 
 ### Optional

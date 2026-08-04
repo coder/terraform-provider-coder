@@ -77,7 +77,7 @@ func appResource() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"agent_id": {
 				Type:        schema.TypeString,
-				Description: "The `id` property of a `coder_agent` resource to associate with.",
+				Description: "The `id` property of a `coder_agent` resource, or the computed `subagent_id` of a supported child execution resource, to associate with.",
 				ForceNew:    true,
 				Required:    true,
 			},

@@ -56,7 +56,7 @@ resource "coder_app" "vim" {
 
 ### Required
 
-- `agent_id` (String) The `id` property of a `coder_agent` resource to associate with.
+- `agent_id` (String) The `id` property of a `coder_agent` resource, or the computed `subagent_id` of a supported child execution resource, to associate with.
 - `slug` (String) A hostname-friendly name for the app. This is used in URLs to access the app. May contain alphanumerics and hyphens. Cannot start/end with a hyphen or contain two consecutive hyphens.
 
 ### Optional
