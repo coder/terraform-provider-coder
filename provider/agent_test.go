@@ -822,3 +822,97 @@ func TestAgent_APIKeyScope(t *testing.T) {
 		})
 	})
 }
+
+// TestAgent_AIBound covers the AI identity binding declaration and the egress
+// attestation that accompanies it. Binding is opt-in only: it can withhold
+// credentials but never grant them, so false and omitted are equivalent as far
+// as the template is concerned.
+func TestAgent_AIBound(t *testing.T) {
+	t.Parallel()
+
+	t.Run("DefaultsToUnbound", func(t *testing.T) {
+		t.Parallel()
+
+		resourceName := "coder_agent.test_ai_default"
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{
+				{
+					Config: `
+						provider "coder" {
+							url = "https://example.com"
+						}
+						resource "coder_agent" "test_ai_default" {
+							os   = "linux"
+							arch = "amd64"
+						}
+					`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "ai_bound", "false"),
+						// No default: an omitted attestation must be absent
+						// rather than claiming "none", so the server can tell
+						// "not declared" from "declared as unenforced".
+						resource.TestCheckNoResourceAttr(resourceName, "egress_enforcement"),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("BoundWithAttestation", func(t *testing.T) {
+		t.Parallel()
+
+		resourceName := "coder_agent.test_ai_bound"
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{
+				{
+					Config: `
+						provider "coder" {
+							url = "https://example.com"
+						}
+						resource "coder_agent" "test_ai_bound" {
+							os                 = "linux"
+							arch               = "amd64"
+							ai_bound           = true
+							egress_enforcement = "forced"
+						}
+					`,
+					Check: resource.ComposeTestCheckFunc(
+						resource.TestCheckResourceAttr(resourceName, "ai_bound", "true"),
+						resource.TestCheckResourceAttr(resourceName, "egress_enforcement", "forced"),
+					),
+				},
+			},
+		})
+	})
+
+	t.Run("RejectsUnknownEnforcement", func(t *testing.T) {
+		t.Parallel()
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{
+				{
+					Config: `
+						provider "coder" {
+							url = "https://example.com"
+						}
+						resource "coder_agent" "test_ai_invalid" {
+							os                 = "linux"
+							arch               = "amd64"
+							ai_bound           = true
+							egress_enforcement = "mandatory"
+						}
+					`,
+					ExpectError: regexp.MustCompile(`expected egress_enforcement to be one of`),
+				},
+			},
+		})
+	})
+}

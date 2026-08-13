@@ -72,6 +72,7 @@ resource "kubernetes_pod" "dev" {
 
 ### Optional
 
+- `ai_bound` (Boolean) Run this agent under a dedicated AI agent identity. A bound agent receives no ambient owner credentials: no owner session token, no user secrets, no external auth tokens, and no Git SSH key. It receives a scoped, workspace-pinned AI session token instead, and its actions are audited against the AI identity on behalf of the workspace owner. This is opt-in only: it can remove credentials but never add them. Setting it to false does not unbind an agent in a workspace that the server has already designated as AI-owned.
 - `api_key_scope` (String) Controls what API routes the agent token can access. Options: `all` (full access) or `no_user_data` (blocks `/external-auth`, `/gitsshkey`, and `/gitauth` routes)
 - `auth` (String) The authentication type the agent will use. Must be one of: `"token"`, `"google-instance-identity"`, `"aws-instance-identity"`, `"azure-instance-identity"`.
 - `connection_timeout` (Number) Time in seconds until the agent is marked as timed out when a connection with the server cannot be established. A value of zero never marks the agent as timed out.
@@ -79,6 +80,7 @@ resource "kubernetes_pod" "dev" {
 
 ~> **Warning:** This attribute is deprecated and will be removed in a future release. Setting `dir` to a value other than `$HOME` will break [Coder Desktop file sync](https://coder.com/docs/user-guides/desktop/desktop-connect-sync).
 - `display_apps` (Block Set, Max: 1) The list of built-in apps to display in the agent bar. (see [below for nested schema](#nestedblock--display_apps))
+- `egress_enforcement` (String) What this agent's environment claims about its network egress, when the agent runs inside a sandbox built by a startup script. `forced` claims every egress path is routed through the platform proxy, `advisory` claims only that proxy environment variables are set, and `none` claims nothing. This is an administrator attestation recorded and surfaced by Coder; the platform does not verify it. Only meaningful together with `ai_bound`.
 - `env` (Map of String) A mapping of environment variables to set inside the workspace.
 - `metadata` (Block List) Each `metadata` block defines a single item consisting of a key/value pair. This feature is in alpha and may break in future releases. (see [below for nested schema](#nestedblock--metadata))
 - `motd_file` (String) The path to a file within the workspace containing a message to display to users when they login via SSH. A typical value would be `"/etc/motd"`.

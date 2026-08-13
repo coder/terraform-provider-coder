@@ -81,6 +81,25 @@ func agentResource() *schema.Resource {
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
+			"ai_bound": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+				ForceNew: true,
+				Description: "Run this agent under a dedicated AI agent identity. A bound agent receives no ambient owner credentials: no owner session token, no user secrets, no external auth tokens, and no Git SSH key. It receives a scoped, workspace-pinned AI session token instead, and its actions are audited against the AI identity on behalf of the workspace owner. " +
+					"This is opt-in only: it can remove credentials but never add them. Setting it to false does not unbind an agent in a workspace that the server has already designated as AI-owned.",
+			},
+			"egress_enforcement": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+				Description: "What this agent's environment claims about its network egress, when the agent runs inside a sandbox built by a startup script. `forced` claims every egress path is routed through the platform proxy, `advisory` claims only that proxy environment variables are set, and `none` claims nothing. This is an administrator attestation recorded and surfaced by Coder; the platform does not verify it. Only meaningful together with `ai_bound`.",
+				ValidateFunc: validation.StringInSlice([]string{
+					"forced",
+					"advisory",
+					"none",
+				}, false),
+			},
 			"api_key_scope": {
 				Type:        schema.TypeString,
 				Optional:    true,
