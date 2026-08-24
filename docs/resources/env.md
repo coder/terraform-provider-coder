@@ -61,7 +61,14 @@ resource "coder_env" "path_go" {
 
 ### Optional
 
-- `merge_strategy` (String) Controls how this environment variable is merged when multiple coder_env resources define the same name. `replace` (default): last value wins. `append`: appends to existing value with a colon `:` separator. `prepend`: prepends to existing value with a colon `:` separator. `error`: fail the build if another coder_env defines the same name. When multiple resources append or prepend to the same name, they are applied in alphabetical order by Terraform resource address. This only merges values across coder_env resources; it does not consider any value already present in the workspace's environment, such as a base image's PATH. To extend such a value, reference it directly, e.g. `value = "$PATH:/usr/local/bin"`, so the agent expands it against the real environment at startup.
+- `merge_strategy` (String) Controls how this environment variable is merged when multiple coder_env resources define the same name.
+When multiple resources append or prepend to the same name, they are applied in alphabetical order by Terraform resource address.
+This only merges values across `coder_env` resources; it does not consider any value already present in the workspace's environment, such as a base image's `PATH`.
+To extend such a value, reference it directly (e.g., `value = "$PATH:/usr/local/bin"`), so the agent expands it against the real environment at startup. Valid values are as follows:
+  - `replace` (default): last value wins.
+  - `append`: appends to existing value with a colon `:` separator.
+  - `prepend`: prepends to existing value with a colon `:` separator.
+  - `error`: fail the build if another coder_env defines the same name.
 - `value` (String) The value of the environment variable.
 
 ### Read-Only
