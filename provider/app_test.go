@@ -109,6 +109,76 @@ func TestApp(t *testing.T) {
 			}
 			`,
 			external: true,
+		}, {
+			name: "NoScheme",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "my-repo"
+				external = true
+			}
+			`,
+			external:    true,
+			expectError: regexp.MustCompile(`must include a scheme`),
+		}, {
+			name: "HostPortWithoutScheme",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "localhost:8080"
+				external = true
+			}
+			`,
+			external:    true,
+			expectError: regexp.MustCompile(`"localhost" URLs must include a host`),
+		}, {
+			name: "NoHost",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "https://"
+				external = true
+			}
+			`,
+			external:    true,
+			expectError: regexp.MustCompile(`"https" URLs must include a host`),
+		}, {
+			name: "NotExternalIsUnchecked",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "my-repo"
+			}
+			`,
+			external: false,
 		}}
 		for _, tc := range cases {
 			tc := tc
