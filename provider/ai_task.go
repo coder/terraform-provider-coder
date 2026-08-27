@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-// Deprecated: Coder Tasks is deprecated as of Coder v2.36 and will be removed in
+// Deprecated: Coder Tasks is deprecated as of Coder v2.34 and will be removed in
 // a future release. Use Coder Agents instead:
 // https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration
 type AITask struct {
@@ -20,7 +20,7 @@ type AITask struct {
 	AppID      string             `mapstructure:"app_id"`
 }
 
-// Deprecated: Coder Tasks is deprecated as of Coder v2.36 and will be removed in
+// Deprecated: Coder Tasks is deprecated as of Coder v2.34 and will be removed in
 // a future release. Use Coder Agents instead:
 // https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration
 type AITaskSidebarApp struct {
@@ -29,21 +29,21 @@ type AITaskSidebarApp struct {
 
 // TaskPromptParameterName is the name of the parameter which is *required* to be defined when a coder_ai_task is used.
 //
-// Deprecated: Coder Tasks is deprecated as of Coder v2.36. Task prompts are read
+// Deprecated: Coder Tasks is deprecated as of Coder v2.34. Task prompts are read
 // from the task itself, not from a parameter.
 const TaskPromptParameterName = "AI Prompt"
 
 // aiTaskDeprecationMessage is surfaced by Terraform whenever a deprecated AI
 // task resource or data source is used.
-const aiTaskDeprecationMessage = "Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Use Coder Agents instead: https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration"
+const aiTaskDeprecationMessage = "Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release. Use Coder Agents instead: https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration"
 
 // aiTaskAttributeDeprecationMessage is surfaced by Terraform whenever a
 // deprecated AI task attribute is used. It is kept short because it is rendered
 // inline in the generated attribute documentation.
-const aiTaskAttributeDeprecationMessage = "Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release."
+const aiTaskAttributeDeprecationMessage = "Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release."
 
 // aiTaskDeprecationNotice is rendered in the generated documentation.
-const aiTaskDeprecationNotice = "\n\n~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration)."
+const aiTaskDeprecationNotice = "\n\n~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release. Starting June 2, 2026, Coder Tasks moves to a 12-month Extended Support Release (ESR) for Premium customers. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration). Coder Tasks documentation remains available in the [v2.36 documentation](https://coder.com/docs/@v2.36.3/ai-coder/tasks)."
 
 func aiTaskResource() *schema.Resource {
 	return &schema.Resource{

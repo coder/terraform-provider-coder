@@ -4,14 +4,14 @@ page_title: "coder_task Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
   Use this data source to read information about Coder Tasks.
-  ~> Deprecated: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Templates no longer require AI task resources; use Coder Agents https://coder.com/docs/ai-coder/agents and follow the migration guide https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration.
+  ~> Deprecated: Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release. Starting June 2, 2026, Coder Tasks moves to a 12-month Extended Support Release (ESR) for Premium customers. Templates no longer require AI task resources; use Coder Agents https://coder.com/docs/ai-coder/agents and follow the migration guide https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration. Coder Tasks documentation remains available in the v2.36 documentation https://coder.com/docs/@v2.36.3/ai-coder/tasks.
 ---
 
 # coder_task (Data Source)
 
 Use this data source to read information about Coder Tasks.
 
-~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration).
+~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release. Starting June 2, 2026, Coder Tasks moves to a 12-month Extended Support Release (ESR) for Premium customers. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration). Coder Tasks documentation remains available in the [v2.36 documentation](https://coder.com/docs/@v2.36.3/ai-coder/tasks).
 
 ## Example Usage
 
