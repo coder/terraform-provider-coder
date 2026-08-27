@@ -10,6 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// Deprecated: Coder Tasks is deprecated as of Coder v2.36 and will be removed in
+// a future release. Use Coder Agents instead:
+// https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration
 type AITask struct {
 	ID         string             `mapstructure:"id"`
 	SidebarApp []AITaskSidebarApp `mapstructure:"sidebar_app"`
@@ -17,6 +20,9 @@ type AITask struct {
 	AppID      string             `mapstructure:"app_id"`
 }
 
+// Deprecated: Coder Tasks is deprecated as of Coder v2.36 and will be removed in
+// a future release. Use Coder Agents instead:
+// https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration
 type AITaskSidebarApp struct {
 	ID string `mapstructure:"id"`
 }
@@ -102,6 +108,7 @@ func aiTaskResource() *schema.Resource {
 						"id": {
 							Type:         schema.TypeString,
 							Description:  "A reference to an existing `coder_app` resource in your template.",
+							Deprecated:   aiTaskAttributeDeprecationMessage,
 							Required:     true,
 							ForceNew:     true,
 							ValidateFunc: validation.IsUUID,

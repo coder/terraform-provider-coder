@@ -38,4 +38,4 @@ Use this resource to define Coder tasks.
 
 Required:
 
-- `id` (String) A reference to an existing `coder_app` resource in your template.
+- `id` (String, Deprecated) A reference to an existing `coder_app` resource in your template.

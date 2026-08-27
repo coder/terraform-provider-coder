@@ -10,5 +10,5 @@ resource "coder_ai_task" "task" {
 
 module "example-agent" {
   count  = data.coder_task.me.enabled ? data.coder_workspace.me.start_count : 0
-  prompt = data.coder_ai_task.me.prompt
+  prompt = data.coder_task.me.prompt
 }
