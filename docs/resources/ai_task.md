@@ -4,11 +4,14 @@ page_title: "coder_ai_task Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
   Use this resource to define Coder tasks.
+  ~> Deprecated: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Templates no longer require AI task resources; use Coder Agents https://coder.com/docs/ai-coder/agents and follow the migration guide https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration.
 ---
 
 # coder_ai_task (Resource)
 
 Use this resource to define Coder tasks.
+
+~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration).
 
 
 
@@ -17,16 +20,16 @@ Use this resource to define Coder tasks.
 
 ### Optional
 
-- `app_id` (String) The ID of the `coder_app` resource that provides the AI interface for this task.
+- `app_id` (String, **Deprecated**: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release.) The ID of the `coder_app` resource that provides the AI interface for this task.
 - `sidebar_app` (Block Set, Max: 1, Deprecated) The coder_app to display in the sidebar. Usually a chat interface with the AI agent running in the workspace, like https://github.com/coder/agentapi. (see [below for nested schema](#nestedblock--sidebar_app))
 
 ### Read-Only
 
-- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context.
+- `enabled` (Boolean, Deprecated) True when executing in a Coder Task context, false when in a Coder Workspace context.
 
   -> The `enabled` field is only populated in Coder v2.28 and later.
 - `id` (String) A unique identifier for this resource.
-- `prompt` (String) The prompt text provided to the task by Coder.
+- `prompt` (String, Deprecated) The prompt text provided to the task by Coder.
 
   -> The `prompt` field is only populated in Coder v2.28 and later.
 

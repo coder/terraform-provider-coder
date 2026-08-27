@@ -4,11 +4,14 @@ page_title: "coder_task Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
   Use this data source to read information about Coder Tasks.
+  ~> Deprecated: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Templates no longer require AI task resources; use Coder Agents https://coder.com/docs/ai-coder/agents and follow the migration guide https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration.
 ---
 
 # coder_task (Data Source)
 
 Use this data source to read information about Coder Tasks.
+
+~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration).
 
 ## Example Usage
 
@@ -34,10 +37,10 @@ module "example-agent" {
 
 ### Read-Only
 
-- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context.
+- `enabled` (Boolean, Deprecated) True when executing in a Coder Task context, false when in a Coder Workspace context.
 
   -> The `enabled` field is only populated in Coder v2.28 and later.
 - `id` (String) The UUID of the task, if executing in a Coder Task context. Empty in a Coder Workspace context.
-- `prompt` (String) The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.
+- `prompt` (String, Deprecated) The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.
 
   -> The `prompt` field is only populated in Coder v2.28 and later.

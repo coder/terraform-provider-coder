@@ -22,13 +22,29 @@ type AITaskSidebarApp struct {
 }
 
 // TaskPromptParameterName is the name of the parameter which is *required* to be defined when a coder_ai_task is used.
+//
+// Deprecated: Coder Tasks is deprecated as of Coder v2.36. Task prompts are read
+// from the task itself, not from a parameter.
 const TaskPromptParameterName = "AI Prompt"
+
+// aiTaskDeprecationMessage is surfaced by Terraform whenever a deprecated AI
+// task resource or data source is used.
+const aiTaskDeprecationMessage = "Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Use Coder Agents instead: https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration"
+
+// aiTaskAttributeDeprecationMessage is surfaced by Terraform whenever a
+// deprecated AI task attribute is used. It is kept short because it is rendered
+// inline in the generated attribute documentation.
+const aiTaskAttributeDeprecationMessage = "Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release."
+
+// aiTaskDeprecationNotice is rendered in the generated documentation.
+const aiTaskDeprecationNotice = "\n\n~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.36 and will be removed in a future release. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration)."
 
 func aiTaskResource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this resource to define Coder tasks.",
+		DeprecationMessage: aiTaskDeprecationMessage,
+		Description:        "Use this resource to define Coder tasks." + aiTaskDeprecationNotice,
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i any) diag.Diagnostics {
 			var diags diag.Diagnostics
 
@@ -76,7 +92,7 @@ func aiTaskResource() *schema.Resource {
 			"sidebar_app": {
 				Type:          schema.TypeSet,
 				Description:   "The coder_app to display in the sidebar. Usually a chat interface with the AI agent running in the workspace, like https://github.com/coder/agentapi.",
-				Deprecated:    "This field has been deprecated in favor of the `app_id` field.",
+				Deprecated:    "This field has been deprecated in favor of the `app_id` field. " + aiTaskAttributeDeprecationMessage,
 				ForceNew:      true,
 				Optional:      true,
 				MaxItems:      1,
@@ -96,11 +112,13 @@ func aiTaskResource() *schema.Resource {
 			"prompt": {
 				Type:        schema.TypeString,
 				Description: "The prompt text provided to the task by Coder.\n\n  -> The `prompt` field is only populated in Coder v2.28 and later.",
+				Deprecated:  aiTaskAttributeDeprecationMessage,
 				Computed:    true,
 			},
 			"app_id": {
 				Type:          schema.TypeString,
 				Description:   "The ID of the `coder_app` resource that provides the AI interface for this task.",
+				Deprecated:    aiTaskAttributeDeprecationMessage,
 				ForceNew:      true,
 				Optional:      true,
 				Computed:      true,
@@ -110,6 +128,7 @@ func aiTaskResource() *schema.Resource {
 			"enabled": {
 				Type:        schema.TypeBool,
 				Description: "True when executing in a Coder Task context, false when in a Coder Workspace context.\n\n  -> The `enabled` field is only populated in Coder v2.28 and later.",
+				Deprecated:  aiTaskAttributeDeprecationMessage,
 				Computed:    true,
 			},
 		},
@@ -118,7 +137,8 @@ func aiTaskResource() *schema.Resource {
 
 func taskDatasource() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to read information about Coder Tasks.",
+		DeprecationMessage: aiTaskDeprecationMessage,
+		Description:        "Use this data source to read information about Coder Tasks." + aiTaskDeprecationNotice,
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			diags := diag.Diagnostics{}
 
@@ -145,11 +165,13 @@ func taskDatasource() *schema.Resource {
 			"prompt": {
 				Type:        schema.TypeString,
 				Computed:    true,
+				Deprecated:  aiTaskAttributeDeprecationMessage,
 				Description: "The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.\n\n  -> The `prompt` field is only populated in Coder v2.28 and later.",
 			},
 			"enabled": {
 				Type:        schema.TypeBool,
 				Computed:    true,
+				Deprecated:  aiTaskAttributeDeprecationMessage,
 				Description: "True when executing in a Coder Task context, false when in a Coder Workspace context.\n\n  -> The `enabled` field is only populated in Coder v2.28 and later.",
 			},
 		},
