@@ -4,11 +4,14 @@ page_title: "coder_task Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
   Use this data source to read information about Coder Tasks.
+  ~> Deprecated: Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release. Starting June 2, 2026, Coder Tasks moves to a 12-month Extended Support Release (ESR) for Premium customers. Templates no longer require AI task resources; use Coder Agents https://coder.com/docs/ai-coder/agents and follow the migration guide https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration. Coder Tasks documentation remains available in the v2.36 documentation https://coder.com/docs/@v2.36.3/ai-coder/tasks.
 ---
 
 # coder_task (Data Source)
 
 Use this data source to read information about Coder Tasks.
+
+~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release. Starting June 2, 2026, Coder Tasks moves to a 12-month Extended Support Release (ESR) for Premium customers. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration). Coder Tasks documentation remains available in the [v2.36 documentation](https://coder.com/docs/@v2.36.3/ai-coder/tasks).
 
 ## Example Usage
 
@@ -25,7 +28,7 @@ resource "coder_ai_task" "task" {
 
 module "example-agent" {
   count  = data.coder_task.me.enabled ? data.coder_workspace.me.start_count : 0
-  prompt = data.coder_ai_task.me.prompt
+  prompt = data.coder_task.me.prompt
 }
 ```
 
@@ -34,10 +37,10 @@ module "example-agent" {
 
 ### Read-Only
 
-- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context.
+- `enabled` (Boolean, Deprecated) True when executing in a Coder Task context, false when in a Coder Workspace context.
 
   -> The `enabled` field is only populated in Coder v2.28 and later.
 - `id` (String) The UUID of the task, if executing in a Coder Task context. Empty in a Coder Workspace context.
-- `prompt` (String) The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.
+- `prompt` (String, Deprecated) The prompt text provided to the task by Coder, if executing in a Coder Task context. Empty in a Coder Workspace context.
 
   -> The `prompt` field is only populated in Coder v2.28 and later.

@@ -4,11 +4,14 @@ page_title: "coder_ai_task Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
   Use this resource to define Coder tasks.
+  ~> Deprecated: Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release. Starting June 2, 2026, Coder Tasks moves to a 12-month Extended Support Release (ESR) for Premium customers. Templates no longer require AI task resources; use Coder Agents https://coder.com/docs/ai-coder/agents and follow the migration guide https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration. Coder Tasks documentation remains available in the v2.36 documentation https://coder.com/docs/@v2.36.3/ai-coder/tasks.
 ---
 
 # coder_ai_task (Resource)
 
 Use this resource to define Coder tasks.
+
+~> **Deprecated**: Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release. Starting June 2, 2026, Coder Tasks moves to a 12-month Extended Support Release (ESR) for Premium customers. Templates no longer require AI task resources; use [Coder Agents](https://coder.com/docs/ai-coder/agents) and follow the [migration guide](https://coder.com/docs/ai-coder/agents/tasks-to-chats-migration). Coder Tasks documentation remains available in the [v2.36 documentation](https://coder.com/docs/@v2.36.3/ai-coder/tasks).
 
 
 
@@ -17,16 +20,16 @@ Use this resource to define Coder tasks.
 
 ### Optional
 
-- `app_id` (String) The ID of the `coder_app` resource that provides the AI interface for this task.
+- `app_id` (String, **Deprecated**: Coder Tasks is deprecated as of Coder v2.34 and will be removed in a future release.) The ID of the `coder_app` resource that provides the AI interface for this task.
 - `sidebar_app` (Block Set, Max: 1, Deprecated) The coder_app to display in the sidebar. Usually a chat interface with the AI agent running in the workspace, like https://github.com/coder/agentapi. (see [below for nested schema](#nestedblock--sidebar_app))
 
 ### Read-Only
 
-- `enabled` (Boolean) True when executing in a Coder Task context, false when in a Coder Workspace context.
+- `enabled` (Boolean, Deprecated) True when executing in a Coder Task context, false when in a Coder Workspace context.
 
   -> The `enabled` field is only populated in Coder v2.28 and later.
 - `id` (String) A unique identifier for this resource.
-- `prompt` (String) The prompt text provided to the task by Coder.
+- `prompt` (String, Deprecated) The prompt text provided to the task by Coder.
 
   -> The `prompt` field is only populated in Coder v2.28 and later.
 
@@ -35,4 +38,4 @@ Use this resource to define Coder tasks.
 
 Required:
 
-- `id` (String) A reference to an existing `coder_app` resource in your template.
+- `id` (String, Deprecated) A reference to an existing `coder_app` resource in your template.
