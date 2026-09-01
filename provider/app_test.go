@@ -576,6 +576,106 @@ func TestApp(t *testing.T) {
 		}
 	})
 
+	t.Run("ExternalURLValidation", func(t *testing.T) {
+		t.Parallel()
+
+		cases := []struct {
+			name        string
+			url         string
+			external    bool
+			expectError *regexp.Regexp
+		}{
+			{
+				name:     "ExternalWithScheme",
+				url:      "https://example.com",
+				external: true,
+			},
+			{
+				name:     "ExternalWithVSCodeScheme",
+				url:      "vscode://remote-ssh",
+				external: true,
+			},
+			{
+				name:     "ExternalWithJetBrainsScheme",
+				url:      "jetbrains-gateway://connection",
+				external: true,
+			},
+			{
+				name:        "ExternalBareString",
+				url:         "my-repo",
+				external:    true,
+				expectError: regexp.MustCompile(`"url" must have a URL scheme`),
+			},
+			{
+				name:        "ExternalRelativePath",
+				url:         "/some/path",
+				external:    true,
+				expectError: regexp.MustCompile(`"url" must have a URL scheme`),
+			},
+			{
+				name:     "ExternalLocalhostNoScheme",
+				url:      "localhost:8080",
+				external: true, // Go's url.Parse treats "localhost" as the scheme, so this passes
+			},
+			{
+				name:     "InternalBareString",
+				url:      "my-repo",
+				external: false,
+			},
+			{
+				name:     "InternalRelativePath",
+				url:      "/some/path",
+				external: false,
+			},
+			{
+				name:     "InternalLocalhost",
+				url:      "http://localhost:8080",
+				external: false,
+			},
+			{
+				name:     "InternalLocalhostNoScheme",
+				url:      "localhost:8080",
+				external: false,
+			},
+		}
+
+		for _, tc := range cases {
+			tc := tc
+			t.Run(tc.name, func(t *testing.T) {
+				t.Parallel()
+
+				externalLine := "external = false"
+				if tc.external {
+					externalLine = "external = true"
+				}
+
+				config := fmt.Sprintf(`
+				provider "coder" {}
+				resource "coder_agent" "dev" {
+					os = "linux"
+					arch = "amd64"
+				}
+				resource "coder_app" "test" {
+					agent_id = coder_agent.dev.id
+					slug = "test"
+					display_name = "Testing"
+					url = %q
+					%s
+				}
+				`, tc.url, externalLine)
+
+				resource.Test(t, resource.TestCase{
+					ProviderFactories: coderFactory(),
+					IsUnitTest:        true,
+					Steps: []resource.TestStep{{
+						Config:      config,
+						ExpectError: tc.expectError,
+					}},
+				})
+			})
+		}
+	})
+
 	t.Run("ConflictsWith", func(t *testing.T) {
 		t.Parallel()
 
