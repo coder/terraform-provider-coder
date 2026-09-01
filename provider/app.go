@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/go-cty/cty"
@@ -81,22 +82,20 @@ func appResource() *schema.Resource {
 				return nil
 			}
 
-			rawURL, ok := rd.GetOk("url")
+			rawURL, ok := rd.Get("url").(string)
 			if !ok {
-				return nil
+				return fmt.Errorf("unexpected type %T for url, expected string", rd.Get("url"))
+			}
+			if strings.TrimSpace(rawURL) == "" {
+				return fmt.Errorf("invalid \"coder_app\" url %q for external app: must include a scheme and host", rawURL)
 			}
 
-			rawURLStr, ok := rawURL.(string)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for url, expected string", rawURL)
-			}
-
-			parsedURL, err := url.Parse(rawURLStr)
+			parsedURL, err := url.Parse(rawURL)
 			if err != nil {
-				return fmt.Errorf("invalid \"coder_app\" url %q for external app: %w", rawURLStr, err)
+				return fmt.Errorf("invalid \"coder_app\" url %q for external app: %w", rawURL, err)
 			}
-			if parsedURL.Scheme == "" || parsedURL.Host == "" {
-				return fmt.Errorf("invalid \"coder_app\" url %q for external app: must include a scheme and host", rawURLStr)
+			if parsedURL.Scheme == "" || parsedURL.Hostname() == "" {
+				return fmt.Errorf("invalid \"coder_app\" url %q for external app: must include a scheme and host", rawURL)
 			}
 
 			return nil
