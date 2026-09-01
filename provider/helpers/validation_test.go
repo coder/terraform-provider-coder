@@ -150,6 +150,91 @@ func TestValidateURL(t *testing.T) {
 	}
 }
 
+func TestValidateExternalURL(t *testing.T) {
+	tests := []struct {
+		name          string
+		value         any
+		label         string
+		expectError   bool
+		errorContains string
+	}{
+		// Valid cases
+		{
+			name:        "empty string",
+			value:       "",
+			label:       "url",
+			expectError: false,
+		},
+		{
+			name:        "valid https URL",
+			value:       "https://example.com",
+			label:       "url",
+			expectError: false,
+		},
+		{
+			name:        "valid http URL",
+			value:       "http://localhost:8080",
+			label:       "url",
+			expectError: false,
+		},
+		{
+			name:        "vscode scheme",
+			value:       "vscode://remote-ssh",
+			label:       "url",
+			expectError: false,
+		},
+		{
+			name:        "jetbrains scheme",
+			value:       "jetbrains-gateway://connection",
+			label:       "url",
+			expectError: false,
+		},
+		// Invalid cases
+		{
+			name:          "bare string no scheme",
+			value:         "my-repo",
+			label:         "url",
+			expectError:   true,
+			errorContains: "must have a URL scheme",
+		},
+		{
+			name:          "relative path no scheme",
+			value:         "/some/path",
+			label:         "url",
+			expectError:   true,
+			errorContains: "must have a URL scheme",
+		},
+		{
+			name:        "localhost without scheme",
+			value:       "localhost:8080",
+			label:       "url",
+			expectError: false, // Go's url.Parse treats "localhost" as the scheme
+		},
+		{
+			name:          "non-string type",
+			value:         123,
+			label:         "url",
+			expectError:   true,
+			errorContains: "expected \"url\" to be a string",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			warnings, errors := ValidateExternalURL(tt.value, tt.label)
+
+			if tt.expectError {
+				require.Len(t, errors, 1, "expected an error but got none")
+				require.Contains(t, errors[0].Error(), tt.errorContains)
+			} else {
+				require.Empty(t, errors, "expected no errors but got: %v", errors)
+			}
+
+			require.Nil(t, warnings, "expected warnings to be nil but got: %v", warnings)
+		})
+	}
+}
+
 func TestWarnDirNotHome(t *testing.T) {
 	tests := []struct {
 		name         string
