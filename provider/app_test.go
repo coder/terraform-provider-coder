@@ -109,6 +109,78 @@ func TestApp(t *testing.T) {
 			}
 			`,
 			external: true,
+		}, {
+			name: "EmptyURL",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = ""
+				external = true
+				open_in = "slim-window"
+			}
+			`,
+			expectError: regexp.MustCompile(`must include a scheme and host`),
+		}, {
+			name: "MissingScheme",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "google.com"
+				external = true
+				open_in = "slim-window"
+			}
+			`,
+			expectError: regexp.MustCompile(`must include a scheme and host`),
+		}, {
+			name: "MissingHost",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "https://"
+				external = true
+				open_in = "slim-window"
+			}
+			`,
+			expectError: regexp.MustCompile(`must include a scheme and host`),
+		}, {
+			name: "NoHostname",
+			config: `
+			provider "coder" {}
+			resource "coder_agent" "dev" {
+				os = "linux"
+				arch = "amd64"
+			}
+			resource "coder_app" "test" {
+				agent_id = coder_agent.dev.id
+				slug = "test"
+				display_name = "Testing"
+				url = "https://:8080"
+				external = true
+				open_in = "slim-window"
+			}
+			`,
+			expectError: regexp.MustCompile(`must include a scheme and host`),
 		}}
 		for _, tc := range cases {
 			tc := tc
