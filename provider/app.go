@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/google/uuid"
@@ -72,6 +74,31 @@ func appResource() *schema.Resource {
 			return nil
 		},
 		DeleteContext: func(ctx context.Context, rd *schema.ResourceData, i any) diag.Diagnostics {
+			return nil
+		},
+		CustomizeDiff: func(ctx context.Context, rd *schema.ResourceDiff, i any) error {
+			if !rd.Get("external").(bool) {
+				return nil
+			}
+
+			rawURL, ok := rd.GetOk("url")
+			if !ok {
+				return nil
+			}
+
+			rawURLStr, ok := rawURL.(string)
+			if !ok {
+				return fmt.Errorf("unexpected type %T for url, expected string", rawURL)
+			}
+
+			parsedURL, err := url.Parse(rawURLStr)
+			if err != nil {
+				return fmt.Errorf("invalid \"coder_app\" url %q for external app: %w", rawURLStr, err)
+			}
+			if parsedURL.Scheme == "" || parsedURL.Host == "" {
+				return fmt.Errorf("invalid \"coder_app\" url %q for external app: must include a scheme and host", rawURLStr)
+			}
+
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
