@@ -293,5 +293,19 @@ func appResource() *schema.Resource {
 				},
 			},
 		},
+		CustomizeDiff: func(ctx context.Context, rd *schema.ResourceDiff, i any) error {
+			// A value that stays unknown until apply cannot be checked here.
+			if !rd.NewValueKnown("external") || !rd.NewValueKnown("url") {
+				return nil
+			}
+
+			external, _ := rd.Get("external").(bool)
+			rawURL, _ := rd.Get("url").(string)
+			if external {
+				return helpers.ValidateExternalURL(rawURL)
+			}
+
+			return nil
+		},
 	}
 }

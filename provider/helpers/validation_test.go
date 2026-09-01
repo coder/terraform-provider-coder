@@ -152,9 +152,9 @@ func TestValidateURL(t *testing.T) {
 
 func TestWarnDirNotHome(t *testing.T) {
 	tests := []struct {
-		name         string
-		value        interface{}
-		warnCount    int
+		name      string
+		value     interface{}
+		warnCount int
 	}{
 		// No warnings expected.
 		{
@@ -200,6 +200,120 @@ func TestWarnDirNotHome(t *testing.T) {
 			warnings, errors := WarnDirNotHome(tt.value, "dir")
 			require.Empty(t, errors, "expected no errors")
 			require.Len(t, warnings, tt.warnCount)
+		})
+	}
+}
+
+func TestValidateExternalURL(t *testing.T) {
+	tests := []struct {
+		name          string
+		value         string
+		errorContains string
+	}{
+		// Valid: a scheme and a host.
+		{
+			name:  "https URL",
+			value: "https://example.com",
+		},
+		{
+			name:  "https URL with path and query",
+			value: "https://example.com/path?q=test",
+		},
+		{
+			name:  "custom vscode scheme",
+			value: "vscode://coder.coder-remote/open?token=$SESSION_TOKEN",
+		},
+		{
+			name:  "reverse DNS scheme with a path",
+			value: "com.example.app://callback",
+		},
+		{
+			name:  "jetbrains gateway",
+			value: "jetbrains-gateway://connect#provider=ssh&host=192.168.1.1&port=22&user=ubuntu&projectPath=/home/ubuntu/projects/my-app",
+		},
+
+		// Invalid: a bare host:port is read as a scheme with an opaque body, so
+		// "localhost:8080" parses as the scheme "localhost" and leaves no host.
+		{
+			name:          "host:port without scheme",
+			value:         "localhost:8080",
+			errorContains: `"localhost" URLs must include a host`,
+		},
+		{
+			name:          "domain and port without scheme",
+			value:         "example.com:8080",
+			errorContains: `"example.com" URLs must include a host`,
+		},
+		{
+			name:          "host:port with a path",
+			value:         "localhost:8080/path",
+			errorContains: `"localhost" URLs must include a host`,
+		},
+
+		// Invalid: opaque URLs have no host, so there is nothing to navigate to.
+		{
+			name:          "opaque scheme",
+			value:         "mailto:user@example.com",
+			errorContains: "must include a host",
+		},
+		{
+			name:          "opaque scheme with a numeric body",
+			value:         "tel:5551234",
+			errorContains: "must include a host",
+		},
+
+		// Invalid: no scheme, so new URL() throws.
+		{
+			name:          "bare string",
+			value:         "my-repo",
+			errorContains: "must include a scheme",
+		},
+		{
+			name:          "absolute path",
+			value:         "/some/path",
+			errorContains: "must include a scheme",
+		},
+		{
+			name:          "relative path",
+			value:         "./file.txt",
+			errorContains: "must include a scheme",
+		},
+		{
+			name:          "protocol relative",
+			value:         "//example.com",
+			errorContains: "must include a scheme",
+		},
+		{
+			name:          "empty string",
+			value:         "",
+			errorContains: "must include a scheme",
+		},
+
+		// Invalid: Go accepts a hostless special scheme, the browser does not.
+		{
+			name:          "https with no host",
+			value:         "https://",
+			errorContains: "must include a host",
+		},
+
+		// Invalid: unparsable by either parser.
+		{
+			name:          "malformed URL",
+			value:         "http://[::1:80",
+			errorContains: "missing ']'",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateExternalURL(tt.value)
+
+			if tt.errorContains == "" {
+				require.NoError(t, err)
+				return
+			}
+			require.Error(t, err)
+			require.Contains(t, err.Error(), tt.errorContains)
 		})
 	}
 }

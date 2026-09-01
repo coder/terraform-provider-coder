@@ -34,3 +34,22 @@ func WarnDirNotHome(val interface{}, _ string) ([]string, []error) {
 		`Setting "dir" to a value other than $HOME will break Coder Desktop file sync.`,
 	}, nil
 }
+
+// ValidateExternalURL validates that value is a URL the browser's URL can parse.
+// An external app URL must carry a scheme and hostname
+func ValidateExternalURL(value string) error {
+	u, err := url.Parse(value)
+	if err != nil {
+		return err
+	}
+
+	if u.Scheme == "" {
+		return fmt.Errorf(`must include a scheme, for example "https://"`)
+	}
+
+	if u.Host == "" || u.Hostname() == "" {
+		return fmt.Errorf("%q URLs must include a host", u.Scheme)
+	}
+
+	return nil
+}
