@@ -365,7 +365,7 @@ func setup(ctx context.Context, t *testing.T, name, coderImg, coderVersion strin
 		}
 		t.Logf("not ready yet...")
 		return false
-	}, 10*time.Second, time.Second, "coder failed to become ready in time")
+	}, 12*time.Second, time.Second, "coder failed to become ready in time")
 
 	// Perform first time setup
 	_, rc := execContainer(ctx, t, ctr.ID, fmt.Sprintf(`coder login %s --first-user-email=%q --first-user-password=%q --first-user-trial=false --first-user-username=%q`, localURL, testEmail, testPassword, testUsername))

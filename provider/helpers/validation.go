@@ -44,7 +44,7 @@ func ValidateExternalURL(value string) error {
 	}
 
 	if u.Scheme == "" {
-		return fmt.Errorf(`must include a scheme, for example "https://" or "vscode://"`)
+		return fmt.Errorf(`must include a scheme, for example "https://"`)
 	}
 
 	if u.Host == "" || u.Hostname() == "" {
