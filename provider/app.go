@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/google/uuid"
@@ -35,6 +37,31 @@ func appResource() *schema.Resource {
 		SchemaVersion: 1,
 
 		Description: "Use this resource to define shortcuts to access applications in a workspace.",
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, i any) error {
+			external, ok := diff.GetOkExists("external")
+			if !ok || !external.(bool) {
+				return nil
+			}
+
+			urlVal, ok := diff.GetOkExists("url")
+			if !ok {
+				return nil
+			}
+
+			u, err := url.Parse(urlVal.(string))
+			if err != nil {
+				return fmt.Errorf("invalid URL %q: %w", urlVal.(string), err)
+			}
+
+			if u.Scheme == "" {
+				return fmt.Errorf(
+					"\"url\" must have a URL scheme (e.g. https://, vscode://, jetbrains-gateway://) when \"external\" is true, got %q",
+					urlVal.(string),
+				)
+			}
+
+			return nil
+		},
 		CreateContext: func(c context.Context, resourceData *schema.ResourceData, i any) diag.Diagnostics {
 			resourceData.SetId(uuid.NewString())
 
