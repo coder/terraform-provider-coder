@@ -118,9 +118,7 @@ func agentResource() *schema.Resource {
 					Optional:    true,
 					Deprecated:  "dir has been deprecated and will be removed in a future release.",
 					Description: "The starting directory when a user creates a shell session. Defaults to `\"$HOME\"`." +
-						"\n\n~> **Warning:** This attribute is deprecated and will be removed in a future release. " +
-						"Setting `dir` to a value other than `$HOME` will break " +
-						"[Coder Desktop file sync](https://coder.com/docs/user-guides/desktop/desktop-connect-sync).",
+						"\n\n~> **Warning:** This attribute is deprecated and will be removed in a future release.",
 					ValidateFunc: helpers.WarnDirNotHome,
 				},
 

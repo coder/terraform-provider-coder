@@ -181,17 +181,17 @@ func TestWarnDirNotHome(t *testing.T) {
 		{
 			name:      "absolute path",
 			value:     "/workspace",
-			warnCount: 2,
+			warnCount: 1,
 		},
 		{
 			name:      "relative path",
 			value:     "projects/foo",
-			warnCount: 2,
+			warnCount: 1,
 		},
 		{
 			name:      "tilde subdir",
 			value:     "~/projects",
-			warnCount: 2,
+			warnCount: 1,
 		},
 	}
 
