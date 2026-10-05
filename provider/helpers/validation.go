@@ -21,19 +21,6 @@ func ValidateURL(value any, label string) ([]string, []error) {
 	return nil, nil
 }
 
-// WarnDirNotHome returns a warning if dir is set to a value other
-// than $HOME. The dir attribute is deprecated and will be removed in
-// a future release.
-func WarnDirNotHome(val interface{}, _ string) ([]string, []error) {
-	d, ok := val.(string)
-	if !ok || d == "" || d == "$HOME" || d == "~" {
-		return nil, nil
-	}
-	return []string{
-		`"dir" is deprecated and will be removed in a future release.`,
-	}, nil
-}
-
 // ValidateExternalURL validates that value is a URL the browser's URL can parse.
 // An external app URL must carry a scheme and hostname
 func ValidateExternalURL(value string) error {

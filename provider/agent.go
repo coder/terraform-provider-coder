@@ -49,9 +49,9 @@ func agentResource() *schema.Resource {
 					return diag.FromErr(err)
 				}
 			}
-				return updateInitScript(resourceData, i)
-			},
 
+			return updateInitScript(resourceData, i)
+		},
 		ReadWithoutTimeout: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			token := agentAuthToken(ctx, "")
 			err := resourceData.Set("token", token)
@@ -74,9 +74,8 @@ func agentResource() *schema.Resource {
 				}
 			}
 
-				return updateInitScript(resourceData, i)
-			},
-
+			return updateInitScript(resourceData, i)
+		},
 		DeleteContext: func(ctx context.Context, resourceData *schema.ResourceData, i interface{}) diag.Diagnostics {
 			return nil
 		},
@@ -112,20 +111,17 @@ func agentResource() *schema.Resource {
 				Description:  "The authentication type the agent will use. Must be one of: `\"token\"`, `\"google-instance-identity\"`, `\"aws-instance-identity\"`, `\"azure-instance-identity\"`.",
 				ValidateFunc: validation.StringInSlice([]string{"token", "google-instance-identity", "aws-instance-identity", "azure-instance-identity"}, false),
 			},
-				"dir": {
-					Type:        schema.TypeString,
-					ForceNew:    true,
-					Optional:    true,
-					Deprecated:  "dir has been deprecated and will be removed in a future release.",
-					Description: "The starting directory when a user creates a shell session. Defaults to `\"$HOME\"`." +
-						"\n\n~> **Warning:** This attribute is deprecated and will be removed in a future release.",
-					ValidateFunc: helpers.WarnDirNotHome,
-				},
-
+			"dir": {
+				Type:     schema.TypeString,
+				ForceNew: true,
+				Optional: true,
+				Description: "The starting directory when a user creates a shell session. Defaults to `\"$HOME\"`. " +
+					"SFTP and scp resolve relative and `~/`-prefixed paths against this directory, " +
+					"so use absolute paths for file transfers.",
+			},
 			"env": {
 				ForceNew:    true,
 				Description: "A mapping of environment variables to set inside the workspace.",
-
 				Type:        schema.TypeMap,
 				Optional:    true,
 			},
