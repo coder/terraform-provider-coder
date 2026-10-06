@@ -59,10 +59,10 @@ data "coder_script_order" "startup_dependencies" {
 
 Required:
 
-- `after` (List of String) Selectors for the scripts they wait for.
-- `run` (List of String) Selectors for the scripts that wait.
+- `after` (List of String) Selectors for the scripts that must finish before any `run` script starts.
+- `run` (List of String) Selectors for the scripts that wait for every `after` script.
 
 Optional:
 
-- `phase` (String) Which lifecycle the rule applies to: `start` or `stop`. Omit it to let Coder infer the phase from the selected scripts. Set it when a `module` selector contains both start and stop scripts, so Coder filters the module to this phase without warning.
+- `phase` (String) Which lifecycle the rule applies to: `start` or `stop`. When omitted, Coder infers the phase from any `coder_script` selector in the rule and filters `module` selectors to that phase with a warning. If the rule has only `module` selectors and they expand to both start and stop scripts, Coder cannot infer the phase and rejects the rule at template import, so set `phase` explicitly in that case.
 - `requires` (String) The outcome required from every `after` script before a `run` script starts. `success` (the default) skips the `run` scripts if any `after` script fails, times out or is skipped. `completion` runs them once every `after` script has finished, whatever the outcome.

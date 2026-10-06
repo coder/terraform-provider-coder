@@ -63,8 +63,8 @@ func scriptOrderDataSource() *schema.Resource {
 				MinItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"run":   selectorSchema("Selectors for the scripts that wait."),
-						"after": selectorSchema("Selectors for the scripts they wait for."),
+						"run":   selectorSchema("Selectors for the scripts that wait for every `after` script."),
+						"after": selectorSchema("Selectors for the scripts that must finish before any `run` script starts."),
 						"requires": {
 							Type: schema.TypeString,
 							Description: "The outcome required from every `after` script before a `run` script starts. " +
@@ -80,13 +80,17 @@ func scriptOrderDataSource() *schema.Resource {
 						"phase": {
 							Type: schema.TypeString,
 							Description: "Which lifecycle the rule applies to: `start` or `stop`. " +
-								"Omit it to let Coder infer the phase from the selected scripts. " +
-								"Set it when a `module` selector contains both start and stop scripts, " +
-								"so Coder filters the module to this phase without warning.",
+								"When omitted, Coder infers the phase from any `coder_script` selector in the rule " +
+								"and filters `module` selectors to that phase with a warning. " +
+								"If the rule has only `module` selectors and they expand to both start and stop " +
+								"scripts, Coder cannot infer the phase and rejects the rule at template import, " +
+								"so set `phase` explicitly in that case.",
 							Optional: true,
 							// No default on purpose. Coder infers the phase when
-							// this is unset and warns when inference filtered a
-							// module selector. A default would hide both.
+							// this is unset, warns when inference filtered a
+							// module selector, and rejects a module-only rule
+							// that spans both phases. A default would hide all
+							// three.
 							ValidateFunc: validation.StringInSlice([]string{
 								scriptOrderPhaseStart,
 								scriptOrderPhaseStop,
