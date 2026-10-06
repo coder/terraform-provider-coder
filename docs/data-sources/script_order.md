@@ -5,7 +5,7 @@ subcategory: ""
 description: |-
   Use this data source to declare ordering constraints between coder_script resources on the same agent. It does not run scripts. Every script selected by run waits for every script selected by after.
   Selectors are Terraform address strings (coder_script.name, coder_script.name[0], coder_script.name["key"], module.name), resolved by Coder relative to the module that declares the data source. Terraform and terraform validate do not check them; Coder reports unknown or unsupported selectors when the template is imported. All values must be known at plan time, and the data source needs no depends_on.
-  Ordering is enforced only by Coder versions that support it. Older versions ignore the data source and run scripts concurrently.
+  -> This data source is only available in Coder v2.39 and later. Older versions ignore it and run scripts concurrently.
 ---
 
 # coder_script_order (Data Source)
@@ -14,7 +14,7 @@ Use this data source to declare ordering constraints between `coder_script` reso
 
 Selectors are Terraform address strings (`coder_script.name`, `coder_script.name[0]`, `coder_script.name["key"]`, `module.name`), resolved by Coder relative to the module that declares the data source. Terraform and `terraform validate` do not check them; Coder reports unknown or unsupported selectors when the template is imported. All values must be known at plan time, and the data source needs no `depends_on`.
 
-Ordering is enforced only by Coder versions that support it. Older versions ignore the data source and run scripts concurrently.
+-> This data source is only available in Coder v2.39 and later. Older versions ignore it and run scripts concurrently.
 
 ## Example Usage
 

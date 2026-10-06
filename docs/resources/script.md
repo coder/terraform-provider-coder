@@ -4,11 +4,14 @@ page_title: "coder_script Resource - terraform-provider-coder"
 subcategory: ""
 description: |-
   Use this resource to run a script on a workspace agent (coder_agent). When multiple scripts are assigned to the same workspace agent, they are executed in parallel unless a coder_script_order data source orders them.
+  -> Ordering with coder_script_order is only available in Coder v2.39 and later.
 ---
 
 # coder_script (Resource)
 
 Use this resource to run a script on a workspace agent (`coder_agent`). When multiple scripts are assigned to the same workspace agent, they are executed in parallel unless a `coder_script_order` data source orders them.
+
+-> Ordering with `coder_script_order` is only available in Coder v2.39 and later.
 
 ## Example Usage
 

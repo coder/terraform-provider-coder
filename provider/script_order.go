@@ -49,8 +49,8 @@ func scriptOrderDataSource() *schema.Resource {
 			"`terraform validate` do not check them; Coder reports unknown or unsupported " +
 			"selectors when the template is imported. All values must be known at plan time, " +
 			"and the data source needs no `depends_on`.\n\n" +
-			"Ordering is enforced only by Coder versions that support it. Older versions " +
-			"ignore the data source and run scripts concurrently.",
+			"-> This data source is only available in Coder v2.39 and later. Older versions " +
+			"ignore it and run scripts concurrently.",
 		ReadContext: func(_ context.Context, rd *schema.ResourceData, _ any) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 			return nil
