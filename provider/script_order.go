@@ -47,7 +47,10 @@ func scriptOrderDataSource() *schema.Resource {
 			"`coder_script.name[0]`, `coder_script.name[\"key\"]`, `module.name`), resolved " +
 			"by Coder relative to the module that declares the data source. Terraform and " +
 			"`terraform validate` do not check them; Coder reports unknown or unsupported " +
-			"selectors when the template is imported. All values must be known at plan time, " +
+			"selectors when the template is imported. Every script a selector resolves to, " +
+			"including each script in a selected module, must set exactly one of " +
+			"`run_on_start` or `run_on_stop`. Coder rejects cron-only scripts and scripts " +
+			"that set both. All values must be known at plan time, " +
 			"and the data source needs no `depends_on`.\n\n" +
 			"-> This data source is only available in Coder v2.39 and later. Older versions " +
 			"ignore it and run scripts concurrently.",
