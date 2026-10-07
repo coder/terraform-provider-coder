@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/url"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -80,6 +81,20 @@ func agentResource() *schema.Resource {
 			return nil
 		},
 		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:        schema.TypeString,
+				Description: "The name of the agent. When using `for_each` or `count`, this can be set to a unique value (e.g., `each.key`) to avoid name collisions. Defaults to the Terraform resource block name.",
+				ForceNew:    true,
+				Optional:    true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+			"coder_access_url": {
+				Type:        schema.TypeString,
+				Description: "Override the Coder access URL that the agent uses to phone home. Useful for networking scenarios where the agent needs to connect via an internal DNS name instead of the public URL.",
+				ForceNew:    true,
+				Optional:    true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
 			"api_key_scope": {
 				Type:        schema.TypeString,
 				Optional:    true,
@@ -485,7 +500,18 @@ func updateInitScript(resourceData *schema.ResourceData, i interface{}) diag.Dia
 	if !valid {
 		return diag.Errorf("arch was unexpected type %q", reflect.TypeOf(resourceData.Get("arch")))
 	}
-	accessURL, err := config.URL.Parse("/")
+
+	// Use custom coder_access_url if provided, otherwise use the provider config URL
+	accessURL := config.URL
+	if customURL, ok := resourceData.Get("coder_access_url").(string); ok && customURL != "" {
+		parsedCustomURL, err := url.Parse(customURL)
+		if err != nil {
+			return diag.Errorf("parse custom coder_access_url: %s", err)
+		}
+		accessURL = parsedCustomURL
+	}
+
+	accessURL, err := accessURL.Parse("/")
 	if err != nil {
 		return diag.Errorf("parse access url: %s", err)
 	}

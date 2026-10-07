@@ -26,6 +26,13 @@ func devcontainerResource() *schema.Resource {
 		ReadContext:   schema.NoopContext,
 		DeleteContext: schema.NoopContext,
 		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:        schema.TypeString,
+				Description: "The name of the sub-agent. When using `for_each` or `count`, this can be set to a unique value (e.g., `each.key`) to avoid name collisions. Defaults to the Terraform resource block name.",
+				ForceNew:    true,
+				Optional:    true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
 			"agent_id": {
 				Type:        schema.TypeString,
 				Description: "The `id` property of a `coder_agent` resource to associate with.",

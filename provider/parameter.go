@@ -117,9 +117,11 @@ func parameterDataSource() *schema.Resource {
 				Option:     rd.Get("option"),
 				Validation: fixedValidation,
 				Optional: func() bool {
-					// This hack allows for checking if the "default" field is present in the .tf file.
-					// If "default" is missing or is "null", then it means that this field is required,
-					// and user must provide a value for it.
+					// Check if user explicitly set optional in the config
+					if userOptional, ok := rd.Get("optional").(bool); ok {
+						return userOptional
+					}
+					// Otherwise, fall back to: optional if default is provided
 					val := !rd.GetRawConfig().AsValueMap()["default"].IsNull()
 					rd.Set("optional", val)
 					return val
@@ -135,8 +137,9 @@ func parameterDataSource() *schema.Resource {
 				return diag.Errorf("parameter can't be immutable and ephemeral")
 			}
 
-			if !parameter.Optional && parameter.Ephemeral {
-				return diag.Errorf("ephemeral parameter requires the default property")
+			// Ephemeral parameters require either a default value or to be explicitly marked as optional
+			if parameter.Ephemeral && parameter.Default == nil && !parameter.Optional {
+				return diag.Errorf("ephemeral parameter requires the default property or optional = true")
 			}
 
 			var input *string
@@ -314,8 +317,9 @@ func parameterDataSource() *schema.Resource {
 			},
 			"optional": {
 				Type:        schema.TypeBool,
+				Optional:    true,
 				Computed:    true,
-				Description: "Whether this value is optional.",
+				Description: "Whether this value is optional. If set to true, the parameter does not require a default value and can be left empty during workspace creation.",
 			},
 			"order": {
 				Type:        schema.TypeInt,
@@ -383,6 +387,12 @@ func valueIsType(typ OptionType, value string) error {
 		if err != nil {
 			return err
 		}
+	case OptionTypeKeyValue:
+		var kv map[string]string
+		err := json.Unmarshal([]byte(value), &kv)
+		if err != nil {
+			return fmt.Errorf("%q is not a valid key-value object", value)
+		}
 	case OptionTypeString:
 		// Anything is a string!
 	default:
@@ -438,19 +448,34 @@ func (v *Parameter) ValidateInput(input *string, previous *string) (string, diag
 		forcedValue = *value
 	}
 
-	d := v.validValue(forcedValue, previous, optionType, optionValues, valuePath)
-	if d.HasError() {
-		return "", d
-	}
-
-	err = valueIsType(v.Type, forcedValue)
-	if err != nil {
+	// For optional parameters without a value, skip type validation
+	// This allows number (and other types) to be optional without requiring a default
+	if !v.Optional && forcedValue == "" {
 		return "", diag.Diagnostics{
 			{
 				Severity: diag.Error,
-				Summary:  fmt.Sprintf("Parameter value is not of type %q", v.Type),
-				Detail:   err.Error(),
+				Summary:  fmt.Sprintf("Parameter %q is required but no value was provided", v.Name),
+				Detail:   "Either provide a value or set a default value for this parameter",
 			},
+		}
+	}
+
+	// Only validate type if a value is provided
+	if forcedValue != "" {
+		d := v.validValue(forcedValue, previous, optionType, optionValues, valuePath)
+		if d.HasError() {
+			return "", d
+		}
+
+		err = valueIsType(v.Type, forcedValue)
+		if err != nil {
+			return "", diag.Diagnostics{
+				{
+					Severity: diag.Error,
+					Summary:  fmt.Sprintf("Parameter value is not of type %q", v.Type),
+					Detail:   err.Error(),
+				},
+			}
 		}
 	}
 
@@ -668,6 +693,12 @@ func (v *Validation) Valid(typ OptionType, value string, previous *string) error
 		err := json.Unmarshal([]byte(value), &listOfStrings)
 		if err != nil {
 			return fmt.Errorf("value %q is not valid list of strings", value)
+		}
+	case OptionTypeKeyValue:
+		var kv map[string]string
+		err := json.Unmarshal([]byte(value), &kv)
+		if err != nil {
+			return fmt.Errorf("value %q is not a valid key-value object", value)
 		}
 	}
 	return nil
