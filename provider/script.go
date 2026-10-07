@@ -44,7 +44,7 @@ func scriptResource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 
-		Description: "Use this resource to run a script from an agent. When multiple scripts are assigned to the same agent, they are executed in parallel.",
+		Description: "Use this resource to run a script on a workspace agent (`coder_agent`). When multiple scripts are assigned to the same workspace agent, they are executed in parallel unless a `coder_script_order` data source orders them.\n\n-> Ordering with `coder_script_order` is only available in Coder v2.39 and later.",
 		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			rd.SetId(uuid.NewString())
 			runOnStart, _ := rd.Get("run_on_start").(bool)
