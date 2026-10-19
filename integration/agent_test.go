@@ -363,10 +363,12 @@ func verifyScriptOrderCancel(ctx context.Context, t *testing.T, ctrID string, ou
 	const name = "coder-script-order-cancel"
 	agentID := agentIDFor(ctx, t, ctrID, name, out["workspace.id"])
 	startAgent(ctx, t, ctrID, name)
+	// code-server starts in parallel with clone_repo and must have exited
+	// before the signal, otherwise it is canceled too.
 	require.Eventually(t, func() bool {
 		o, rc := execContainer(ctx, t, ctrID, fmt.Sprintf("cat /tmp/%s.log 2>/dev/null", name))
-		return rc == 0 && strings.Contains(o, "clone_repo start")
-	}, agentWaitTimeout, time.Second, "clone_repo never started")
+		return rc == 0 && strings.Contains(o, "clone_repo start") && strings.Contains(o, "start_code_server end")
+	}, agentWaitTimeout, time.Second, "clone_repo never started or code-server never finished")
 	stopAgent(ctx, t, ctrID, name)
 	agent := waitForAgent(ctx, t, ctrID, name, agentID, "off", "shutdown_error", "shutdown_timeout")
 
