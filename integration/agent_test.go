@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,7 +50,10 @@ type agentLog struct {
 	SourceID string `json:"source_id"`
 }
 
-const agentWaitTimeout = 2 * time.Minute
+const (
+	agentWaitTimeout  = 2 * time.Minute
+	reportWaitTimeout = 30 * time.Second
+)
 
 // startAgent runs coder agent in the background inside the Coder container
 // for the workspace the named case created.
@@ -184,8 +188,9 @@ func countOf(lines []string, want string) int {
 	return n
 }
 
-// latestBuildTimings fetches the timings of the workspace's latest build.
-func latestBuildTimings(ctx context.Context, t *testing.T, ctrID, name, workspaceID string) buildTimings {
+// waitForTimings polls the latest build's timings until every named script
+// has one timing for the stage.
+func waitForTimings(ctx context.Context, t *testing.T, ctrID, name, workspaceID, stage string, displayNames ...string) buildTimings {
 	t.Helper()
 	var ws struct {
 		LatestBuild struct {
@@ -193,8 +198,25 @@ func latestBuildTimings(ctx context.Context, t *testing.T, ctrID, name, workspac
 		} `json:"latest_build"`
 	}
 	require.NoError(t, apiGet(ctx, t, ctrID, name, "/api/v2/workspaces/"+workspaceID, &ws))
+	// The agent reports its lifecycle state before the goroutines that send
+	// each timing have finished, so the first read after a state change can
+	// be empty.
 	var timings buildTimings
-	require.NoError(t, apiGet(ctx, t, ctrID, name, "/api/v2/workspacebuilds/"+ws.LatestBuild.ID+"/timings", &timings))
+	require.EventuallyWithT(t, func(c *assert.CollectT) {
+		timings = buildTimings{}
+		if !assert.NoError(c, apiGet(ctx, t, ctrID, name, "/api/v2/workspacebuilds/"+ws.LatestBuild.ID+"/timings", &timings)) {
+			return
+		}
+		for _, dn := range displayNames {
+			n := 0
+			for _, tm := range timings.AgentScriptTimings {
+				if tm.Stage == stage && tm.DisplayName == dn {
+					n++
+				}
+			}
+			assert.Equalf(c, 1, n, "expected one %s timing for %q, got %+v", stage, dn, timings.AgentScriptTimings)
+		}
+	}, reportWaitTimeout, time.Second)
 	return timings
 }
 
@@ -233,18 +255,23 @@ func requireDependencies(t *testing.T, agent workspaceAgent, displayName, addres
 	require.Equalf(t, want, s.Dependencies, "%s dependencies", displayName)
 }
 
-// agentLogLines returns the agent log lines for one script's log source.
-func agentLogLines(ctx context.Context, t *testing.T, ctrID, name, agentID, sourceID string) []string {
+// requireLogLine polls one script's agent log lines until want appears.
+func requireLogLine(ctx context.Context, t *testing.T, ctrID, name, agentID, sourceID, want string) {
 	t.Helper()
-	var logs []agentLog
-	require.NoError(t, apiGet(ctx, t, ctrID, name, "/api/v2/workspaceagents/"+agentID+"/logs", &logs))
-	var lines []string
-	for _, l := range logs {
-		if l.SourceID == sourceID {
-			lines = append(lines, l.Output)
+	// Script logs are flushed after the agent reports its lifecycle state.
+	require.EventuallyWithT(t, func(c *assert.CollectT) {
+		var logs []agentLog
+		if !assert.NoError(c, apiGet(ctx, t, ctrID, name, "/api/v2/workspaceagents/"+agentID+"/logs", &logs)) {
+			return
 		}
-	}
-	return lines
+		var lines []string
+		for _, l := range logs {
+			if l.SourceID == sourceID {
+				lines = append(lines, l.Output)
+			}
+		}
+		assert.Contains(c, lines, want)
+	}, reportWaitTimeout, time.Second)
 }
 
 func verifyScriptOrder(ctx context.Context, t *testing.T, ctrID string, out map[string]string) {
@@ -260,7 +287,7 @@ func verifyScriptOrder(ctx context.Context, t *testing.T, ctrID string, out map[
 	requireLineAfter(t, lines, "post_setup start", "clone_repo end")
 	requireLineAfter(t, lines, "clone_repo end", "start_code_server start")
 
-	timings := latestBuildTimings(ctx, t, ctrID, name, out["workspace.id"])
+	timings := waitForTimings(ctx, t, ctrID, name, out["workspace.id"], "start", "Clone repo", "Install tools", "Post setup", "code-server")
 	clone := timingFor(t, timings, "start", "Clone repo")
 	install := timingFor(t, timings, "start", "Install tools")
 	post := timingFor(t, timings, "start", "Post setup")
@@ -293,7 +320,7 @@ func verifyScriptOrderSkip(ctx context.Context, t *testing.T, ctrID string, out 
 	require.NotContains(t, lines, "install_tools start", "skipped script must not run: %q", lines)
 	requireLineAfter(t, lines, "post_setup start", "clone_repo end")
 
-	timings := latestBuildTimings(ctx, t, ctrID, name, out["workspace.id"])
+	timings := waitForTimings(ctx, t, ctrID, name, out["workspace.id"], "start", "Clone repo", "Install tools", "Post setup", "code-server")
 	clone := timingFor(t, timings, "start", "Clone repo")
 	require.Equal(t, "exit_failure", clone.Status)
 	require.Equal(t, int32(1), clone.ExitCode)
@@ -303,8 +330,7 @@ func verifyScriptOrderSkip(ctx context.Context, t *testing.T, ctrID string, out 
 	require.Equal(t, "ok", timingFor(t, timings, "start", "Post setup").Status)
 	require.Equal(t, "ok", timingFor(t, timings, "start", "code-server").Status)
 
-	installLines := agentLogLines(ctx, t, ctrID, name, agentID, scriptFor(t, agent, "Install tools").LogSourceID)
-	require.Contains(t, installLines, `Skipping script: dependency "Clone repo" failed.`)
+	requireLogLine(ctx, t, ctrID, name, agentID, scriptFor(t, agent, "Install tools").LogSourceID, `Skipping script: dependency "Clone repo" failed.`)
 
 	requireDependencies(t, agent, "Install tools", "coder_script.install_tools",
 		[]agentScriptDependency{{PrerequisiteResourceAddress: "coder_script.clone_repo", Requirement: "success"}})
@@ -322,7 +348,7 @@ func verifyScriptOrderStop(ctx context.Context, t *testing.T, ctrID string, out 
 	lines := orderLogLines(ctx, t, ctrID, name)
 	requireLineAfter(t, lines, "stop_db start", "save_state end")
 
-	timings := latestBuildTimings(ctx, t, ctrID, name, out["workspace.id"])
+	timings := waitForTimings(ctx, t, ctrID, name, out["workspace.id"], "stop", "Save state", "Stop DB")
 	save := timingFor(t, timings, "stop", "Save state")
 	stop := timingFor(t, timings, "stop", "Stop DB")
 	require.Equal(t, "ok", save.Status)
@@ -349,7 +375,7 @@ func verifyScriptOrderCancel(ctx context.Context, t *testing.T, ctrID string, ou
 	require.NotContains(t, lines, "install_tools start")
 	require.NotContains(t, lines, "post_setup start")
 
-	timings := latestBuildTimings(ctx, t, ctrID, name, out["workspace.id"])
+	timings := waitForTimings(ctx, t, ctrID, name, out["workspace.id"], "start", "Clone repo", "Install tools", "Post setup", "code-server")
 	clone := timingFor(t, timings, "start", "Clone repo")
 	require.Equal(t, "canceled", clone.Status)
 	require.Truef(t, clone.EndedAt.After(clone.StartedAt), "canceled running script must keep its real interval: %+v", clone)
@@ -360,8 +386,6 @@ func verifyScriptOrderCancel(ctx context.Context, t *testing.T, ctrID string, ou
 	}
 	require.Equal(t, "ok", timingFor(t, timings, "start", "code-server").Status)
 
-	installLines := agentLogLines(ctx, t, ctrID, name, agentID, scriptFor(t, agent, "Install tools").LogSourceID)
-	require.Contains(t, installLines, "Canceled before starting.")
-	cloneLines := agentLogLines(ctx, t, ctrID, name, agentID, scriptFor(t, agent, "Clone repo").LogSourceID)
-	require.Contains(t, cloneLines, "Canceled while running.")
+	requireLogLine(ctx, t, ctrID, name, agentID, scriptFor(t, agent, "Install tools").LogSourceID, "Canceled before starting.")
+	requireLogLine(ctx, t, ctrID, name, agentID, scriptFor(t, agent, "Clone repo").LogSourceID, "Canceled while running.")
 }
