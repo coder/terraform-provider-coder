@@ -82,6 +82,11 @@ To run these integration tests locally:
 
 1. Run `CODER_IMAGE=ghcr.io/coder/coder-preview CODER_VERSION=main-x.y.z-devel-abcd1234 make test-integration`.
 
+The provider binary runs inside the Coder container, so on macOS build it for Linux first, for example `GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build .` on Apple silicon.
+The `coder-script-order*` cases start a workspace agent inside the Coder container and read its results through the API.
+While a run is in progress the agent's log is at `/tmp/<case>-agent.log` inside the container.
+These cases skip on Coder images older than v2.39, the first release that enforces script ordering.
+
 > [!Note]
 > You can specify `CODER_IMAGE` if the Coder image you wish to test is hosted somewhere other than `ghcr.io/coder/coder`.
 > For example, `CODER_IMAGE=example.com/repo/coder CODER_VERSION=foobar make test-integration`.

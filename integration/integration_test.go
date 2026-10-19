@@ -68,6 +68,9 @@ func TestIntegration(t *testing.T) {
 		minVersion string
 		// map of string to regex to be passed to assertOutput()
 		expectedOutput map[string]string
+		// Optional. Runs after assertOutput for cases that need to inspect the
+		// workspace after provisioning.
+		verify func(ctx context.Context, t *testing.T, ctrID string, output map[string]string)
 	}{
 		{
 			name:       "test-data-source",
@@ -225,6 +228,64 @@ func TestIntegration(t *testing.T) {
 				"task.enabled":    "false",
 			},
 		},
+		{
+			name:       "coder-script-order",
+			minVersion: "v2.39.0",
+			expectedOutput: map[string]string{
+				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"agent.id":            `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":     `.+`,
+				"script_order.rule.#": `^2$`,
+			},
+			verify: verifyScriptOrder,
+		},
+		{
+			name:       "coder-script-order-skip",
+			minVersion: "v2.39.0",
+			expectedOutput: map[string]string{
+				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"agent.id":            `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":     `.+`,
+				"script_order.rule.#": `^2$`,
+			},
+			verify: verifyScriptOrderSkip,
+		},
+		{
+			name:       "coder-script-order-stop",
+			minVersion: "v2.39.0",
+			expectedOutput: map[string]string{
+				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"agent.id":            `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":     `.+`,
+				"script_order.rule.#": `^1$`,
+			},
+			verify: verifyScriptOrderStop,
+		},
+		{
+			name:       "coder-script-order-cancel",
+			minVersion: "v2.39.0",
+			expectedOutput: map[string]string{
+				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"agent.id":            `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":     `.+`,
+				"script_order.rule.#": `^2$`,
+			},
+			verify: verifyScriptOrderCancel,
+		},
+		{
+			// Runs on every Coder version. A Coder older than the data source
+			// ignores it and must still import and build the template.
+			name:       "coder-script-order-compat",
+			minVersion: "v0.0.0",
+			expectedOutput: map[string]string{
+				"agent.id":                     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":              `.+`,
+				"script_order.rule.0.run.0":    `^coder_script\.install_tools$`,
+				"script_order.rule.0.after.0":  `^coder_script\.clone_repo$`,
+				"script_order.rule.0.requires": `^success$`,
+				"script_order.rule.0.phase":    `^$`,
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
@@ -263,6 +324,9 @@ func TestIntegration(t *testing.T) {
 			actual := make(map[string]string)
 			require.NoError(t, json.NewDecoder(strings.NewReader(out)).Decode(&actual))
 			assertOutput(t, tt.expectedOutput, actual)
+			if tt.verify != nil {
+				tt.verify(ctx, t, ctrID, actual)
+			}
 		})
 	}
 }
