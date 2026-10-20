@@ -20,6 +20,7 @@ const (
 	OptionTypeNumber     OptionType = "number"
 	OptionTypeBoolean    OptionType = "bool"
 	OptionTypeListString OptionType = "list(string)"
+	OptionTypeKeyValue   OptionType = "keyvalue"
 )
 
 func OptionTypes() []OptionType {
@@ -28,6 +29,7 @@ func OptionTypes() []OptionType {
 		OptionTypeNumber,
 		OptionTypeBoolean,
 		OptionTypeListString,
+		OptionTypeKeyValue,
 	}
 }
 
@@ -105,6 +107,10 @@ var formTypeTruthTable = map[OptionType]map[bool][]ParameterFormType{
 	OptionTypeListString: {
 		true:  {ParameterFormTypeRadio, ParameterFormTypeMultiSelect},
 		false: {ParameterFormTypeTagSelect},
+	},
+	OptionTypeKeyValue: {
+		true:  {ParameterFormTypeRadio, ParameterFormTypeDropdown},
+		false: {ParameterFormTypeInput, ParameterFormTypeTextArea},
 	},
 }
 
