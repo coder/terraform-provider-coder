@@ -169,9 +169,10 @@ func verifyScriptOrderStop(ctx context.Context, t *testing.T, ctrID, name string
 func verifyScriptOrderCancel(ctx context.Context, t *testing.T, ctrID, name string, out map[string]string) {
 	agentID := agentIDFor(ctx, t, ctrID, name, out["workspace.id"])
 	startAgent(ctx, t, ctrID, name)
-	// code-server starts in parallel with clone_repo and must have exited
-	// before the signal, otherwise it is canceled too.
-	waitForOrderLog(ctx, t, ctrID, name, "clone_repo start", "start_code_server end")
+	// code-server starts in parallel with clone_repo. Its timing proves the
+	// agent saw it exit, so the signal cannot cancel it as well.
+	waitForOrderLog(ctx, t, ctrID, name, "clone_repo start")
+	waitForTimings(ctx, t, ctrID, name, out["workspace.id"], "start", "code-server")
 	stopAgent(ctx, t, ctrID, name)
 	agent := waitForAgent(ctx, t, ctrID, name, agentID, "off", "shutdown_error", "shutdown_timeout")
 

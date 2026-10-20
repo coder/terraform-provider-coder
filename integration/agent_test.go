@@ -96,7 +96,12 @@ func apiGet(ctx context.Context, t *testing.T, ctrID, name, path string, out any
 	cmd := fmt.Sprintf(
 		`curl -s -w '\n%%{http_code}' -H "Coder-Session-Token: $(cat /tmp/%s.session-token)" http://localhost:3000%s`,
 		name, path)
-	body, rc := execContainer(ctx, t, ctrID, cmd)
+	// Callers poll from testify's goroutine, where a failed require would
+	// end the poll early instead of the test.
+	body, rc, err := tryExecContainer(ctx, t, ctrID, cmd)
+	if err != nil {
+		return fmt.Errorf("GET %s: %w", path, err)
+	}
 	if rc != 0 {
 		return fmt.Errorf("GET %s: exit %d: %s", path, rc, body)
 	}
