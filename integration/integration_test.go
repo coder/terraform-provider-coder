@@ -70,7 +70,7 @@ func TestIntegration(t *testing.T) {
 		expectedOutput map[string]string
 		// Optional. Runs after assertOutput for cases that need to inspect the
 		// workspace after provisioning.
-		verify func(ctx context.Context, t *testing.T, ctrID string, output map[string]string)
+		verify func(ctx context.Context, t *testing.T, ctrID, name string, output map[string]string)
 	}{
 		{
 			name:       "test-data-source",
@@ -325,7 +325,7 @@ func TestIntegration(t *testing.T) {
 			require.NoError(t, json.NewDecoder(strings.NewReader(out)).Decode(&actual))
 			assertOutput(t, tt.expectedOutput, actual)
 			if tt.verify != nil {
-				tt.verify(ctx, t, ctrID, actual)
+				tt.verify(ctx, t, ctrID, tt.name, actual)
 			}
 		})
 	}
@@ -460,9 +460,20 @@ func ensureImage(ctx context.Context, t *testing.T, cli *client.Client, ref stri
 // the output and the exit code of the command.
 func execContainer(ctx context.Context, t *testing.T, containerID, command string) (string, int) {
 	t.Helper()
+	out, rc, err := tryExecContainer(ctx, t, containerID, command)
+	require.NoError(t, err)
+	return out, rc
+}
+
+// tryExecContainer is execContainer for callers that cannot fail the test,
+// such as a poll condition running on another goroutine.
+func tryExecContainer(ctx context.Context, t *testing.T, containerID, command string) (string, int, error) {
+	t.Helper()
 	t.Logf("exec container cmd: %q", command)
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	require.NoError(t, err, "connect to docker")
+	if err != nil {
+		return "", 0, fmt.Errorf("connect to docker: %w", err)
+	}
 	defer cli.Close()
 	execConfig := types.ExecConfig{
 		AttachStdout: true,
@@ -470,18 +481,26 @@ func execContainer(ctx context.Context, t *testing.T, containerID, command strin
 		Cmd:          []string{"/bin/sh", "-c", command},
 	}
 	ex, err := cli.ContainerExecCreate(ctx, containerID, execConfig)
-	require.NoError(t, err, "create container exec")
+	if err != nil {
+		return "", 0, fmt.Errorf("create container exec: %w", err)
+	}
 	resp, err := cli.ContainerExecAttach(ctx, ex.ID, types.ExecStartCheck{})
-	require.NoError(t, err, "attach to container exec")
+	if err != nil {
+		return "", 0, fmt.Errorf("attach to container exec: %w", err)
+	}
 	defer resp.Close()
 	var buf bytes.Buffer
 	_, err = stdcopy.StdCopy(&buf, &buf, resp.Reader)
-	require.NoError(t, err, "read stdout")
+	if err != nil {
+		return "", 0, fmt.Errorf("read stdout: %w", err)
+	}
 	out := buf.String()
 	t.Log("exec container output:\n" + out)
 	execResp, err := cli.ContainerExecInspect(ctx, ex.ID)
-	require.NoError(t, err, "get exec exit code")
-	return out, execResp.ExitCode
+	if err != nil {
+		return "", 0, fmt.Errorf("get exec exit code: %w", err)
+	}
+	return out, execResp.ExitCode, nil
 }
 
 // assertOutput asserts that, for each key-value pair in expected:
