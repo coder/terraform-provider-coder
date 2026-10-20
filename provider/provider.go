@@ -77,6 +77,7 @@ func New() *schema.Provider {
 			"coder_env":            envResource(),
 			"coder_devcontainer":   devcontainerResource(),
 			"coder_external_agent": externalAgentResource(),
+			"coder_dlp_policy":     dlpPolicyResource(),
 		},
 	}
 }
