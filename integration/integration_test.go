@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,7 +24,6 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/slices"
 	"golang.org/x/mod/semver"
 )
 
@@ -61,6 +61,9 @@ func TestIntegration(t *testing.T) {
 	t.Cleanup(cancel)
 	ctrID := setup(ctx, t, t.Name(), coderImg, coderVersion)
 
+	// Anticipated version, update as required.
+	const scriptOrderMinVersion = "v2.39.0"
+
 	for _, tt := range []struct {
 		// Name of the folder under `integration/` containing a test template
 		name string
@@ -68,8 +71,7 @@ func TestIntegration(t *testing.T) {
 		minVersion string
 		// map of string to regex to be passed to assertOutput()
 		expectedOutput map[string]string
-		// Optional. Runs after assertOutput for cases that need to inspect the
-		// workspace after provisioning.
+		// Optional. Runs after assertOutput.
 		verify func(ctx context.Context, t *testing.T, ctrID, name string, output map[string]string)
 	}{
 		{
@@ -230,10 +232,9 @@ func TestIntegration(t *testing.T) {
 		},
 		{
 			name:       "coder-script-order",
-			minVersion: "v2.39.0",
+			minVersion: scriptOrderMinVersion,
 			expectedOutput: map[string]string{
 				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
-				"agent.id":            `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
 				"script_order.id":     `.+`,
 				"script_order.rule.#": `^2$`,
 			},
@@ -241,10 +242,9 @@ func TestIntegration(t *testing.T) {
 		},
 		{
 			name:       "coder-script-order-skip",
-			minVersion: "v2.39.0",
+			minVersion: scriptOrderMinVersion,
 			expectedOutput: map[string]string{
 				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
-				"agent.id":            `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
 				"script_order.id":     `.+`,
 				"script_order.rule.#": `^2$`,
 			},
@@ -252,10 +252,9 @@ func TestIntegration(t *testing.T) {
 		},
 		{
 			name:       "coder-script-order-stop",
-			minVersion: "v2.39.0",
+			minVersion: scriptOrderMinVersion,
 			expectedOutput: map[string]string{
 				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
-				"agent.id":            `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
 				"script_order.id":     `.+`,
 				"script_order.rule.#": `^1$`,
 			},
@@ -263,18 +262,17 @@ func TestIntegration(t *testing.T) {
 		},
 		{
 			name:       "coder-script-order-cancel",
-			minVersion: "v2.39.0",
+			minVersion: scriptOrderMinVersion,
 			expectedOutput: map[string]string{
 				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
-				"agent.id":            `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
 				"script_order.id":     `.+`,
 				"script_order.rule.#": `^2$`,
 			},
 			verify: verifyScriptOrderCancel,
 		},
 		{
-			// Runs on every Coder version. A Coder older than the data source
-			// ignores it and must still import and build the template.
+			// A Coder older than the data source ignores it and must still
+			// import and build the template.
 			name:       "coder-script-order-compat",
 			minVersion: "v0.0.0",
 			expectedOutput: map[string]string{

@@ -18,8 +18,15 @@ resource "coder_agent" "main" {
   arch = data.coder_provisioner.me.arch
 }
 
+variable "output_path" {
+  type = string
+}
+
+# Every file the test reads is named after the output path, so a copied
+# template cannot share a file with another case.
 locals {
-  order_log = "/tmp/coder-script-order-skip.log"
+  case      = trimsuffix(var.output_path, ".json")
+  order_log = "${local.case}.log"
 }
 
 # Fails on purpose so that install_tools is skipped and post_setup still runs.
@@ -27,7 +34,6 @@ resource "coder_script" "clone_repo" {
   agent_id     = coder_agent.main.id
   display_name = "Clone repo"
   run_on_start = true
-  timeout      = 30
   script       = <<-EOT
     echo "clone_repo start" >> ${local.order_log}
     echo "clone_repo end" >> ${local.order_log}
@@ -77,26 +83,21 @@ data "coder_script_order" "bootstrap" {
   }
 }
 
-variable "output_path" {
-  type = string
-}
-
 resource "local_file" "output" {
   filename = var.output_path
   content = jsonencode({
     "workspace.id"        = data.coder_workspace.me.id
-    "agent.id"            = coder_agent.main.id
     "script_order.id"     = data.coder_script_order.bootstrap.id
     "script_order.rule.#" = tostring(length(data.coder_script_order.bootstrap.rule))
   })
 }
 
 resource "local_sensitive_file" "agent_token" {
-  filename = "/tmp/coder-script-order-skip.agent-token"
+  filename = "${local.case}.agent-token"
   content  = coder_agent.main.token
 }
 
 resource "local_sensitive_file" "session_token" {
-  filename = "/tmp/coder-script-order-skip.session-token"
+  filename = "${local.case}.session-token"
   content  = data.coder_workspace_owner.me.session_token
 }

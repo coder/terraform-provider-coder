@@ -18,20 +18,15 @@ resource "coder_agent" "main" {
   arch = data.coder_provisioner.me.arch
 }
 
-locals {
-  order_log = "/tmp/coder-script-order-stop.log"
+variable "output_path" {
+  type = string
 }
 
-# One startup script so the agent reaches the ready state before the test
-# stops it.
-resource "coder_script" "warm" {
-  agent_id     = coder_agent.main.id
-  display_name = "Warm"
-  run_on_start = true
-  script       = <<-EOT
-    echo "warm start" >> ${local.order_log}
-    echo "warm end" >> ${local.order_log}
-  EOT
+# Every file the test reads is named after the output path, so a copied
+# template cannot share a file with another case.
+locals {
+  case      = trimsuffix(var.output_path, ".json")
+  order_log = "${local.case}.log"
 }
 
 resource "coder_script" "save_state" {
@@ -63,26 +58,21 @@ data "coder_script_order" "shutdown" {
   }
 }
 
-variable "output_path" {
-  type = string
-}
-
 resource "local_file" "output" {
   filename = var.output_path
   content = jsonencode({
     "workspace.id"        = data.coder_workspace.me.id
-    "agent.id"            = coder_agent.main.id
     "script_order.id"     = data.coder_script_order.shutdown.id
     "script_order.rule.#" = tostring(length(data.coder_script_order.shutdown.rule))
   })
 }
 
 resource "local_sensitive_file" "agent_token" {
-  filename = "/tmp/coder-script-order-stop.agent-token"
+  filename = "${local.case}.agent-token"
   content  = coder_agent.main.token
 }
 
 resource "local_sensitive_file" "session_token" {
-  filename = "/tmp/coder-script-order-stop.session-token"
+  filename = "${local.case}.session-token"
   content  = data.coder_workspace_owner.me.session_token
 }

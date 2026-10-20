@@ -41,8 +41,8 @@ variable "output_path" {
   type = string
 }
 
-# Coder drops an agent that no resource references. Writing the agent ID
-# here makes this file that resource.
+# Coder does not count coder_script as a resource that references the
+# agent, so without the agent ID here the agent is dropped.
 resource "local_file" "output" {
   filename = var.output_path
   content = jsonencode({

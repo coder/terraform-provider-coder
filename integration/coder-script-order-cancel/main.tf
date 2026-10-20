@@ -18,8 +18,15 @@ resource "coder_agent" "main" {
   arch = data.coder_provisioner.me.arch
 }
 
+variable "output_path" {
+  type = string
+}
+
+# Every file the test reads is named after the output path, so a copied
+# template cannot share a file with another case.
 locals {
-  order_log = "/tmp/coder-script-order-cancel.log"
+  case      = trimsuffix(var.output_path, ".json")
+  order_log = "${local.case}.log"
 }
 
 # Runs long enough for the test to stop the agent while the dependents are
@@ -78,26 +85,21 @@ data "coder_script_order" "bootstrap" {
   }
 }
 
-variable "output_path" {
-  type = string
-}
-
 resource "local_file" "output" {
   filename = var.output_path
   content = jsonencode({
     "workspace.id"        = data.coder_workspace.me.id
-    "agent.id"            = coder_agent.main.id
     "script_order.id"     = data.coder_script_order.bootstrap.id
     "script_order.rule.#" = tostring(length(data.coder_script_order.bootstrap.rule))
   })
 }
 
 resource "local_sensitive_file" "agent_token" {
-  filename = "/tmp/coder-script-order-cancel.agent-token"
+  filename = "${local.case}.agent-token"
   content  = coder_agent.main.token
 }
 
 resource "local_sensitive_file" "session_token" {
-  filename = "/tmp/coder-script-order-cancel.session-token"
+  filename = "${local.case}.session-token"
   content  = data.coder_workspace_owner.me.session_token
 }
