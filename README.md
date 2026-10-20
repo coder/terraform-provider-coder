@@ -80,7 +80,14 @@ To run these integration tests locally:
      docker pull ghcr.io/coder/coder-preview:main-x.y.z-devel-abcd1234
    ```
 
+1. On macOS, build the provider for Linux, since the binary runs inside the Coder container. For example `GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build .` on Apple silicon. Repeat this after editing provider sources, otherwise `make` rebuilds the binary for macOS.
+
 1. Run `CODER_IMAGE=ghcr.io/coder/coder-preview CODER_VERSION=main-x.y.z-devel-abcd1234 make test-integration`.
+
+The four agent cases (`coder-script-order`, `-skip`, `-stop` and `-cancel`) start a workspace agent inside the Coder container and read its results through the API.
+While a run is in progress the agent's log is at `/tmp/<case>-agent.log` inside the container.
+They run only when `CODER_VERSION` is `latest` or a release tag at or above `v2.39.0`, the first release that enforces script ordering. A preview tag like the one above does not compare as a release and skips them, so use `CODER_VERSION=latest` to run them against the newest preview image.
+The `coder-script-order-compat` case runs on every image.
 
 > [!Note]
 > You can specify `CODER_IMAGE` if the Coder image you wish to test is hosted somewhere other than `ghcr.io/coder/coder`.

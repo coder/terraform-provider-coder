@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,7 +24,6 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/exp/slices"
 	"golang.org/x/mod/semver"
 )
 
@@ -61,6 +61,9 @@ func TestIntegration(t *testing.T) {
 	t.Cleanup(cancel)
 	ctrID := setup(ctx, t, t.Name(), coderImg, coderVersion)
 
+	// Anticipated version, update as required.
+	const scriptOrderMinVersion = "v2.39.0"
+
 	for _, tt := range []struct {
 		// Name of the folder under `integration/` containing a test template
 		name string
@@ -68,6 +71,8 @@ func TestIntegration(t *testing.T) {
 		minVersion string
 		// map of string to regex to be passed to assertOutput()
 		expectedOutput map[string]string
+		// Optional. Runs after assertOutput.
+		verify func(ctx context.Context, t *testing.T, ctrID, name string, output map[string]string)
 	}{
 		{
 			name:       "test-data-source",
@@ -225,6 +230,60 @@ func TestIntegration(t *testing.T) {
 				"task.enabled":    "false",
 			},
 		},
+		{
+			name:       "coder-script-order",
+			minVersion: scriptOrderMinVersion,
+			expectedOutput: map[string]string{
+				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":     `.+`,
+				"script_order.rule.#": `^2$`,
+			},
+			verify: verifyScriptOrder,
+		},
+		{
+			name:       "coder-script-order-skip",
+			minVersion: scriptOrderMinVersion,
+			expectedOutput: map[string]string{
+				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":     `.+`,
+				"script_order.rule.#": `^2$`,
+			},
+			verify: verifyScriptOrderSkip,
+		},
+		{
+			name:       "coder-script-order-stop",
+			minVersion: scriptOrderMinVersion,
+			expectedOutput: map[string]string{
+				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":     `.+`,
+				"script_order.rule.#": `^1$`,
+			},
+			verify: verifyScriptOrderStop,
+		},
+		{
+			name:       "coder-script-order-cancel",
+			minVersion: scriptOrderMinVersion,
+			expectedOutput: map[string]string{
+				"workspace.id":        `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":     `.+`,
+				"script_order.rule.#": `^2$`,
+			},
+			verify: verifyScriptOrderCancel,
+		},
+		{
+			// A Coder older than the data source ignores it and must still
+			// import and build the template.
+			name:       "coder-script-order-compat",
+			minVersion: "v0.0.0",
+			expectedOutput: map[string]string{
+				"agent.id":                     `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`,
+				"script_order.id":              `.+`,
+				"script_order.rule.0.run.0":    `^coder_script\.install_tools$`,
+				"script_order.rule.0.after.0":  `^coder_script\.clone_repo$`,
+				"script_order.rule.0.requires": `^success$`,
+				"script_order.rule.0.phase":    `^$`,
+			},
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
@@ -263,6 +322,9 @@ func TestIntegration(t *testing.T) {
 			actual := make(map[string]string)
 			require.NoError(t, json.NewDecoder(strings.NewReader(out)).Decode(&actual))
 			assertOutput(t, tt.expectedOutput, actual)
+			if tt.verify != nil {
+				tt.verify(ctx, t, ctrID, tt.name, actual)
+			}
 		})
 	}
 }
@@ -396,9 +458,20 @@ func ensureImage(ctx context.Context, t *testing.T, cli *client.Client, ref stri
 // the output and the exit code of the command.
 func execContainer(ctx context.Context, t *testing.T, containerID, command string) (string, int) {
 	t.Helper()
+	out, rc, err := tryExecContainer(ctx, t, containerID, command)
+	require.NoError(t, err)
+	return out, rc
+}
+
+// tryExecContainer is execContainer for callers that cannot fail the test,
+// such as a poll condition running on another goroutine.
+func tryExecContainer(ctx context.Context, t *testing.T, containerID, command string) (string, int, error) {
+	t.Helper()
 	t.Logf("exec container cmd: %q", command)
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	require.NoError(t, err, "connect to docker")
+	if err != nil {
+		return "", 0, fmt.Errorf("connect to docker: %w", err)
+	}
 	defer cli.Close()
 	execConfig := types.ExecConfig{
 		AttachStdout: true,
@@ -406,18 +479,26 @@ func execContainer(ctx context.Context, t *testing.T, containerID, command strin
 		Cmd:          []string{"/bin/sh", "-c", command},
 	}
 	ex, err := cli.ContainerExecCreate(ctx, containerID, execConfig)
-	require.NoError(t, err, "create container exec")
+	if err != nil {
+		return "", 0, fmt.Errorf("create container exec: %w", err)
+	}
 	resp, err := cli.ContainerExecAttach(ctx, ex.ID, types.ExecStartCheck{})
-	require.NoError(t, err, "attach to container exec")
+	if err != nil {
+		return "", 0, fmt.Errorf("attach to container exec: %w", err)
+	}
 	defer resp.Close()
 	var buf bytes.Buffer
 	_, err = stdcopy.StdCopy(&buf, &buf, resp.Reader)
-	require.NoError(t, err, "read stdout")
+	if err != nil {
+		return "", 0, fmt.Errorf("read stdout: %w", err)
+	}
 	out := buf.String()
 	t.Log("exec container output:\n" + out)
 	execResp, err := cli.ContainerExecInspect(ctx, ex.ID)
-	require.NoError(t, err, "get exec exit code")
-	return out, execResp.ExitCode
+	if err != nil {
+		return "", 0, fmt.Errorf("get exec exit code: %w", err)
+	}
+	return out, execResp.ExitCode, nil
 }
 
 // assertOutput asserts that, for each key-value pair in expected:
