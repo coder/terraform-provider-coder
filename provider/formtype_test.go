@@ -416,8 +416,8 @@ func formTypeTest(t *testing.T, c formTypeTestCase) bool {
 	}
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest:        true,
-		ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
+		ProtoV5ProviderFactories: coderFactory(),
 		Steps: []resource.TestStep{
 			{
 				Config:      tf,

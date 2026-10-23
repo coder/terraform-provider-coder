@@ -1,10 +1,11 @@
 package provider_test
 
 import (
+	"context"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
 
@@ -24,8 +25,8 @@ func TestProvider(t *testing.T) {
 func TestProviderEmpty(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {}
@@ -46,10 +47,10 @@ func TestProviderEmpty(t *testing.T) {
 	})
 }
 
-func coderFactory() map[string]func() (*schema.Provider, error) {
-	return map[string]func() (*schema.Provider, error){
-		"coder": func() (*schema.Provider, error) {
-			return provider.New(), nil
+func coderFactory() map[string]func() (tfprotov5.ProviderServer, error) {
+	return map[string]func() (tfprotov5.ProviderServer, error){
+		"coder": func() (tfprotov5.ProviderServer, error) {
+			return provider.NewMux(context.Background())
 		},
 	}
 }

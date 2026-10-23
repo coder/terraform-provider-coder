@@ -17,8 +17,8 @@ func TestWorkspace(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -53,8 +53,8 @@ func TestWorkspace_UndefinedOwner(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -90,8 +90,8 @@ func TestWorkspace_MissingTemplateName(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_VERSION", "v1.2.3")
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -199,8 +199,8 @@ func TestWorkspace_PrebuildEnv(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: coderFactory(),
-				IsUnitTest:        true,
+				ProtoV5ProviderFactories: coderFactory(),
+				IsUnitTest:               true,
 				Steps: []resource.TestStep{{
 					Config: `
 provider "coder" {

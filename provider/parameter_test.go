@@ -696,8 +696,8 @@ data "coder_parameter" "region" {
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: coderFactory(),
-				IsUnitTest:        true,
+				ProtoV5ProviderFactories: coderFactory(),
+				IsUnitTest:               true,
 				Steps: []resource.TestStep{{
 					Config:      tc.Config,
 					ExpectError: tc.ExpectError,
@@ -1070,8 +1070,8 @@ func TestParameterValidationEnforcement(t *testing.T) {
 
 				cfg.WriteString("}\n")
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config:      cfg.String(),
 						ExpectError: row.CreateError,
@@ -1331,8 +1331,8 @@ func TestParameterWithManyOptions(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: fmt.Sprintf(`data "coder_parameter" "region" {
 				name = "Region"

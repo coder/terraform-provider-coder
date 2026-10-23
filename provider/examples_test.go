@@ -28,8 +28,8 @@ func TestExamples(t *testing.T) {
 
 func resourceTest(t *testing.T, testDir string) {
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: mustReadFile(t, fmt.Sprintf("../examples/data-sources/%s/data-source.tf", testDir)),
 		}},

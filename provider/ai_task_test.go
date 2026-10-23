@@ -15,8 +15,8 @@ func TestAITask_Enabled(t *testing.T) {
 		t.Setenv("CODER_TASK_ID", "7d8d4c2e-fb57-44f9-a183-22509819c2e7")
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -42,8 +42,8 @@ func TestAITask_Enabled(t *testing.T) {
 		t.Setenv("CODER_TASK_ID", "")
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -74,8 +74,8 @@ func TestAITask(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -115,8 +115,8 @@ func TestAITask(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -134,8 +134,8 @@ func TestAITask(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -179,8 +179,8 @@ func TestAITask(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -201,8 +201,8 @@ func TestAITask(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -221,8 +221,8 @@ func TestTaskDatasource(t *testing.T) {
 		t.Setenv("CODER_TASK_ID", "7d8d4c2e-fb57-44f9-a183-22509819c2e7")
 		t.Setenv("CODER_TASK_PROMPT", "some task prompt")
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {}
@@ -250,8 +250,8 @@ func TestTaskDatasource(t *testing.T) {
 
 	t.Run("NotExists", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {}
@@ -283,8 +283,8 @@ func TestTaskDatasource(t *testing.T) {
 	t.Run("InvalidTaskID", func(t *testing.T) {
 		t.Setenv("CODER_TASK_ID", "not a valid UUID")
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {}

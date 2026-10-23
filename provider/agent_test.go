@@ -13,8 +13,8 @@ import (
 func TestAgent(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -105,8 +105,8 @@ func TestAgent_StartupScriptBehavior(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			t.Parallel()
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: coderFactory(),
-				IsUnitTest:        true,
+				ProtoV5ProviderFactories: coderFactory(),
+				IsUnitTest:               true,
 				Steps: []resource.TestStep{{
 					Config:      tc.Config,
 					ExpectError: tc.ExpectError,
@@ -129,8 +129,8 @@ func TestAgent_StartupScriptBehavior(t *testing.T) {
 func TestAgent_Instance(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -168,8 +168,8 @@ func TestAgent_Instance(t *testing.T) {
 func TestAgent_Metadata(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -216,8 +216,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("OK", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -266,8 +266,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("OnlyMemory", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -301,8 +301,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 	})
 	t.Run("MultipleMemory", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -329,8 +329,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("InvalidThreshold", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -354,8 +354,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("MissingMonitors", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -374,8 +374,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("DuplicatePaths", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -404,8 +404,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("NoPath", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -428,8 +428,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("NonAbsPath", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -454,8 +454,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("EmptyPath", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -480,8 +480,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 
 	t.Run("ThresholdMissing", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -504,8 +504,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 	})
 	t.Run("EnabledMissing", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -530,8 +530,8 @@ func TestAgent_ResourcesMonitoring(t *testing.T) {
 func TestAgent_MetadataDuplicateKeys(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 				provider "coder" {
@@ -566,8 +566,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 	t.Parallel()
 	t.Run("OK", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
@@ -617,8 +617,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 
 	t.Run("Subset", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
@@ -662,8 +662,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 	// Assert all the defaults are set correctly.
 	t.Run("Omitted", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 					provider "coder" {
@@ -705,8 +705,8 @@ func TestAgent_DisplayApps(t *testing.T) {
 
 	t.Run("InvalidApp", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				// Test the fields with non-default values.
 				Config: `
@@ -741,8 +741,8 @@ func TestAgent_APIKeyScope(t *testing.T) {
 		resourceName := "coder_agent.test_scope_valid"
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{
 				// Step 1: Default value
 				{
@@ -800,8 +800,8 @@ func TestAgent_APIKeyScope(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{
 				// Step 1: Invalid value check
 				{
@@ -836,8 +836,8 @@ func TestAgent_AIBound(t *testing.T) {
 		resourceName := "coder_agent.test_ai_default"
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{
 				{
 					Config: `
@@ -867,8 +867,8 @@ func TestAgent_AIBound(t *testing.T) {
 		resourceName := "coder_agent.test_ai_bound"
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{
 				{
 					Config: `
@@ -895,8 +895,8 @@ func TestAgent_AIBound(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{
 				{
 					Config: `

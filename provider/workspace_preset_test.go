@@ -670,8 +670,8 @@ func TestWorkspacePreset(t *testing.T) {
 			t.Parallel()
 
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: coderFactory(),
-				IsUnitTest:        true,
+				ProtoV5ProviderFactories: coderFactory(),
+				IsUnitTest:               true,
 				Steps: []resource.TestStep{{
 					Config:      testcase.Config,
 					ExpectError: testcase.ExpectError,

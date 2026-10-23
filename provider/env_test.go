@@ -14,8 +14,8 @@ func TestEnv(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -49,8 +49,8 @@ func TestEnvEmptyValue(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -83,8 +83,8 @@ func TestEnvBadName(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -103,8 +103,8 @@ func TestEnvNoName(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -121,8 +121,8 @@ func TestEnvNoName(t *testing.T) {
 func TestEnvDefaultMergeStrategy(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {}
@@ -149,8 +149,8 @@ func TestEnvValidMergeStrategies(t *testing.T) {
 		t.Run(strategy, func(t *testing.T) {
 			t.Parallel()
 			resource.Test(t, resource.TestCase{
-				ProviderFactories: coderFactory(),
-				IsUnitTest:        true,
+				ProtoV5ProviderFactories: coderFactory(),
+				IsUnitTest:               true,
 				Steps: []resource.TestStep{{
 					Config: `
 					provider "coder" {}
@@ -177,8 +177,8 @@ func TestEnvValidMergeStrategies(t *testing.T) {
 func TestEnvInvalidMergeStrategy(t *testing.T) {
 	t.Parallel()
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {}

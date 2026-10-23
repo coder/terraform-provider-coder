@@ -13,8 +13,8 @@ func TestExternalAuth(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {
@@ -43,8 +43,8 @@ func TestOptionalExternalAuth(t *testing.T) {
 	t.Parallel()
 
 	resource.Test(t, resource.TestCase{
-		ProviderFactories: coderFactory(),
-		IsUnitTest:        true,
+		ProtoV5ProviderFactories: coderFactory(),
+		IsUnitTest:               true,
 		Steps: []resource.TestStep{{
 			Config: `
 			provider "coder" {

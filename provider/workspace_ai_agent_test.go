@@ -14,8 +14,8 @@ func TestWorkspaceAIAgentDatasource(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_AI_AGENT_SESSION_TOKEN", "ai-agent-session-token")
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 			provider "coder" {}
@@ -41,8 +41,8 @@ func TestWorkspaceAIAgentDatasource(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_AI_AGENT_SESSION_TOKEN", "")
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 			provider "coder" {}

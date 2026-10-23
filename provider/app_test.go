@@ -19,8 +19,8 @@ func TestApp(t *testing.T) {
 		t.Parallel()
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 				provider "coder" {
@@ -115,8 +115,8 @@ func TestApp(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				t.Parallel()
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config: tc.config,
 						Check: func(state *terraform.State) error {
@@ -220,8 +220,8 @@ func TestApp(t *testing.T) {
 				}
 
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config:      config,
 						Check:       checkFn,
@@ -315,8 +315,8 @@ func TestApp(t *testing.T) {
 				}
 
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config:      config,
 						Check:       checkFn,
@@ -381,8 +381,8 @@ func TestApp(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				t.Parallel()
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config: tc.config,
 						Check: func(state *terraform.State) error {
@@ -452,8 +452,8 @@ func TestApp(t *testing.T) {
 				`, c.displayName)
 
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config:      config,
 						ExpectError: c.expectError,
@@ -509,8 +509,8 @@ func TestApp(t *testing.T) {
 				`, c.icon)
 
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config:      config,
 						ExpectError: c.expectError,
@@ -565,8 +565,8 @@ func TestApp(t *testing.T) {
 				`, c.tooltip)
 
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config:      config,
 						ExpectError: c.expectError,
@@ -694,8 +694,8 @@ func TestApp(t *testing.T) {
 				`, strings.Join(extraLines, "\n	"))
 
 				resource.Test(t, resource.TestCase{
-					ProviderFactories: coderFactory(),
-					IsUnitTest:        true,
+					ProtoV5ProviderFactories: coderFactory(),
+					IsUnitTest:               true,
 					Steps: []resource.TestStep{{
 						Config:      config,
 						ExpectError: c.expectError,

@@ -37,8 +37,8 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_OWNER_RBAC_ROLES", `[{"name":"member","org_id":"00000000-0000-0000-0000-000000000000"}]`)
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 			provider "coder" {}
@@ -89,8 +89,8 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 		}
 
 		resource.Test(t, resource.TestCase{
-			ProviderFactories: coderFactory(),
-			IsUnitTest:        true,
+			ProtoV5ProviderFactories: coderFactory(),
+			IsUnitTest:               true,
 			Steps: []resource.TestStep{{
 				Config: `
 			provider "coder" {}

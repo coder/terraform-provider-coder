@@ -57,6 +57,7 @@ func New() *schema.Provider {
 			}, nil
 		},
 		DataSourcesMap: map[string]*schema.Resource{
+			"coder_template":           templateDataSource(),
 			"coder_workspace":          workspaceDataSource(),
 			"coder_workspace_tags":     workspaceTagDataSource(),
 			"coder_provisioner":        provisionerDataSource(),
