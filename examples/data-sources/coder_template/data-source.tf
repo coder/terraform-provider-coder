@@ -9,7 +9,8 @@ terraform {
 provider "coder" {}
 
 # Proposed POC data source, requiring the companion development provider.
-# Coder supplies template identity for template-scoped runs and workspace builds.
+# Coder supplies template identity in both provisioning scopes:
+# Shared resources (once per template) and Per-workspace resources (each workspace).
 data "coder_template" "current" {}
 
 output "template_id" {

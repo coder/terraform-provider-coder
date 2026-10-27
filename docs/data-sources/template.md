@@ -3,14 +3,21 @@
 page_title: "coder_template Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Proposed POC data source for template identity.
+  Proposed POC data source for template identity in the shared and per-workspace resource provisioning scopes.
 ---
 
 # coder_template (Data Source)
 
 This proposed POC data source requires the companion development provider. It is
-not a released provider feature. It exposes template identity in template-scoped
-Terraform runs and workspace builds without requiring a workspace identity.
+not a released provider feature. It exposes template identity in both provisioning
+scopes without requiring a workspace identity:
+
+- **Shared resources (once per template)**: Resources provisioned once for the
+  template and shared by its workspaces.
+- **Per-workspace resources (each workspace)**: Resources provisioned separately
+  for each workspace.
+
+Use `coder_template` in both scopes.
 
 ## Example usage
 
@@ -28,7 +35,8 @@ terraform {
 provider "coder" {}
 
 # Proposed POC data source, requiring the companion development provider.
-# Coder supplies template identity for template-scoped runs and workspace builds.
+# Coder supplies template identity in both provisioning scopes:
+# Shared resources (once per template) and Per-workspace resources (each workspace).
 data "coder_template" "current" {}
 
 output "template_id" {
@@ -42,8 +50,8 @@ output "template_name" {
 
 ## Environment contract
 
-Coder supplies these variables to the provider process for template-scoped runs
-and workspace builds:
+Coder supplies these variables to the provider process in both the shared and
+per-workspace resource provisioning scopes:
 
 | Variable | Attribute | Missing or empty fallback |
 | --- | --- | --- |

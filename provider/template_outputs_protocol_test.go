@@ -22,12 +22,22 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 	sdk, err := provider.New().GRPCProvider().GetProviderSchema(t.Context(), &tfprotov5.GetProviderSchemaRequest{})
 	require.NoError(t, err)
 	require.Equal(t, sdk.Provider, schemas.Provider)
+	identity := schemas.DataSourceSchemas["coder_template"]
+	require.NotNil(t, identity)
+	require.Contains(t, identity.Block.Description, "Shared resources (once per template)")
+	require.Contains(t, identity.Block.Description, "Per-workspace resources (each workspace)")
 	sch := schemas.DataSourceSchemas["coder_template_outputs"]
+	require.NotNil(t, sch)
+	require.Contains(t, sch.Block.Description, "shared resource outputs snapshot")
 	require.Len(t, sch.Block.Attributes, 3)
 	for _, attr := range sch.Block.Attributes {
-		if attr.Name == "outputs" {
+		switch attr.Name {
+		case "outputs":
 			require.True(t, attr.Type.Is(tftypes.DynamicPseudoType))
 			require.True(t, attr.Computed)
+			require.Contains(t, attr.Description, "shared resource output values")
+		case "revision_id":
+			require.Contains(t, attr.Description, "shared resource revision")
 		}
 	}
 
@@ -36,15 +46,15 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 	}{
 		{name: "EmptyObject", outputs: "{}"},
 		{name: "EmptyEnvironment"},
-		{name: "MalformedJSON", outputs: `{"private-marker":`, wantError: "CODER_TEMPLATE_OUTPUTS must be a JSON object"},
-		{name: "TrailingJSON", outputs: `{} {"private-marker":1}`, wantError: "CODER_TEMPLATE_OUTPUTS must be a JSON object"},
-		{name: "Null", outputs: `null`, wantError: "CODER_TEMPLATE_OUTPUTS must be a JSON object"},
-		{name: "Array", outputs: `[]`, wantError: "CODER_TEMPLATE_OUTPUTS must be a JSON object"},
-		{name: "String", outputs: `"private-marker"`, wantError: "CODER_TEMPLATE_OUTPUTS must be a JSON object"},
-		{name: "Number", outputs: `123`, wantError: "CODER_TEMPLATE_OUTPUTS must be a JSON object"},
-		{name: "Boolean", outputs: `true`, wantError: "CODER_TEMPLATE_OUTPUTS must be a JSON object"},
-		{name: "Whitespace", outputs: " \n", wantError: "CODER_TEMPLATE_OUTPUTS must be a JSON object"},
-		{name: "InvalidRevision", outputs: "{}", revisionID: "private-marker", wantError: "CODER_TEMPLATE_RESOURCE_REVISION_ID must be a UUID"},
+		{name: "MalformedJSON", outputs: `{"private-marker":`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
+		{name: "TrailingJSON", outputs: `{} {"private-marker":1}`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
+		{name: "Null", outputs: `null`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
+		{name: "Array", outputs: `[]`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
+		{name: "String", outputs: `"private-marker"`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
+		{name: "Number", outputs: `123`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
+		{name: "Boolean", outputs: `true`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
+		{name: "Whitespace", outputs: " \n", wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
+		{name: "InvalidRevision", outputs: "{}", revisionID: "private-marker", wantError: "Shared resource revision ID in CODER_TEMPLATE_RESOURCE_REVISION_ID must be a UUID"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "")
@@ -73,7 +83,7 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 		first := templateOutputValues(t, readTemplateOutputs(t, server, sch), sch)
 		secondRevision := "33333333-3333-4333-8333-333333333333"
 		t.Setenv("CODER_TEMPLATE_RESOURCE_REVISION_ID", secondRevision)
-		// A subsequent build can also change output types and keys.
+		// A subsequent shared resource revision can change output types and keys.
 		t.Setenv("CODER_TEMPLATE_OUTPUTS", `{"namespace":"second","new":true}`)
 		second := templateOutputValues(t, readTemplateOutputs(t, server, sch), sch)
 		require.True(t, first["id"].Equal(second["id"]))
