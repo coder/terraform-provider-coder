@@ -14,7 +14,7 @@ const templateImportID = "import"
 func templateDataSource() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
-		Description:   "Proposed POC data source for template identity in both provisioning scopes: Shared resources (once per template) and Per-workspace resources (each workspace).",
+		Description:   "Proposed POC data source for template identity in both provisioning scopes: Shared resources (owned by a Foundation) and Per-workspace resources (each workspace). The template ID remains distinct from the Foundation ID.",
 		ReadContext: func(_ context.Context, rd *schema.ResourceData, _ interface{}) diag.Diagnostics {
 			if err := rd.Set("name", helpers.OptionalEnvOrDefault("CODER_WORKSPACE_TEMPLATE_NAME", "default")); err != nil {
 				return diag.FromErr(err)

@@ -24,27 +24,33 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 	require.Equal(t, sdk.Provider, schemas.Provider)
 	identity := schemas.DataSourceSchemas["coder_template"]
 	require.NotNil(t, identity)
-	require.Contains(t, identity.Block.Description, "Shared resources (once per template)")
+	require.Contains(t, identity.Block.Description, "Shared resources (owned by a Foundation)")
 	require.Contains(t, identity.Block.Description, "Per-workspace resources (each workspace)")
 	sch := schemas.DataSourceSchemas["coder_template_outputs"]
 	require.NotNil(t, sch)
 	require.Contains(t, sch.Block.Description, "shared resource outputs snapshot")
-	require.Len(t, sch.Block.Attributes, 3)
+	require.Len(t, sch.Block.Attributes, 4)
 	for _, attr := range sch.Block.Attributes {
 		switch attr.Name {
 		case "outputs":
 			require.True(t, attr.Type.Is(tftypes.DynamicPseudoType))
 			require.True(t, attr.Computed)
 			require.Contains(t, attr.Description, "shared resource output values")
+		case "foundation_id":
+			require.True(t, attr.Computed)
+			require.False(t, attr.Optional)
+			require.False(t, attr.Required)
+			require.Contains(t, attr.Description, "Foundation supplying the snapshot")
 		case "revision_id":
 			require.Contains(t, attr.Description, "shared resource revision")
 		}
 	}
 
 	for _, tc := range []struct {
-		name, outputs, revisionID, wantError string
+		name, outputs, revisionID, foundationID, wantError string
 	}{
 		{name: "EmptyObject", outputs: "{}"},
+		{name: "InvalidFoundation", outputs: "{}", foundationID: "private-marker", wantError: "Foundation ID in CODER_FOUNDATION_ID must be a UUID"},
 		{name: "EmptyEnvironment"},
 		{name: "MalformedJSON", outputs: `{"private-marker":`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
 		{name: "TrailingJSON", outputs: `{} {"private-marker":1}`, wantError: "Shared resource outputs in CODER_TEMPLATE_OUTPUTS must be a JSON object"},
@@ -58,6 +64,7 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "")
+			t.Setenv("CODER_FOUNDATION_ID", tc.foundationID)
 			t.Setenv("CODER_TEMPLATE_OUTPUTS", tc.outputs)
 			t.Setenv("CODER_TEMPLATE_RESOURCE_REVISION_ID", tc.revisionID)
 			resp := readTemplateOutputs(t, server, sch)
@@ -72,6 +79,7 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 			values := templateOutputValues(t, resp, sch)
 			require.True(t, values["id"].Equal(tftypes.NewValue(tftypes.String, "import")))
 			require.True(t, values["revision_id"].Equal(tftypes.NewValue(tftypes.String, "")))
+			require.True(t, values["foundation_id"].Equal(tftypes.NewValue(tftypes.String, "")))
 			require.True(t, values["outputs"].Equal(tftypes.NewValue(tftypes.Object{AttributeTypes: map[string]tftypes.Type{}}, map[string]tftypes.Value{})))
 		})
 	}
@@ -79,6 +87,7 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 	t.Run("RefreshedSnapshots", func(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "11111111-1111-4111-8111-111111111111")
 		t.Setenv("CODER_TEMPLATE_RESOURCE_REVISION_ID", "22222222-2222-4222-8222-222222222222")
+		t.Setenv("CODER_FOUNDATION_ID", "44444444-4444-4444-8444-444444444444")
 		t.Setenv("CODER_TEMPLATE_OUTPUTS", `{"namespace":"first"}`)
 		first := templateOutputValues(t, readTemplateOutputs(t, server, sch), sch)
 		secondRevision := "33333333-3333-4333-8333-333333333333"
@@ -87,6 +96,9 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 		t.Setenv("CODER_TEMPLATE_OUTPUTS", `{"namespace":"second","new":true}`)
 		second := templateOutputValues(t, readTemplateOutputs(t, server, sch), sch)
 		require.True(t, first["id"].Equal(second["id"]))
+		require.True(t, first["foundation_id"].Equal(second["foundation_id"]))
+		require.True(t, second["foundation_id"].Equal(tftypes.NewValue(tftypes.String, "44444444-4444-4444-8444-444444444444")))
+		require.False(t, second["id"].Equal(second["foundation_id"]))
 		require.True(t, second["revision_id"].Equal(tftypes.NewValue(tftypes.String, secondRevision)))
 		var outputs map[string]tftypes.Value
 		require.NoError(t, second["outputs"].As(&outputs))
@@ -97,7 +109,7 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 	})
 
 	t.Run("UnsetEnvironment", func(t *testing.T) {
-		for _, key := range []string{"CODER_WORKSPACE_TEMPLATE_ID", "CODER_TEMPLATE_OUTPUTS", "CODER_TEMPLATE_RESOURCE_REVISION_ID"} {
+		for _, key := range []string{"CODER_WORKSPACE_TEMPLATE_ID", "CODER_TEMPLATE_OUTPUTS", "CODER_TEMPLATE_RESOURCE_REVISION_ID", "CODER_FOUNDATION_ID"} {
 			t.Setenv(key, "")
 			require.NoError(t, os.Unsetenv(key))
 		}
@@ -113,9 +125,10 @@ func TestTemplateOutputsProtocol(t *testing.T) {
 func readTemplateOutputs(t *testing.T, server tfprotov5.ProviderServer, sch *tfprotov5.Schema) *tfprotov5.ReadDataSourceResponse {
 	t.Helper()
 	config, err := tfprotov5.NewDynamicValue(sch.ValueType(), tftypes.NewValue(sch.ValueType(), map[string]tftypes.Value{
-		"id":          tftypes.NewValue(tftypes.String, nil),
-		"revision_id": tftypes.NewValue(tftypes.String, nil),
-		"outputs":     tftypes.NewValue(tftypes.DynamicPseudoType, nil),
+		"id":            tftypes.NewValue(tftypes.String, nil),
+		"revision_id":   tftypes.NewValue(tftypes.String, nil),
+		"foundation_id": tftypes.NewValue(tftypes.String, nil),
+		"outputs":       tftypes.NewValue(tftypes.DynamicPseudoType, nil),
 	}))
 	require.NoError(t, err)
 	resp, err := server.ReadDataSource(t.Context(), &tfprotov5.ReadDataSourceRequest{TypeName: "coder_template_outputs", Config: &config})

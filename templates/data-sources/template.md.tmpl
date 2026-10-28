@@ -12,12 +12,16 @@ This proposed POC data source requires the companion development provider. It is
 not a released provider feature. It exposes template identity in both provisioning
 scopes without requiring a workspace identity:
 
-- **Shared resources (once per template)**: Resources provisioned once for the
-  template and shared by its workspaces.
+- **Shared resources (owned by a Foundation)**: Resources provisioned independently
+  of the attached template and shared by its workspaces. Template identity is
+  available only when a template is attached.
 - **Per-workspace resources (each workspace)**: Resources provisioned separately
   for each workspace.
 
-Use `coder_template` in both scopes.
+Use `coder_template` for template identity in both scopes. Use `coder_foundation`
+for the independent Foundation identity and its outputs snapshot. Neither data source aliases the other's
+ID. Preserve existing identifier inputs on live resources: replacing a template ID
+with a Foundation ID in a resource name can cause infrastructure replacement.
 
 ## Example usage
 

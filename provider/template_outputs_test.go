@@ -12,7 +12,11 @@ func TestTemplateOutputsTyped(t *testing.T) {
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_NAME", "shared")
 	t.Setenv("CODER_WORKSPACE_TEMPLATE_ID", "11111111-1111-4111-8111-111111111111")
 	t.Setenv("CODER_TEMPLATE_RESOURCE_REVISION_ID", "22222222-2222-4222-8222-222222222222")
+	t.Setenv("CODER_FOUNDATION_ID", "33333333-3333-4333-8333-333333333333")
+	t.Setenv("CODER_FOUNDATION_NAME", "shared-foundation")
+	t.Setenv("CODER_FOUNDATION_TEMPLATE_IDS", `["11111111-1111-4111-8111-111111111111"]`)
 	t.Setenv("CODER_TEMPLATE_OUTPUTS", ` {"namespace":"shared","nested":{"enabled":true,"optional":null},"mixed":[1,"two",false,null,{"x":[]}],"large":9007199254740993,"decimal":0.1234567890123456789,"empty":{}} `)
+	t.Setenv("CODER_FOUNDATION_OUTPUT_METADATA", `{"namespace":{"type":"string","sensitive":false},"nested":{"type":["object",{"enabled":"bool","optional":"dynamic"}],"sensitive":false},"mixed":{"type":["tuple",["number","string","bool","dynamic",["object",{"x":["tuple",[]]}]]],"sensitive":false},"large":{"type":"number","sensitive":false},"decimal":{"type":"number","sensitive":false},"empty":{"type":["object",{}],"sensitive":false}}`)
 	resource.Test(t, resource.TestCase{
 		ProtoV5ProviderFactories: coderFactory(),
 		IsUnitTest:               true,
@@ -20,6 +24,8 @@ func TestTemplateOutputsTyped(t *testing.T) {
 			Config: `
 provider "coder" { url = "https://example.com:8080" }
 data "coder_template_outputs" "current" {}
+data "coder_foundation" "current" {}
+data "coder_template" "current" {}
 data "coder_workspace" "me" {}
 resource "coder_agent" "test" {
   os = "linux"
@@ -40,6 +46,11 @@ output "types_preserved" {
 			Check: resource.ComposeTestCheckFunc(
 				resource.TestCheckOutput("namespace", "shared"),
 				resource.TestCheckOutput("types_preserved", "true"),
+				resource.TestCheckResourceAttr("data.coder_foundation.current", "id", "33333333-3333-4333-8333-333333333333"),
+				resource.TestCheckResourceAttr("data.coder_foundation.current", "name", "shared-foundation"),
+				resource.TestCheckResourceAttr("data.coder_foundation.current", "template_ids.0", "11111111-1111-4111-8111-111111111111"),
+				resource.TestCheckResourceAttr("data.coder_template.current", "id", "11111111-1111-4111-8111-111111111111"),
+				resource.TestCheckResourceAttr("data.coder_template_outputs.current", "foundation_id", "33333333-3333-4333-8333-333333333333"),
 				resource.TestCheckResourceAttr("data.coder_template_outputs.current", "id", "11111111-1111-4111-8111-111111111111"),
 				resource.TestCheckResourceAttr("data.coder_template_outputs.current", "revision_id", "22222222-2222-4222-8222-222222222222"),
 				resource.TestCheckResourceAttr("data.coder_workspace.me", "access_url", "https://example.com:8080"),

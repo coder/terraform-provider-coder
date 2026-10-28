@@ -8,9 +8,8 @@ terraform {
 
 provider "coder" {}
 
-# Proposed POC data source, requiring the companion development provider.
-# Coder supplies an immutable shared resource outputs snapshot to per-workspace
-# builds, with sensitive outputs excluded.
+# Deprecated compatibility data source. Prefer coder_foundation for new templates.
+# Coder supplies an immutable snapshot with Terraform types and sensitivity.
 data "coder_template_outputs" "shared" {}
 
 locals {
@@ -22,7 +21,8 @@ locals {
 }
 
 output "subnet_ids" {
-  value = local.subnet_ids
+  value     = local.subnet_ids
+  sensitive = true
 }
 
 output "template_resource_revision_id" {

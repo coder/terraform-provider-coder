@@ -3,64 +3,51 @@
 page_title: "coder_template_outputs Data Source - terraform-provider-coder"
 subcategory: ""
 description: |-
-  Proposed POC data source for an immutable shared resource outputs snapshot.
+  Compatibility data source for an immutable shared resource outputs snapshot.
 ---
 
 # coder_template_outputs (Data Source)
 
-This proposed POC data source requires the companion development provider and
-matching Coder server support. It is not a released provider feature. It reads
-the immutable shared resource outputs snapshot supplied by Coder to a per-workspace
-build, not live Terraform state or an API endpoint.
+This development data source is deprecated. Use [`coder_foundation`](foundation.md)
+for combined Foundation metadata and outputs. The compatibility data source retains
+its template-based ID and existing attributes; it is not an alias for Foundation
+identity. Both require the companion development provider and matching Coder server.
 
-The two provisioning scopes are **Shared resources (once per template)** and
-**Per-workspace resources (each workspace)**. This data source passes outputs from
-the shared resources scope to builds in the per-workspace resources scope. Use
-`coder_template_outputs` to read this snapshot.
-
-Coder excludes sensitive outputs before supplying the snapshot. The provider
-receives only output names and their values, not Terraform output metadata. It
-cannot identify or filter sensitive values itself. Do not inject secrets into
-`CODER_TEMPLATE_OUTPUTS`: `outputs` is not marked sensitive and is stored in
-Terraform state.
+It reads the immutable shared resource outputs snapshot supplied by Coder to a
+per-workspace build, not live Terraform state or an API endpoint. A Foundation owns
+its shared resources independently of attached templates.
 
 ## Example usage
 
-Add these blocks to the Terraform configuration for per-workspace resources:
-
 {{tffile "examples/data-sources/coder_template_outputs/data-source.tf"}}
-
-`outputs` is a computed, dynamically typed object. Access output values directly,
-for example `data.coder_template_outputs.current.outputs.namespace`. Nested
-objects, heterogeneous arrays, numbers, booleans, strings, and nulls retain their
-Terraform types without string coercion. For example, Coder can supply:
-
-```json
-{"network":{"subnet_ids":["subnet-a","subnet-b"]},"enabled":true}
-```
-
-Template import can run before shared resource outputs exist. Use `try` with a
-fallback appropriate for the consuming resource when accessing those values.
-Coder's server gates per-workspace builds on shared resource readiness; this data
-source does not use missing environment variables as a build gate.
 
 ## Environment contract
 
 | Variable | Attribute | Missing or empty fallback |
 | --- | --- | --- |
 | `CODER_TEMPLATE_OUTPUTS` | `outputs` | `{}` |
+| `CODER_FOUNDATION_OUTPUT_METADATA` | `outputs` types and sensitivity | Legacy JSON type inference |
 | `CODER_TEMPLATE_RESOURCE_REVISION_ID` | `revision_id` | Empty string |
+| `CODER_FOUNDATION_ID` | `foundation_id` | Empty string |
 | `CODER_WORKSPACE_TEMPLATE_ID` | `id` | `import` |
 
-`CODER_TEMPLATE_OUTPUTS` must be a JSON object mapping output names directly to
-values, not the metadata envelopes produced by `terraform output -json`. Invalid
-JSON and non-object values, including `null`, produce an error without exposing
-the payload. Numbers retain Terraform's numeric precision rather than passing
-through Go floating-point values.
+When output metadata is supplied, the values and metadata follow the exact-type
+[Foundation contract](foundation.md#environment-contract). Sensitive outputs are
+not filtered. The entire `outputs` attribute is marked sensitive if any root
+output is sensitive. Sensitive data is still stored in Terraform state.
 
-`CODER_TEMPLATE_RESOURCE_REVISION_ID` identifies the shared resource revision
-supplying the snapshot. A nonempty value must be a UUID. Empty values are permitted
-during template import. The data source ID is the template ID, not the revision
-ID, so a new snapshot does not change its identity.
+For compatibility with older development servers, absent or empty metadata enables
+JSON type inference: arrays become tuples and objects become objects, so original
+list, set, and map types cannot be recovered. This legacy path does not mark the
+attribute sensitive and must only receive snapshots from servers that excluded
+sensitive outputs. New integrations must always provide metadata for nonempty
+snapshots. Numbers retain Terraform precision in both paths.
+
+Use `try` for optional output keys and empty snapshots during import. Nonempty
+Foundation and revision IDs must be UUIDs. `revision_id` identifies the legacy
+shared resource revision, not the producing run exposed as
+`coder_foundation.snapshot_id`. Neither data source selects versions or enforces
+compatibility policy. Coder supplies a pinned snapshot; Terraform determines whether
+required outputs are available.
 
 {{ .SchemaMarkdown | trimspace }}

@@ -49,6 +49,7 @@ func (*templateOutputsProvider) Configure(context.Context, framework.ConfigureRe
 
 func (*templateOutputsProvider) DataSources(context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		func() datasource.DataSource { return &foundationDataSource{} },
 		func() datasource.DataSource { return &templateOutputsDataSource{} },
 	}
 }
