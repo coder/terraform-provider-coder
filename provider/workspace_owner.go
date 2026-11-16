@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -17,17 +18,49 @@ func workspaceOwnerDataSource() *schema.Resource {
 		ReadContext: func(ctx context.Context, rd *schema.ResourceData, i interface{}) diag.Diagnostics {
 			diags := diag.Diagnostics{}
 
-			if idStr := os.Getenv("CODER_WORKSPACE_OWNER_ID"); idStr != "" {
-				rd.SetId(idStr)
-			} else {
-				rd.SetId(uuid.NewString())
+			ownerID := os.Getenv("CODER_WORKSPACE_OWNER_ID")
+			if ownerID == "" {
+				ownerID = uuid.NewString()
 			}
+			rd.SetId(ownerID)
 
-			if username := os.Getenv("CODER_WORKSPACE_OWNER"); username != "" {
-				_ = rd.Set("name", username)
-			} else {
-				_ = rd.Set("name", "default")
+			username := os.Getenv("CODER_WORKSPACE_OWNER")
+			if username == "" {
+				username = "default"
 			}
+			_ = rd.Set("name", username)
+
+			// A delegated identity is an identity created under a user,
+			// for example for an agent. Its root user answers for it.
+			// Any other owner is their own root user, so templates can
+			// read the root user without asking which kind of owner
+			// they have. Deployments that predate delegated identities
+			// set none of these.
+			delegated := false
+			if delegatedRaw := os.Getenv("CODER_WORKSPACE_OWNER_DELEGATED"); delegatedRaw != "" {
+				var err error
+				delegated, err = strconv.ParseBool(delegatedRaw)
+				if err != nil {
+					return diag.Errorf("invalid delegated owner flag: %s", err.Error())
+				}
+			}
+			_ = rd.Set("delegated", delegated)
+
+			// Only a delegated identity has a parent. The parent is the
+			// root user, or another delegated identity in between.
+			_ = rd.Set("parent_id", os.Getenv("CODER_WORKSPACE_OWNER_PARENT_ID"))
+
+			rootUserID := os.Getenv("CODER_WORKSPACE_OWNER_ROOT_USER_ID")
+			if rootUserID == "" {
+				rootUserID = ownerID
+			}
+			_ = rd.Set("root_user_id", rootUserID)
+
+			rootUserName := os.Getenv("CODER_WORKSPACE_OWNER_ROOT_USER_NAME")
+			if rootUserName == "" {
+				rootUserName = username
+			}
+			_ = rd.Set("root_user_name", rootUserName)
 
 			if fullname := os.Getenv("CODER_WORKSPACE_OWNER_NAME"); fullname != "" {
 				_ = rd.Set("full_name", fullname)
@@ -127,6 +160,28 @@ func workspaceOwnerDataSource() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Description: "The type of login the user has.",
+			},
+			"delegated": {
+				Type:     schema.TypeBool,
+				Computed: true,
+				Description: "Whether the workspace owner is a delegated identity: an identity created under a user that can never do more than that user, such as the identity of an agent. " +
+					"A delegated identity has no email address and none of its root user's credentials.",
+			},
+			"parent_id": {
+				Type:     schema.TypeString,
+				Computed: true,
+				Description: "The UUID of the identity the workspace owner was created under: its root user, or another delegated identity in between. " +
+					"This is empty unless the owner is a delegated identity.",
+			},
+			"root_user_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The UUID of the user who answers for the workspace owner. This is the owner, unless the owner is a delegated identity.",
+			},
+			"root_user_name": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "The username of the user who answers for the workspace owner. This is the owner, unless the owner is a delegated identity.",
 			},
 			"rbac_roles": {
 				Type: schema.TypeList,

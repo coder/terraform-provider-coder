@@ -2,6 +2,7 @@ package provider_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -64,8 +65,65 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Equal(t, `github`, attrs["login_type"])
 					assert.Equal(t, `member`, attrs["rbac_roles.0.name"])
 					assert.Equal(t, `00000000-0000-0000-0000-000000000000`, attrs["rbac_roles.0.org_id"])
+					// An owner who is not a delegated identity is
+					// their own root user.
+					assert.Equal(t, "false", attrs["delegated"])
+					assert.Empty(t, attrs["parent_id"])
+					assert.Equal(t, "11111111-1111-1111-1111-111111111111", attrs["root_user_id"])
+					assert.Equal(t, "owner123", attrs["root_user_name"])
 					return nil
 				},
+			}},
+		})
+	})
+
+	t.Run("DelegatedIdentity", func(t *testing.T) {
+		t.Setenv("CODER_WORKSPACE_OWNER_ID", "22222222-2222-2222-2222-222222222222")
+		t.Setenv("CODER_WORKSPACE_OWNER", "my-agent")
+		t.Setenv("CODER_WORKSPACE_OWNER_DELEGATED", "true")
+		// The owner is two levels below its root user.
+		t.Setenv("CODER_WORKSPACE_OWNER_PARENT_ID", "33333333-3333-3333-3333-333333333333")
+		t.Setenv("CODER_WORKSPACE_OWNER_ROOT_USER_ID", "11111111-1111-1111-1111-111111111111")
+		t.Setenv("CODER_WORKSPACE_OWNER_ROOT_USER_NAME", "owner123")
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+			provider "coder" {}
+			data "coder_workspace_owner" "me" {}
+			`,
+				Check: func(s *terraform.State) error {
+					require.Len(t, s.Modules, 1)
+					resource := s.Modules[0].Resources["data.coder_workspace_owner.me"]
+					require.NotNil(t, resource)
+
+					attrs := resource.Primary.Attributes
+					assert.Equal(t, "22222222-2222-2222-2222-222222222222", attrs["id"])
+					assert.Equal(t, "my-agent", attrs["name"])
+					assert.Equal(t, "true", attrs["delegated"])
+					assert.Equal(t, "33333333-3333-3333-3333-333333333333", attrs["parent_id"])
+					assert.Equal(t, "11111111-1111-1111-1111-111111111111", attrs["root_user_id"])
+					assert.Equal(t, "owner123", attrs["root_user_name"])
+					return nil
+				},
+			}},
+		})
+	})
+
+	t.Run("InvalidDelegated", func(t *testing.T) {
+		t.Setenv("CODER_WORKSPACE_OWNER_DELEGATED", "sometimes")
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+			provider "coder" {}
+			data "coder_workspace_owner" "me" {}
+			`,
+				ExpectError: regexp.MustCompile("invalid delegated owner flag"),
 			}},
 		})
 	})
@@ -83,6 +141,10 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 			"CODER_WORKSPACE_OWNER_SSH_PRIVATE_KEY",
 			"CODER_WORKSPACE_OWNER_LOGIN_TYPE",
 			"CODER_WORKSPACE_OWNER_RBAC_ROLES",
+			"CODER_WORKSPACE_OWNER_DELEGATED",
+			"CODER_WORKSPACE_OWNER_PARENT_ID",
+			"CODER_WORKSPACE_OWNER_ROOT_USER_ID",
+			"CODER_WORKSPACE_OWNER_ROOT_USER_NAME",
 		} { // https://github.com/golang/go/issues/52817
 			t.Setenv(v, "")
 			os.Unsetenv(v)
@@ -114,6 +176,10 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Empty(t, attrs["oidc_access_token"])
 					assert.Empty(t, attrs["login_type"])
 					assert.Empty(t, attrs["rbac_roles.0"])
+					assert.Equal(t, "false", attrs["delegated"])
+					assert.Empty(t, attrs["parent_id"])
+					assert.Equal(t, attrs["id"], attrs["root_user_id"])
+					assert.Equal(t, "default", attrs["root_user_name"])
 					return nil
 				},
 			}},

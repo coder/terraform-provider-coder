@@ -46,6 +46,7 @@ resource "coder_env" "git_author_email" {
 
 ### Read-Only
 
+- `delegated` (Boolean) Whether the workspace owner is a delegated identity: an identity created under a user that can never do more than that user, such as the identity of an agent. A delegated identity has no email address and none of its root user's credentials.
 - `email` (String) The email address of the user.
 - `full_name` (String) The full name of the user.
 - `groups` (List of String) The groups of which the user is a member.
@@ -53,7 +54,10 @@ resource "coder_env" "git_author_email" {
 - `login_type` (String) The type of login the user has.
 - `name` (String) The username of the user.
 - `oidc_access_token` (String, Sensitive) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.
+- `parent_id` (String) The UUID of the identity the workspace owner was created under: its root user, or another delegated identity in between. This is empty unless the owner is a delegated identity.
 - `rbac_roles` (List of Object) The RBAC roles of which the user is assigned. (see [below for nested schema](#nestedatt--rbac_roles))
+- `root_user_id` (String) The UUID of the user who answers for the workspace owner. This is the owner, unless the owner is a delegated identity.
+- `root_user_name` (String) The username of the user who answers for the workspace owner. This is the owner, unless the owner is a delegated identity.
 - `session_token` (String, Sensitive) Session token for authenticating with a Coder deployment. It is regenerated every time a workspace is started.
 - `ssh_private_key` (String, Sensitive) The user's generated SSH private key.
 - `ssh_public_key` (String) The user's generated SSH public key.
