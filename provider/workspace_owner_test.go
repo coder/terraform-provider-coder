@@ -85,6 +85,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 		t.Setenv("CODER_WORKSPACE_OWNER_PARENT_ID", "33333333-3333-3333-3333-333333333333")
 		t.Setenv("CODER_WORKSPACE_OWNER_ROOT_USER_ID", "11111111-1111-1111-1111-111111111111")
 		t.Setenv("CODER_WORKSPACE_OWNER_ROOT_USER_NAME", "owner123")
+		t.Setenv("CODER_WORKSPACE_OWNER_LABELS", `{"session":"s-123","purpose":"review"}`)
 
 		resource.Test(t, resource.TestCase{
 			ProviderFactories: coderFactory(),
@@ -104,10 +105,29 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Equal(t, "my-agent", attrs["name"])
 					assert.Equal(t, "true", attrs["delegated"])
 					assert.Equal(t, "33333333-3333-3333-3333-333333333333", attrs["parent_id"])
+					assert.Equal(t, "2", attrs["labels.%"])
+					assert.Equal(t, "s-123", attrs["labels.session"])
+					assert.Equal(t, "review", attrs["labels.purpose"])
 					assert.Equal(t, "11111111-1111-1111-1111-111111111111", attrs["root_user_id"])
 					assert.Equal(t, "owner123", attrs["root_user_name"])
 					return nil
 				},
+			}},
+		})
+	})
+
+	t.Run("InvalidLabels", func(t *testing.T) {
+		t.Setenv("CODER_WORKSPACE_OWNER_LABELS", `["not", "a", "map"]`)
+
+		resource.Test(t, resource.TestCase{
+			ProviderFactories: coderFactory(),
+			IsUnitTest:        true,
+			Steps: []resource.TestStep{{
+				Config: `
+			provider "coder" {}
+			data "coder_workspace_owner" "me" {}
+			`,
+				ExpectError: regexp.MustCompile("invalid owner labels"),
 			}},
 		})
 	})
@@ -143,6 +163,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 			"CODER_WORKSPACE_OWNER_RBAC_ROLES",
 			"CODER_WORKSPACE_OWNER_DELEGATED",
 			"CODER_WORKSPACE_OWNER_PARENT_ID",
+			"CODER_WORKSPACE_OWNER_LABELS",
 			"CODER_WORKSPACE_OWNER_ROOT_USER_ID",
 			"CODER_WORKSPACE_OWNER_ROOT_USER_NAME",
 		} { // https://github.com/golang/go/issues/52817
@@ -178,6 +199,7 @@ func TestWorkspaceOwnerDatasource(t *testing.T) {
 					assert.Empty(t, attrs["rbac_roles.0"])
 					assert.Equal(t, "false", attrs["delegated"])
 					assert.Empty(t, attrs["parent_id"])
+					assert.Equal(t, "0", attrs["labels.%"])
 					assert.Equal(t, attrs["id"], attrs["root_user_id"])
 					assert.Equal(t, "default", attrs["root_user_name"])
 					return nil

@@ -51,6 +51,7 @@ resource "coder_env" "git_author_email" {
 - `full_name` (String) The full name of the user.
 - `groups` (List of String) The groups of which the user is a member.
 - `id` (String) The UUID of the workspace owner.
+- `labels` (Map of String) What whoever created the delegated identity said it is for, such as the session it serves. Coder does not verify labels, so treat them as untrusted input. This is empty unless the owner is a delegated identity.
 - `login_type` (String) The type of login the user has.
 - `name` (String) The username of the user.
 - `oidc_access_token` (String, Sensitive) A valid OpenID Connect access token of the workspace owner. This is only available if the workspace owner authenticated with OpenID Connect. If a valid token cannot be obtained, this value will be an empty string.

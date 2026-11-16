@@ -50,6 +50,16 @@ func workspaceOwnerDataSource() *schema.Resource {
 			// root user, or another delegated identity in between.
 			_ = rd.Set("parent_id", os.Getenv("CODER_WORKSPACE_OWNER_PARENT_ID"))
 
+			// Labels say what a delegated identity is for. Whoever created
+			// the identity set them, and Coder does not verify them.
+			labels := map[string]string{}
+			if labelsRaw := os.Getenv("CODER_WORKSPACE_OWNER_LABELS"); labelsRaw != "" {
+				if err := json.NewDecoder(strings.NewReader(labelsRaw)).Decode(&labels); err != nil {
+					return diag.Errorf("invalid owner labels: %s", err.Error())
+				}
+			}
+			_ = rd.Set("labels", labels)
+
 			rootUserID := os.Getenv("CODER_WORKSPACE_OWNER_ROOT_USER_ID")
 			if rootUserID == "" {
 				rootUserID = ownerID
@@ -172,6 +182,15 @@ func workspaceOwnerDataSource() *schema.Resource {
 				Computed: true,
 				Description: "The UUID of the identity the workspace owner was created under: its root user, or another delegated identity in between. " +
 					"This is empty unless the owner is a delegated identity.",
+			},
+			"labels": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
+				Description: "What whoever created the delegated identity said it is for, such as the session it serves. " +
+					"Coder does not verify labels, so treat them as untrusted input. This is empty unless the owner is a delegated identity.",
 			},
 			"root_user_id": {
 				Type:        schema.TypeString,
