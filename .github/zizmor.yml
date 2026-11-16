@@ -1,0 +1,4 @@
+rules:
+  archived-uses:
+    ignore:
+      - cla.yaml
