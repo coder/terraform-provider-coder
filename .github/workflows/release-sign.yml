@@ -1,8 +1,8 @@
 # Builds, signs and publishes a release of a Coder Terraform provider. On the push of a v* tag,
 # the tag's release.yml calls main's copy of this file, not the tag's own. The other providers
-# (coder/terraform-provider-coderd) call the same copy, so the steps that sign exist once. A tag
-# on a commit from before this file runs that commit's release.yml instead, which coder/gcp does
-# not let sign.
+# (coder/terraform-provider-coderd, coder/terraform-provider-envbuilder) call the same copy, so
+# the steps that sign exist once. A tag on a commit from before this file runs that commit's
+# release.yml instead, which coder/gcp does not let sign.
 name: release-sign
 on:
   workflow_call:
@@ -33,6 +33,8 @@ jobs:
       GPGKMS_EMAIL: security@coder.com
       GPGKMS_CREATED: "2026-11-17T00:00:00Z"
       GPGKMS_VERSION: 52ee1a995f55f6fcb51f3c0a3ac20ed634120806 # github.com/coder/gpgkms v0.1.2
+      # Committed public key; the derived key must match it byte for byte.
+      GPGKMS_PUBLIC_KEY: .github/release-signing-key.asc
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -56,27 +58,24 @@ jobs:
           check-latest: true
           cache: false
 
-      # The signing script and the committed public key come from this file's own commit, not
-      # from the checkout above, which is the caller's.
+      # The signing script comes from this file's own commit, not from the checkout above, which
+      # is the caller's. The public key is the caller's own committed copy.
       - name: Checkout the signing script
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ job.workflow_repository }}
           ref: ${{ job.workflow_sha }}
           path: .release-sign
-          sparse-checkout: |
-            .github/release-signing-key.asc
-            scripts/release-signing-key.sh
+          sparse-checkout: scripts/release-signing-key.sh
           sparse-checkout-cone-mode: false
           persist-credentials: false
 
       # Moved out of the workspace: goreleaser refuses to release from a tree with untracked
-      # files. The derived key must match GPGKMS_PUBLIC_KEY byte for byte.
+      # files.
       - name: Install the signing script
         run: |
           mv .release-sign "${RUNNER_TEMP}/release-sign"
           echo "${RUNNER_TEMP}/release-sign/scripts" >> "${GITHUB_PATH}"
-          echo "GPGKMS_PUBLIC_KEY=${RUNNER_TEMP}/release-sign/.github/release-signing-key.asc" >> "${GITHUB_ENV}"
 
       # Same as coder/coder's release signing. The credentials file fetches a fresh GitHub OIDC
       # token whenever the Google client needs one, so signing late in the goreleaser run still
