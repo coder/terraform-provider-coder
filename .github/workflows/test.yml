@@ -217,7 +217,7 @@ jobs:
           check-latest: true
 
       - name: Run actionlint
-        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -color -shellcheck=
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 -color -shellcheck= -ignore 'property "workflow_(repository|sha)" is not defined'
 
       - name: Run zizmor
         uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
