@@ -72,6 +72,8 @@ jobs:
           go test -v ./integration
 
   goreleaser:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: test
     steps:
