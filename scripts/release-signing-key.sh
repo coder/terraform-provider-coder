@@ -7,7 +7,7 @@
 #   release-signing-key.sh sign FILE SIGNATURE   write a binary detached signature (goreleaser
 #                                                calls this for the SHA256SUMS file)
 #
-# Runs in release.yml's goreleaser job, which sets GPGKMS_* and Google credentials. The private
+# Runs in release-sign.yml's goreleaser job, which sets GPGKMS_* and Google credentials. The private
 # key never leaves Cloud KMS.
 #
 # $GPGKMS_PUBLIC_KEY was derived with the same gpgkms version and GPGKMS_* values by someone with

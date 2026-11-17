@@ -27,7 +27,7 @@ website/node_modules
 
 website/vendor
 
-# google-github-actions/auth credentials, written to the workspace in release.yml
+# google-github-actions/auth credentials, written to the workspace in release-sign.yml
 gha-creds-*.json
 
 # Test exclusions
