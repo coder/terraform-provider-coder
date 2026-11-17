@@ -115,22 +115,18 @@ jobs:
           check-latest: true
           cache: false
 
-      # No third-party auth action. The credential file tells Google's client libraries to fetch
-      # a fresh GitHub OIDC token whenever they need one (as google-github-actions/auth does), so
-      # signing late in the goreleaser run still works, and to impersonate the signer.
+      # Same as coder/coder's release signing. The credentials file fetches a fresh GitHub OIDC
+      # token whenever the Google client needs one, so signing late in the goreleaser run still
+      # works. Not exported: only the steps that run gpgkms get it, explicitly. The file lands in
+      # the workspace as gha-creds-*.json (gitignored, or goreleaser sees a dirty tree) and the
+      # action deletes it when the job ends.
       - name: Authenticate to Google Cloud
-        run: |
-          set -euo pipefail
-          audience="$(jq -rn --arg a "https://iam.googleapis.com/${GPGKMS_WIF_PROVIDER}" '$a | @uri')"
-          umask 077
-          gcloud iam workload-identity-pools create-cred-config "${GPGKMS_WIF_PROVIDER}" \
-            --service-account="${GPGKMS_SERVICE_ACCOUNT}" \
-            --credential-source-url="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${audience}" \
-            --credential-source-headers="Authorization=Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
-            --credential-source-type=json \
-            --credential-source-field-name=value \
-            --output-file="${RUNNER_TEMP}/gcp-credentials.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=${RUNNER_TEMP}/gcp-credentials.json" >> "${GITHUB_ENV}"
+        id: gcp
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ env.GPGKMS_WIF_PROVIDER }}
+          service_account: ${{ env.GPGKMS_SERVICE_ACCOUNT }}
+          export_environment_variables: false
 
       - name: Install gpgkms
         run: |
@@ -141,6 +137,8 @@ jobs:
       # Terraform Registry has; otherwise the job stops before anything is published.
       - name: Check the signing key
         run: ./scripts/release-signing-key.sh check
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcp.outputs.credentials_file_path }}
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
@@ -149,7 +147,4 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Remove credentials
-        if: always()
-        run: rm -f "${RUNNER_TEMP}/gcp-credentials.json"
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcp.outputs.credentials_file_path }}

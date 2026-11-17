@@ -27,6 +27,9 @@ website/node_modules
 
 website/vendor
 
+# google-github-actions/auth credentials, written to the workspace in release.yml
+gha-creds-*.json
+
 # Test exclusions
 !command/test-fixtures/**/*.tfstate
 !command/test-fixtures/**/.terraform/
