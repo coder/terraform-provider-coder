@@ -1,14 +1,9 @@
-# This GitHub action can publish assets for release when a tag is created.
-# Currently its setup to run on any tag that matches the pattern "v*" (ie. v0.1.0).
+# Publishes a release when a v* tag is pushed (e.g. v2.20.0).
 #
-# This uses an action (hashicorp/ghaction-import-gpg) that assumes you set your
-# private key in the `GPG_PRIVATE_KEY` secret and passphrase in the `PASSPHRASE`
-# secret. If you would rather own your own GPG handling, please fork this action
-# or use an alternative one for key handling.
-#
-# You will need to pass the `--batch` flag to `gpg` in your signing step
-# in `goreleaser` to indicate this is being used in a non-interactive mode.
-#
+# The checksums are signed with a Cloud KMS key whose OpenPGP public key is committed as
+# .github/release-signing-key.asc and registered with the Terraform Registry. Only the goreleaser
+# job, in the `release` environment (coder/github-org-terraform: v* tags only, a reviewer approves
+# each run), can sign with it.
 name: release
 on:
   push:
@@ -79,10 +74,30 @@ jobs:
           go test -v ./integration
 
   goreleaser:
-    permissions:
-      contents: write
     runs-on: ubuntu-latest
     needs: test
+    # The release environment (coder/github-org-terraform): v* tags only, and a second release
+    # manager approves each run. coder/gcp only lets this job, in this environment, on a release
+    # tag, act as the signer.
+    environment: release
+    permissions:
+      contents: write # create the GitHub release and upload its assets
+      id-token: write # workload identity federation to the Cloud KMS signing key
+    env:
+      # The signing key never leaves Cloud KMS (coder/gcp:
+      # projects/production/coder-release-signing/terraform_provider.tf).
+      GPGKMS_KEY: projects/coder-release-signing/locations/us-central1/keyRings/release-signing/cryptoKeys/gpg-terraform-provider/cryptoKeyVersions/1
+      GPGKMS_WIF_PROVIDER: projects/720429782538/locations/global/workloadIdentityPools/github-release-signing/providers/coder-terraform-provider
+      GPGKMS_SERVICE_ACCOUNT: terraform-provider-signer@coder-release-signing.iam.gserviceaccount.com
+      # The OpenPGP identity derived from the KMS key. GPGKMS_CREATED is part of the fingerprint
+      # registered with the Terraform Registry: never change it. No expiry, so `terraform init`
+      # keeps verifying old releases.
+      GPGKMS_NAME: Coder Terraform Provider Signing Key
+      GPGKMS_EMAIL: security@coder.com
+      GPGKMS_CREATED: "2026-11-17T00:00:00Z"
+      GPGKMS_VERSION: 52ee1a995f55f6fcb51f3c0a3ac20ed634120806 # github.com/coder/gpgkms v0.1.2
+      # Committed public key; the derived key must match it byte for byte.
+      GPGKMS_PUBLIC_KEY: .github/release-signing-key.asc
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,13 +115,32 @@ jobs:
           check-latest: true
           cache: false
 
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
-        with:
-          # These secrets will need to be configured for the repository:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+      # No third-party auth action. The credential file tells Google's client libraries to fetch
+      # a fresh GitHub OIDC token whenever they need one (as google-github-actions/auth does), so
+      # signing late in the goreleaser run still works, and to impersonate the signer.
+      - name: Authenticate to Google Cloud
+        run: |
+          set -euo pipefail
+          audience="$(jq -rn --arg a "https://iam.googleapis.com/${GPGKMS_WIF_PROVIDER}" '$a | @uri')"
+          umask 077
+          gcloud iam workload-identity-pools create-cred-config "${GPGKMS_WIF_PROVIDER}" \
+            --service-account="${GPGKMS_SERVICE_ACCOUNT}" \
+            --credential-source-url="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${audience}" \
+            --credential-source-headers="Authorization=Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            --credential-source-type=json \
+            --credential-source-field-name=value \
+            --output-file="${RUNNER_TEMP}/gcp-credentials.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${RUNNER_TEMP}/gcp-credentials.json" >> "${GITHUB_ENV}"
+
+      - name: Install gpgkms
+        run: |
+          GOBIN="${RUNNER_TEMP}/bin" go install "github.com/coder/gpgkms/cmd/gpgkms@${GPGKMS_VERSION}"
+          echo "${RUNNER_TEMP}/bin" >> "${GITHUB_PATH}"
+
+      # The public key derived from Cloud KMS must equal the committed one, which is what the
+      # Terraform Registry has; otherwise the job stops before anything is published.
+      - name: Check the signing key
+        run: ./scripts/release-signing-key.sh check
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
@@ -114,6 +148,8 @@ jobs:
           version: "v2.19.0"
           args: release --clean
         env:
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          # GitHub sets this automatically
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Remove credentials
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/gcp-credentials.json"
