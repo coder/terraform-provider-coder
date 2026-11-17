@@ -1,6 +1,8 @@
-# Builds, signs and publishes a release. On the push of a v* tag, the tag's release.yml calls
-# main's copy of this file, not the tag's own. A tag on a commit from before this file runs that
-# commit's release.yml instead, which coder/gcp does not let sign.
+# Builds, signs and publishes a release of a Coder Terraform provider. On the push of a v* tag,
+# the tag's release.yml calls main's copy of this file, not the tag's own. The other providers
+# (coder/terraform-provider-coderd, coder/terraform-provider-envbuilder) call the same copy, so
+# the steps that sign exist once. A tag on a commit from before this file runs that commit's
+# release.yml instead, which coder/gcp does not let sign.
 name: release-sign
 on:
   workflow_call:
@@ -49,15 +51,31 @@ jobs:
             exit 1
           fi
 
-      - name: Check Go Versions
-        run: ./scripts/check_go_version.sh
-
       - name: Set up Go
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26"
           check-latest: true
           cache: false
+
+      # The signing script comes from this file's own commit, not from the checkout above, which
+      # is the caller's. The public key is the caller's own committed copy.
+      - name: Checkout the signing script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ job.workflow_repository }}
+          ref: ${{ job.workflow_sha }}
+          path: .release-sign
+          sparse-checkout: scripts/release-signing-key.sh
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      # Moved out of the workspace: goreleaser refuses to release from a tree with untracked
+      # files.
+      - name: Install the signing script
+        run: |
+          mv .release-sign "${RUNNER_TEMP}/release-sign"
+          echo "${RUNNER_TEMP}/release-sign/scripts" >> "${GITHUB_PATH}"
 
       # Same as coder/coder's release signing. The credentials file fetches a fresh GitHub OIDC
       # token whenever the Google client needs one, so signing late in the goreleaser run still
@@ -72,6 +90,10 @@ jobs:
           service_account: ${{ env.GPGKMS_SERVICE_ACCOUNT }}
           export_environment_variables: false
 
+      # A caller's .gitignore does not have to list the credentials file.
+      - name: Ignore the credentials file
+        run: echo 'gha-creds-*.json' >> .git/info/exclude
+
       - name: Install gpgkms
         run: |
           GOBIN="${RUNNER_TEMP}/bin" go install "github.com/coder/gpgkms/cmd/gpgkms@${GPGKMS_VERSION}"
@@ -80,7 +102,7 @@ jobs:
       # The public key derived from Cloud KMS must equal the committed one, which is what the
       # Terraform Registry has; otherwise the job stops before anything is published.
       - name: Check the signing key
-        run: ./scripts/release-signing-key.sh check
+        run: release-signing-key.sh check
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.gcp.outputs.credentials_file_path }}
 

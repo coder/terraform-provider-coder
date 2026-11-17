@@ -37,9 +37,9 @@ checksum:
   algorithm: sha256
 signs:
   # Binary detached signature of the SHA256SUMS file, as the Terraform Registry requires, made
-  # with the Cloud KMS key (see scripts/release-signing-key.sh and release-sign.yml).
+  # with the Cloud KMS key. release-sign.yml puts main's scripts/release-signing-key.sh on PATH.
   - artifacts: checksum
-    cmd: ./scripts/release-signing-key.sh
+    cmd: release-signing-key.sh
     args:
       - "sign"
       - "${artifact}"
