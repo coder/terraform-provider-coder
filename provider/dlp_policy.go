@@ -1,0 +1,71 @@
+package provider
+
+import (
+	"context"
+
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+)
+
+type DLPPolicy struct {
+	ID                   string   `mapstructure:"id"`
+	SSHAccess            bool     `mapstructure:"ssh_access"`
+	WebTerminalAccess    bool     `mapstructure:"web_terminal_access"`
+	PortForwardingAccess bool     `mapstructure:"port_forwarding_access"`
+	AllowedApplications  []string `mapstructure:"allowed_applications"`
+}
+
+func dlpPolicyResource() *schema.Resource {
+	return &schema.Resource{
+		SchemaVersion: 1,
+
+		Description: "Use this resource to declare a data loss prevention policy. " +
+			"Reference its `id` from a `coder_agent`'s `dlp_policy` attribute to apply " +
+			"it to that agent. A single policy may be referenced by any number of agents.",
+		CreateContext: func(_ context.Context, rd *schema.ResourceData, _ any) diag.Diagnostics {
+			rd.SetId(uuid.NewString())
+			return nil
+		},
+		ReadContext:   schema.NoopContext,
+		DeleteContext: schema.NoopContext,
+		Schema: map[string]*schema.Schema{
+			"id": {
+				Type:        schema.TypeString,
+				Description: "A unique identifier for this resource.",
+				Computed:    true,
+			},
+			"ssh_access": {
+				Type:        schema.TypeBool,
+				Description: "Whether workspace users may connect to the workspace over SSH.",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+			},
+			"web_terminal_access": {
+				Type:        schema.TypeBool,
+				Description: "Whether workspace users may open the in-browser web terminal.",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+			},
+			"port_forwarding_access": {
+				Type:        schema.TypeBool,
+				Description: "Whether workspace users may forward arbitrary TCP ports from the workspace.",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+			},
+			"allowed_applications": {
+				Type: schema.TypeList,
+				Description: "Slugs of coder_app resources workspace users are allowed to access. " +
+					"Apps whose slugs are not in this list are blocked.",
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+		},
+	}
+}
