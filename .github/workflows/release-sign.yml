@@ -32,7 +32,7 @@ jobs:
       GPGKMS_NAME: Coder Terraform Provider Signing Key
       GPGKMS_EMAIL: security@coder.com
       GPGKMS_CREATED: "2026-11-17T00:00:00Z"
-      GPGKMS_VERSION: 5417e8731035ea99348010be462acd78880940ca # github.com/coder/gpgkms v0.2.0
+      GPGKMS_VERSION: c4dfbf62fc83d453e3843f67bc93c471ed386c27 # github.com/coder/gpgkms v0.2.1
       # Committed public key; the derived key must match it byte for byte.
       GPGKMS_PUBLIC_KEY: .github/release-signing-key.asc
     steps:
